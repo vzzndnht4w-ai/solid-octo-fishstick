@@ -3,4 +3,7 @@
 import budgets from './budgets.js';
 import goals from './goals.js';
 import insights from './insights.js';
-export default [budgets, goals, insights];
+import fairness from './fairness.js';
+import upcoming from './upcoming.js';
+import streaks from './streaks.js';
+export default [upcoming, budgets, goals, streaks, fairness, insights];

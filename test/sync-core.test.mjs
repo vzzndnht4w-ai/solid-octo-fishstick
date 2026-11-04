@@ -86,3 +86,13 @@ test('приглашение и код', () => {
   assert.equal(normUrl('abc.supabase.co/'), 'https://abc.supabase.co');
   assert.equal(normUrl('https://abc.supabase.co/rest/v1'), 'https://abc.supabase.co');
 });
+
+test('коллекции (комментарии, шаблоны…) синхронизируются как записи', async () => {
+  const keys = await deriveKeys('K9'), srv = new Server();
+  const a = new Phone(srv, keys), b = new Phone(srv, keys);
+  a.s.comments = [{ id: 'c1', txId: 't', person: 'max', emoji: '❤' }]; a.s.templates = [{ id: 'm1', title: 'Кофе' }];
+  await a.sync(1000); await b.sync(1001);
+  assert.deepEqual(b.s.comments, [{ id: 'c1', txId: 't', person: 'max', emoji: '❤' }]); assert.equal(b.s.templates[0].title, 'Кофе');
+  b.s.comments = []; await b.sync(2000); await a.sync(2001);
+  assert.deepEqual(a.s.comments, []);
+});

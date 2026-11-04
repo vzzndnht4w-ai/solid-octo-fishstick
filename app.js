@@ -14,6 +14,11 @@ import recurring from './screens/recurring.js';
 import data from './screens/data.js';
 import profile from './screens/profile.js';
 import syncScreen from './screens/sync.js';
+import dateScreen from './screens/date.js';
+import challenges from './screens/challenges.js';
+import wrapped from './screens/wrapped.js';
+import templates from './screens/templates.js';
+import calendar from './screens/calendar.js';
 import * as sync from './lib/sync.js';
 import onboarding from './screens/onboarding.js';
 import { lockScreen, confirmPin, closePad } from './screens/lock.js';
@@ -23,8 +28,8 @@ import './lib/profile-icons.js';
 import { method as methodOf } from './ledger.js';
 import { runRecurring } from './lib/recurring.js';
 
-const SCREENS = { home, feed, stats, add, more, settings, budgets, goals, recurring, data, profile, sync: syncScreen };
-const TAB_OF = { settings: 'more', budgets: 'more', goals: 'more', recurring: 'more', data: 'more', profile: 'more', sync: 'more' };
+const SCREENS = { home, feed, stats, add, more, settings, budgets, goals, recurring, data, profile, sync: syncScreen, date: dateScreen, challenges, wrapped, templates, calendar };
+const TAB_OF = { settings: 'more', budgets: 'more', goals: 'more', recurring: 'more', data: 'more', profile: 'more', sync: 'more', date: 'more', challenges: 'more', wrapped: 'more', templates: 'more', calendar: 'more' };
 const view = $('#view'), nav = $('#tabs'), sheet = $('#sheet'), toastEl = $('#toast');
 
 let route = 'home';
