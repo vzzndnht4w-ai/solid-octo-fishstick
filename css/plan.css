@@ -1,1 +1,71 @@
-/* plan */
+/* plan: бюджеты, цели, регулярные платежи */
+.sheet.tall{max-height:92dvh;overflow-y:auto;overscroll-behavior:contain}
+.btns2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.addbtn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:0}
+.iconbtn{background:var(--surface2);border:0;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted);flex:none}
+.linkbtn{background:none;border:0;color:var(--dinara);font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:2px;padding:4px 0}
+
+/* уровни: --rc — цвет кольца и полосы */
+.lvl-ok{--rc:var(--max)}.lvl-warn{--rc:var(--joint)}.lvl-over{--rc:var(--neg)}.lvl-done{--rc:var(--pos)}
+.pbar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:8px}
+.pbar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,color-mix(in srgb,var(--rc,var(--max)) 62%,#fff),var(--rc,var(--max)));min-width:0;transition:width .4s}
+.ring{position:relative;display:inline-flex;flex:none;color:var(--rc,var(--max))}
+.ring svg{display:block}
+.ring .rt{fill:none;stroke:var(--line)}
+.ring .rf{fill:none;stroke:currentColor;stroke-linecap:round;transition:stroke-dashoffset .5s}
+.ring .rin{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--ink);font-size:15px}
+.lvl-done .ring .rin{color:var(--pos);font-size:26px}
+.cap{font-size:12.5px;font-weight:600;color:var(--muted);margin-top:5px}
+.lvl-warn .cap{color:var(--joint)}.lvl-over .cap{color:var(--neg)}
+
+/* бюджеты */
+.bsum{display:flex;align-items:center;gap:18px}
+.bsum .g{min-width:0}.bsum .bbig{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.bsum .rin b{font-size:19px;font-weight:800}
+.bud{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;background:none;border:0;text-align:left}
+.bud+.bud{border-top:1px solid var(--line)}
+.bud .g{flex:1;min-width:0}
+.bud .row{gap:8px}.bud .row>b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bud .bnum{font-size:12.5px;color:var(--muted);white-space:nowrap}.bud .bnum b{color:var(--ink);font-weight:700}
+.bud .setlim{font-size:13px;color:var(--muted);font-weight:600;display:inline-flex;align-items:center;gap:2px;white-space:nowrap}
+.wbud{display:flex;flex-direction:column;gap:12px}
+.whead{margin-bottom:2px}.whead>b{display:flex;align-items:center;gap:8px;font-size:17px}
+.wb{display:flex;align-items:center;gap:12px}
+.wb .tile{width:36px;height:36px;font-size:18px;border-radius:12px}
+.wb .g{flex:1;min-width:0}.wb .row{gap:8px}.wb .row>b{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wb .cap{margin:0;white-space:nowrap}.wb .pbar{height:6px;margin-top:6px}
+.wb .cap{color:var(--muted);font-size:12.5px}.wb.lvl-warn .cap{color:var(--joint)}.wb.lvl-over .cap{color:var(--neg)}
+
+/* цели */
+.goal{display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden}
+.goal.lvl-done{background:linear-gradient(160deg,color-mix(in srgb,var(--pos) 14%,var(--surface)),var(--surface) 70%);box-shadow:var(--shadow),inset 0 0 0 1.5px color-mix(in srgb,var(--pos) 45%,transparent)}
+.gtop{display:flex;align-items:center;gap:16px}
+.gtop .g{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.gname{font-size:18px;font-weight:800;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gsum{font-size:15px}.gsum b{font-size:20px;font-weight:800;letter-spacing:-.01em}
+.gemo{font-size:20px;line-height:1}.gemo.big{font-size:34px}
+.goal .pbar{margin-top:0}
+.gplan{display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:14px;padding:10px 12px;font-size:13.5px}
+.gplan .i{font-size:18px;color:var(--joint)}.gplan.warn .i{color:var(--neg)}
+.gfund{display:flex;align-items:center;justify-content:center;gap:8px;margin:0;padding:14px;text-align:center}
+.goal .gfund.ghost{text-align:center;justify-content:center}
+.badge{display:inline-flex;align-items:center;gap:6px;width:fit-content;font-size:12.5px;font-weight:700;color:var(--pos);background:color-mix(in srgb,var(--pos) 14%,transparent);border-radius:99px;padding:3px 10px;margin-top:4px}
+.wgoals{display:flex;flex-direction:column;gap:12px}
+.wg{display:flex;align-items:center;gap:12px}
+.wg .g{flex:1;min-width:0}.wg .g b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wg .gpct{font-weight:800;font-size:15px;color:var(--rc)}
+.wg .gemo{font-size:22px}.lvl-done.wg .ring .rin{font-size:20px}
+.emojis{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.emo{border:1.5px solid transparent;background:var(--surface);border-radius:12px;aspect-ratio:1;font-size:20px;padding:0;display:flex;align-items:center;justify-content:center}
+.emo.on{border-color:var(--dinara);background:color-mix(in srgb,var(--dinara) 10%,var(--surface))}
+.gemo-tile{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;background:var(--surface);flex:none}
+
+/* регулярные платежи */
+.rsum{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.rsum b{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.tx.rec.paused{opacity:.55}
+.tx.rec .sub span{white-space:nowrap}
+.daypick{display:flex;align-items:center;gap:12px}
+.daypick input{text-align:center;font-size:20px;font-weight:800;width:90px}
+.daypick .back{box-shadow:none;border:1px solid var(--line)}
+@media (max-width:360px){.emojis{grid-template-columns:repeat(6,1fr)}}
