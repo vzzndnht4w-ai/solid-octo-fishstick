@@ -27,6 +27,7 @@ import { shouldLock } from './lib/pin.js';
 import './lib/profile-icons.js';
 import { method as methodOf } from './ledger.js';
 import { runRecurring } from './lib/recurring.js';
+import { sheetBlock, bindSheetBlock } from './lib/together-ui.js';
 
 const SCREENS = { home, feed, stats, add, more, settings, budgets, goals, recurring, data, profile, sync: syncScreen, date: dateScreen, challenges, wrapped, templates, calendar };
 const TAB_OF = { settings: 'more', budgets: 'more', goals: 'more', recurring: 'more', data: 'more', profile: 'more', sync: 'more', date: 'more', challenges: 'more', wrapped: 'more', templates: 'more', calendar: 'more' };
@@ -120,13 +121,14 @@ function openSheet(id) {
   sheet.hidden = false;
   sheet.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-label="Операция"><div class="grab"></div><div class="row" style="justify-content:flex-start;gap:12px">${v.icon}<div><b style="font-size:18px">${esc(v.title)}</b></div></div>
     <div class="big ${v.cls}" style="margin-top:12px">${v.amt}</div><div class="kvs">${rows}</div>
-    <div class="btns">${confirmDel ? `<button data-sheet="cancel">Не удалять</button><button class="del" data-sheet="del2">Да, удалить</button>` : `<button data-sheet="edit" ${mine ? '' : 'disabled style="opacity:.4"'}>Изменить</button><button class="del" data-sheet="del">Удалить</button>`}</div></div>`;
+    <div class="btns">${confirmDel ? `<button data-sheet="cancel">Не удалять</button><button class="del" data-sheet="del2">Да, удалить</button>` : `<button data-sheet="edit" ${mine ? '' : 'disabled style="opacity:.4"'}>Изменить</button><button class="del" data-sheet="del">Удалить</button>`}</div>${sheetBlock(s, t)}</div>`;
   const opener = document.activeElement;
   const close = () => { sheet.hidden = true; sheet.innerHTML = ''; confirmDel = false; document.removeEventListener('keydown', onKey); if (opener && opener.isConnected) opener.focus(); };
   const onKey = (e) => { if (e.key === 'Escape') close(); };
   document.addEventListener('keydown', onKey);
   sheet.onclick = (e) => { if (e.target === sheet) close(); };
   $('.sheet button', sheet)?.focus({ preventScroll: true });
+  bindSheetBlock(sheet, t);
   $$('[data-sheet]', sheet).forEach((b) => (b.onclick = () => {
     const act = b.dataset.sheet;
     if (act === 'edit') { close(); api.editTx(t); }

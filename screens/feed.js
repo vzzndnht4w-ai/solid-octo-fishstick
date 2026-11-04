@@ -2,6 +2,7 @@ import { WALLETS, other, inMonth, method as methodOf } from '../ledger.js';
 import { ic, esc, nameOf, feminine, tile, methodTag, money as fm, monthSwitch, dayLabel, $, $$ } from '../core.js';
 import { registerIcons } from '../icons.js';
 import { isSecret } from '../lib/analytics.js';
+import { txBadge } from '../lib/together-ui.js';
 
 registerIcons({ search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4' });
 
@@ -81,7 +82,7 @@ function listHtml(s, list) {
     const dayNet = g.items.reduce((acc, t) => acc + (t.type === 'income' ? t.amount : t.type === 'expense' ? -t.amount : 0), 0);
     const label = filter.allTime && g.date.slice(0, 4) !== year ? `${dayLabel(g.date)} ${g.date.slice(0, 4)}` : dayLabel(g.date);
     html += `<div class="day"><span>${label}</span><span>${dayNet ? (dayNet > 0 ? '+' : '') + fm(dayNet) : ''}</span></div><div class="list">`;
-    for (const t of g.items) { const v = txView(t, s.viewer); html += `<button class="tx" data-id="${t.id}">${v.icon}<div class="mid"><b>${esc(v.title)}</b><div class="sub">${v.sub}</div></div><span class="amt ${v.cls}">${v.amt}</span></button>`; }
+    for (const t of g.items) { const v = txView(t, s.viewer); html += `<button class="tx" data-id="${t.id}">${v.icon}<div class="mid"><b>${esc(v.title)}</b><div class="sub">${v.sub}${txBadge(s, t)}</div></div><span class="amt ${v.cls}">${v.amt}</span></button>`; }
     html += '</div>';
   }
   return html;
