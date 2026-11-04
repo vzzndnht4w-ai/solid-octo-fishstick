@@ -1,13 +1,13 @@
 import { WALLETS, other, inMonth, method as methodOf } from '../ledger.js';
 import { ic, esc, nameOf, feminine, tile, methodTag, money as fm, monthSwitch, dayLabel, $, $$ } from '../core.js';
 import { registerIcons } from '../icons.js';
-import { isSecret } from '../lib/analytics.js';
+import { isSecret, isPendingSurprise, shortDate } from '../lib/tools.js';
 
 registerIcons({ search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4' });
 
 /** Как показать операцию в списке и в шторке. */
 export function txView(t, viewer) {
-  const secret = t.hidden && t.person !== viewer;
+  const secret = isSecret(t, viewer);
   const mname = (m) => (m === 'cash' ? 'наличные' : 'карта');
   if (t.type === 'transfer') {
     const same = t.from === t.to, mf = methodOf(t, 'from'), mt = methodOf(t, 'to');
@@ -20,12 +20,13 @@ export function txView(t, viewer) {
   const m = methodTag(methodOf(t));
   const icon = secret ? `<span class="tile" style="--h:#858aa0">${ic('lock')}</span>` : tile(t.category);
   const title = secret ? 'Скрыто' : t.category;
+  const sur = isPendingSurprise(t, viewer) ? `<span class="tag surprise">${ic('gift')}Сюрприз до ${shortDate(t.revealOn)}</span>` : '';
   const note = !secret && t.note ? `<span>${esc(t.note)}</span>` : '';
-  if (t.type === 'income') return { icon, title, sub: `<span class="tag ${t.person}">${esc(nameOf(t.person))}</span>${m}${note}`, amt: '+' + fm(t.amount), cls: 'pos' };
+  if (t.type === 'income') return { icon, title, sub: `<span class="tag ${t.person}">${esc(nameOf(t.person))}</span>${m}${sur}${note}`, amt: '+' + fm(t.amount), cls: 'pos' };
   const who = t.scope === 'personal'
     ? `<span class="tag ${t.person}">${esc(nameOf(t.person))} · лично</span>`
     : `<span class="tag joint">Общее ${t.shareMax}/${100 - t.shareMax}</span><span class="tag ${t.paidFrom}">${t.paidFrom === 'joint' ? 'из котла' : 'платил' + feminine(t.paidFrom) + ' ' + esc(nameOf(t.paidFrom))}</span>`;
-  return { icon, title, sub: `${who}${m}${note}`, amt: '−' + fm(t.amount), cls: '' };
+  return { icon, title, sub: `${who}${m}${sur}${note}`, amt: '−' + fm(t.amount), cls: '' };
 }
 
 // ---------- Фильтр ленты (на уровне модуля — сохраняется при переключении вкладок) ----------

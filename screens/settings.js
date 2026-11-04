@@ -29,6 +29,7 @@ export default {
       + ctl({ icon: 'globe', hue: '#36b0d4', label: 'Валюта', sub: 'Символ в суммах по всему приложению', control: `<div class="chips s-cur" role="group" aria-label="Валюта">${CURRENCIES.map((c) => `<button type="button" class="chip${st.currency === c ? ' on' : ''}" data-cur="${c}" data-fk="cur-${c}" aria-pressed="${st.currency === c}" aria-label="${c}">${c}</button>`).join('')}</div>` }))}
     ${group('Общие траты',
       ctl({ icon: 'pie', hue: '#9a6cff', label: 'Доля по умолчанию', sub: 'Подставляется в новую общую трату', control: `<p class="sharelab" id="s-sharelab" aria-live="polite">${esc(shareText(share))}</p><input type="range" id="s-share" min="0" max="100" step="5" value="${share}" aria-label="Доля ${esc(PEOPLE.max)} в процентах" aria-valuetext="${share}%"><div class="chips mt"><button type="button" class="chip" data-share="50">50/50</button><button type="button" class="chip" data-share="60">60/40</button><button type="button" class="chip" data-share="70">70/30</button></div>` })
+      + ctl({ icon: 'users', hue: '#2aa874', label: 'Делить общее по доходам', sub: 'Доля в новой общей трате — по доходам за последние 3 месяца', control: seg('splitInc', [['0', 'Выкл.'], ['1', 'Вкл.']], st.splitByIncome ? '1' : '0', 'Делить общее по доходам') })
       + ctl({ icon: 'card', hue: '#4f86f0', label: 'Способ оплаты по умолчанию', control: seg('method', [['card', `${ic('card')} Карта`], ['cash', `${ic('cash')} Наличные`]], st.defaultMethod || 'card', 'Способ оплаты по умолчанию') }))}
     ${group('Безопасность',
       ctl({ icon: 'timer', hue: '#ef8a45', label: 'Автоблокировка', sub: 'Через сколько после ухода в фон спрашивать PIN-код', control: seg('lock', LOCKS, st.autoLockMin ?? 1, 'Автоблокировка') })
@@ -47,6 +48,7 @@ export default {
       if (k === 'theme') { applyTheme(v); set((z) => { z.theme = v; }); }
       if (k === 'method') set((z) => { z.defaultMethod = v; });
       if (k === 'lock') set((z) => { z.autoLockMin = +v; });
+      if (k === 'splitInc') set((z) => { z.splitByIncome = v === '1'; });
     }));
     $$('[data-cur]', root).forEach((b) => (b.onclick = () => set((z) => { z.currency = b.dataset.cur; })));
 

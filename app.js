@@ -5,7 +5,7 @@ import { $, $$, esc, ic, av, nameOf, dayLabel, todayStr, shiftMonth, money as fm
 import home from './screens/home.js';
 import feed, { txView } from './screens/feed.js';
 import stats from './screens/stats.js';
-import add, { startEdit, reset as resetDraft, isEditing } from './screens/add.js';
+import add, { startEdit, startWith, reset as resetDraft, isEditing } from './screens/add.js';
 import more from './screens/more.js';
 import settings from './screens/settings.js';
 import budgets from './screens/budgets.js';
@@ -27,6 +27,8 @@ import { shouldLock } from './lib/pin.js';
 import './lib/profile-icons.js';
 import { method as methodOf } from './ledger.js';
 import { runRecurring } from './lib/recurring.js';
+import { parseQuickLink, findTemplate, isSecret } from './lib/tools.js';
+import { quickAdd } from './lib/tools-ui.js';
 
 const SCREENS = { home, feed, stats, add, more, settings, budgets, goals, recurring, data, profile, sync: syncScreen, date: dateScreen, challenges, wrapped, templates, calendar };
 const TAB_OF = { settings: 'more', budgets: 'more', goals: 'more', recurring: 'more', data: 'more', profile: 'more', sync: 'more', date: 'more', challenges: 'more', wrapped: 'more', templates: 'more', calendar: 'more' };
@@ -109,7 +111,7 @@ function toast(msg, action) {
 let confirmDel = false;
 function openSheet(id) {
   const s = store.get(), t = s.txs.find((x) => x.id === id); if (!t) return;
-  const v = txView(t, s.viewer), mine = !t.hidden || t.person === s.viewer;
+  const v = txView(t, s.viewer), mine = !isSecret(t, s.viewer, todayStr());
   const kv = (k, val) => `<div class="row"><span class="muted">${k}</span><b>${val}</b></div>`;
   const mname = (m) => (m === 'cash' ? 'Наличные' : 'Карта');
   let rows = kv('Дата', `${dayLabel(t.date)}, ${t.date.slice(8)}.${t.date.slice(5, 7)}.${t.date.slice(0, 4)}`);
@@ -173,11 +175,26 @@ function render() {
   $$('[data-switch]', view).forEach((b) => (b.onclick = () => chooseUser(s.viewer === 'max' ? 'dinara' : 'max')));
   screen.bind(view, s, api);
   restoreFocus(fk);
+  openQuickLink(s);
 }
 function restoreFocus(fk) {
   if (!fk) return;
   const el = [...document.querySelectorAll('[data-fk]')].find((e) => e.dataset.fk === fk);
   if (el && !el.disabled) el.focus({ preventScroll: true });
+}
+
+// Быстрая ссылка (?add=…&cat=… или ?tpl=…): разбираем при старте, выполняем, когда приложение разблокировано.
+let pendingLink = parseQuickLink(location.search);
+if (pendingLink) { try { window.history.replaceState(null, '', location.pathname + location.hash); } catch {} }
+function openQuickLink(s) {
+  if (!pendingLink || locked || !s.viewer || !s.settings.onboarded) return;
+  const l = pendingLink; pendingLink = null;
+  setTimeout(() => {
+    if (l.tpl) {
+      const it = findTemplate(s.templates, l.tpl);
+      if (it) quickAdd(it, api); else toast(`Шаблон «${l.tpl}» не найден`);
+    } else { startWith(l, store.get()); api.go('add', { keepDraft: true }); }
+  }, 0);
 }
 
 store.subscribe(() => { applyAll(store.get()); render(); });
