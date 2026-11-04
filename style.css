@@ -151,3 +151,11 @@ button:focus-visible,input:focus-visible{outline:3px solid color-mix(in srgb,var
 .toast{position:fixed;z-index:60;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom));background:var(--ink);color:var(--bg);border-radius:16px;padding:12px 16px;font-weight:600;font-size:14.5px;display:flex;gap:14px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:calc(100% - 32px)}
 .toast[hidden]{display:none}.toast button{background:none;border:0;color:var(--dinara2);font-weight:700}
 .profile-row{width:100%;border:0;display:flex;align-items:center;justify-content:space-between;text-align:left;color:var(--ink)}
+
+/* появление экрана при переходе (не при каждой перерисовке) */
+main.enter>*{animation:rise .38s cubic-bezier(.2,.8,.3,1) both}
+main.enter>*:nth-child(2){animation-delay:.04s}main.enter>*:nth-child(3){animation-delay:.08s}main.enter>*:nth-child(4){animation-delay:.12s}main.enter>*:nth-child(n+5){animation-delay:.16s}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+@media (prefers-reduced-motion:reduce){main.enter>*{animation:none}}
+.card,.tx,.chip,.opt,.catb,.primary,.ghost{transition:transform .12s ease,background-color .2s}
+.card:active,.tx:active,.chip:active,.opt:active,.catb:active,.primary:active,.ghost:active{transform:scale(.98)}

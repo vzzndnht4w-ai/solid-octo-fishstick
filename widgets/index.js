@@ -6,4 +6,5 @@ import insights from './insights.js';
 import fairness from './fairness.js';
 import upcoming from './upcoming.js';
 import streaks from './streaks.js';
-export default [upcoming, budgets, goals, streaks, fairness, insights];
+import quick from './quick.js';
+export default [quick, upcoming, budgets, goals, streaks, fairness, insights];

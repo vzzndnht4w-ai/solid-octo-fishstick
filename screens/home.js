@@ -1,6 +1,18 @@
 import { PEOPLE, balancesByMethod, debt, stats, inMonth, other } from '../ledger.js';
 import { ic, av, esc, nameOf, init, feminine, money as fm, monthSwitch, monthLabel, $ } from '../core.js';
 import widgets from '../widgets/index.js';
+import { debtAgeDays, plural } from '../lib/tools.js';
+
+const OLD_DEBT_DAYS = 14, OLD_DEBT_MIN = 100000;
+/** Мягкое напоминание, если долг висит дольше 14 дней и больше 1 000 ₽. */
+export function debtNote(txs, d, today) {
+  if (Math.abs(d) <= OLD_DEBT_MIN) return '';
+  const days = debtAgeDays(txs, today);
+  if (days == null || days <= OLD_DEBT_DAYS) return '';
+  const w = Math.round(days / 7), m = Math.round(days / 30);
+  const age = days < 60 ? `${w} ${plural(w, 'неделю', 'недели', 'недель')}` : `около ${m} ${plural(m, 'месяца', 'месяцев', 'месяцев')}`;
+  return `<p class="debtnote" role="note">Долг висит ${age} — самое время рассчитаться</p>`;
+}
 
 export default {
   render(s, a) {
@@ -11,7 +23,7 @@ export default {
     const debtor = d > 0 ? 'dinara' : 'max', creditor = other(debtor);
     const settle = d === 0
       ? `<div class="settle"><span class="av joint">${ic('users')}</span><div class="t"><b>Вы квиты</b><span class="muted sm">Никто никому не должен</span></div></div>`
-      : `<div class="settle">${av(debtor)}<span class="arrow">${ic('arrow')}</span>${av(creditor)}<div class="t"><b>${fm(Math.abs(d))}</b><span class="muted sm">Вернуть: ${esc(nameOf(debtor))} → ${esc(nameOf(creditor))}</span></div><button class="chip" data-settle>Рассчитаться</button></div>`;
+      : `<div class="settle">${av(debtor)}<span class="arrow">${ic('arrow')}</span>${av(creditor)}<div class="t"><b>${fm(Math.abs(d))}</b><span class="muted sm">Вернуть: ${esc(nameOf(debtor))} → ${esc(nameOf(creditor))}</span></div><button class="chip" data-settle>Рассчитаться</button>${debtNote(all, d, a.today())}</div>`;
     const person = (p) => {
       const spent = ms[p].personal + ms[p].sharedShare, left = ms[p].earned - spent;
       const pct = ms[p].earned ? Math.min(100, Math.round((spent / ms[p].earned) * 100)) : spent ? 100 : 0;

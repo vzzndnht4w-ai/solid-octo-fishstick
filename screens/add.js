@@ -1,22 +1,29 @@
 import { WALLETS, EXPENSE_CATEGORIES, INCOME_CATEGORIES, other, splitAmount, shareByIncome, inMonth, validate, method as methodOf, parseMoney } from '../ledger.js';
 import { ic, av, esc, nameOf, feminine, catOf, money as fm, todayStr, $, $$ } from '../core.js';
+import '../lib/tools-ui.js';
+import { incomeShare, addDays, templateFromTx, templateErrors } from '../lib/tools.js';
 
-let draft = null, error = '';
+let draft = null, error = '', tplOpen = false;
 
-const newDraft = (s) => ({ editId: null, type: 'expense', amount: '', person: s.viewer, category: EXPENSE_CATEGORIES[0], scope: 'shared', paidFrom: s.viewer, method: s.settings.defaultMethod || 'card', shareMax: s.settings.defaultShare ?? 50, note: '', hidden: false, wallet: s.viewer, from: s.viewer, fromMethod: 'card', to: 'joint', toMethod: 'card', date: todayStr() });
-const draftFrom = (t, s) => ({ ...newDraft(s), ...t, editId: t.id, person: t.person || t.from || s.viewer, amount: String(t.amount / 100).replace('.', ','), method: methodOf(t), fromMethod: methodOf(t, 'from'), toMethod: methodOf(t, 'to'), note: t.note || '', hidden: !!t.hidden });
+const autoShare = (s) => (s.settings.splitByIncome ? incomeShare(s.txs, todayStr(), 3) : null);
+const newDraft = (s) => ({ editId: null, shareAuto: autoShare(s) != null, revealOn: '', revealMode: 'never', type: 'expense', amount: '', person: s.viewer, category: EXPENSE_CATEGORIES[0], scope: 'shared', paidFrom: s.viewer, method: s.settings.defaultMethod || 'card', shareMax: autoShare(s) ?? s.settings.defaultShare ?? 50, note: '', hidden: false, wallet: s.viewer, from: s.viewer, fromMethod: 'card', to: 'joint', toMethod: 'card', date: todayStr() });
+const draftFrom = (t, s) => ({ ...newDraft(s), ...t, editId: t.id, person: t.person || t.from || s.viewer, amount: String(t.amount / 100).replace('.', ','), method: methodOf(t), fromMethod: methodOf(t, 'from'), toMethod: methodOf(t, 'to'), note: t.note || '', hidden: !!t.hidden, shareAuto: false, revealOn: t.revealOn || '', revealMode: t.revealOn ? 'date' : 'never' });
 
 export const startEdit = (t, s) => { draft = draftFrom(t, s); error = ''; };
-export const reset = () => { draft = null; error = ''; };
+export const reset = () => { draft = null; error = ''; tplOpen = false; };
 export const isEditing = () => !!(draft && draft.editId);
 /** Открыть форму с заготовкой (например, из шаблона регулярного платежа). */
-export const startWith = (partial, s) => { draft = { ...newDraft(s), ...partial }; error = ''; };
+export const startWith = (partial, s) => { draft = { ...newDraft(s), ...partial }; if (partial.shareMax != null) draft.shareAuto = false; error = ''; tplOpen = false; };
 
 const chips = (name, items, cur, cls = () => '') => `<div class="chips" data-chips="${name}">${items.map(([v, l]) => `<button type="button" data-v="${v}" class="chip ${cls(v)} ${String(cur) === String(v) ? 'on' : ''}" aria-pressed="${String(cur) === String(v)}">${l}</button>`).join('')}</div>`;
 const personChips = (name, cur) => chips(name, ['max', 'dinara'].map((p) => [p, `${av(p, 'sm')}${esc(nameOf(p))}`]), cur, (v) => v);
 const walletChips = (name, cur) => chips(name, Object.entries(WALLETS).map(([w, l]) => [w, esc(l)]), cur, (v) => v);
 const methodChips = (name, cur) => chips(name, [['card', `${ic('card')} Карта`], ['cash', `${ic('cash')} Наличные`]], cur);
 const catGrid = (list, cur) => `<div class="cats" data-chips="category">${list.map((c) => { const [i, h] = catOf(c); return `<button type="button" data-v="${esc(c)}" class="catb ${cur === c ? 'on' : ''}" aria-pressed="${cur === c}" style="--h:${h}"><span class="tile" style="--h:${h}">${ic(i)}</span>${esc(c)}</button>`; }).join('')}</div>`;
+
+const REVEAL = [['never', 'Никогда'], ['week', 'Через неделю'], ['month', 'Через месяц'], ['date', 'К дате…']];
+const revealBlock = (dr) => `<div class="reveal" role="group" aria-label="Открыть партнёру"><span class="rlab">${ic('gift')} Открыть партнёру</span><div class="chips">${REVEAL.map(([v, l]) => `<button type="button" class="chip ${dr.revealMode === v ? 'on' : ''}" data-reveal="${v}" aria-pressed="${dr.revealMode === v}">${l}</button>`).join('')}</div>${dr.revealMode === 'date' ? `<label class="sr" for="f-reveal">Дата раскрытия</label><input type="date" id="f-reveal" value="${esc(dr.revealOn)}" min="${todayStr()}">` : ''}<small class="muted">${dr.revealOn ? 'После этой даты детали увидит партнёр.' : 'Детали останутся скрытыми от партнёра.'}</small></div>`;
+const tplBlock = (dr) => `<div class="tplsave">${tplOpen ? `<div class="card"><label class="l" for="f-tpl" style="margin-top:0">Название шаблона</label><input id="f-tpl" maxlength="30" placeholder="Например, Кофе" value="${esc(dr.note || (dr.type === 'income' ? '' : dr.category))}"><button type="button" class="primary" id="f-tplsave" style="margin-top:12px">Сохранить шаблон</button></div>` : `<button type="button" class="ghost" id="f-tplopen">${ic('qbolt')} Сохранить как шаблон</button>`}</div>`;
 
 function readForm() {
   if (!draft) return;
@@ -26,6 +33,7 @@ function readForm() {
   if (g('f-date')) draft.date = g('f-date').value;
   if (g('f-hidden')) draft.hidden = g('f-hidden').checked;
   if (g('f-share')) draft.shareMax = +g('f-share').value;
+  if (g('f-reveal')) draft.revealOn = g('f-reveal').value;
 }
 
 function updatePreview() {
@@ -33,7 +41,7 @@ function updatePreview() {
   if (!lab || !pv) return;
   readForm();
   const sp = splitAmount(parseMoney(draft.amount) || 0, draft.shareMax), pf = draft.paidFrom;
-  lab.textContent = `Как делим: ${nameOf('max')} ${draft.shareMax}% · ${nameOf('dinara')} ${100 - draft.shareMax}%`;
+  lab.textContent = `Как делим: ${nameOf('max')} ${draft.shareMax}% · ${nameOf('dinara')} ${100 - draft.shareMax}%${draft.shareAuto ? ' · по доходам за 3 месяца' : ''}`;
   const debtor = other(pf);
   pv.innerHTML = `${esc(nameOf('max'))}: <b>${fm(sp.max)}</b> · ${esc(nameOf('dinara'))}: <b>${fm(sp.dinara)}</b><br>` + (pf === 'joint' ? 'Платим из котла — долгов не возникает.' : `Платил${feminine(pf)} ${esc(nameOf(pf))}: ${esc(nameOf(debtor))} ${feminine(debtor) ? 'будет должна' : 'будет должен'} свою долю. Котёл не меняется.`);
 }
@@ -69,6 +77,8 @@ export default {
     }
     h += `<label class="l" for="f-date">Дата</label><input type="date" id="f-date" value="${dr.date}"><label class="l" for="f-note">Заметка</label><input id="f-note" placeholder="Необязательно" value="${esc(dr.note)}">`;
     if (dr.type !== 'transfer') h += `<label class="switch"><span>Скрыть детали от партнёра<br><span class="muted sm">Будет видна только сумма</span></span><input type="checkbox" id="f-hidden" ${dr.hidden ? 'checked' : ''}></label>`;
+    if (dr.type !== 'transfer' && dr.hidden) h += revealBlock(dr);
+    if (dr.type !== 'transfer') h += tplBlock(dr);
     return h + `${error ? `<div class="error">${esc(error)}</div>` : ''}<button class="primary" id="f-save">${dr.editId ? 'Сохранить изменения' : 'Добавить'}</button>`;
   },
   bind(root, s, a) {
@@ -93,7 +103,27 @@ export default {
       const r = $('#f-share'); if (r) r.value = draft.shareMax;
       updatePreview();
     }));
-    const share = $('#f-share'); if (share) share.oninput = updatePreview;
+    const share = $('#f-share'); if (share) share.oninput = () => { draft.shareAuto = false; updatePreview(); };
+    $$('[data-reveal]', root).forEach((b) => (b.onclick = () => {
+      readForm(); const m = b.dataset.reveal; draft.revealMode = m;
+      draft.revealOn = m === 'never' ? '' : m === 'week' ? addDays(todayStr(), 7) : m === 'month' ? addDays(todayStr(), 30) : (draft.revealOn || addDays(todayStr(), 14));
+      a.render();
+    }));
+    const hid = $('#f-hidden', root); if (hid) hid.onchange = () => { readForm(); a.render(); };
+    const to = $('#f-tplopen', root); if (to) to.onclick = () => { readForm(); tplOpen = true; a.render(); setTimeout(() => $('#f-tpl')?.focus(), 0); };
+    const ts = $('#f-tplsave', root);
+    if (ts) ts.onclick = () => {
+      readForm();
+      const title = ($('#f-tpl').value || '').trim().slice(0, 30), amount = parseMoney(draft.amount);
+      if (!title) { error = 'Введите название шаблона'; a.render(); return; }
+      const shared = draft.type === 'expense' && draft.scope === 'shared';
+      const tpl = templateFromTx({ type: draft.type, amount, category: draft.category, scope: draft.type === 'expense' ? draft.scope : undefined, person: draft.person, paidFrom: draft.type === 'expense' ? (draft.scope === 'personal' ? draft.person : draft.paidFrom) : undefined, method: draft.method, shareMax: shared ? draft.shareMax : undefined, wallet: draft.type === 'income' ? draft.wallet : undefined, note: draft.note.trim(), hidden: draft.hidden });
+      const errs = amount ? templateErrors(tpl, s.viewer) : ['Сначала укажите сумму'];
+      if (errs.length) { error = errs[0]; a.render(); return; }
+      a.store.mutate((x) => { x.templates.push({ id: crypto.randomUUID(), title, tpl }); });
+      tplOpen = false; error = '';
+      a.toast(`Шаблон «${title}» сохранён`);
+    };
     const amt = $('#f-amount'); if (amt) amt.oninput = updatePreview;
     updatePreview();
     const cn = $('[data-cancel]', root); if (cn) cn.onclick = () => { draft = null; a.go('feed'); };
@@ -102,6 +132,7 @@ export default {
       readForm();
       const amount = parseMoney(draft.amount);
       let tx = { type: draft.type, amount, date: draft.date || todayStr(), note: draft.note.trim(), hidden: draft.hidden && draft.type !== 'transfer' };
+      if (tx.hidden && draft.revealOn) tx.revealOn = draft.revealOn; else if (draft.editId) tx.revealOn = null;
       if (draft.type === 'income') tx = { ...tx, person: draft.person, wallet: draft.wallet, category: draft.category, method: draft.method };
       else if (draft.type === 'expense') {
         tx = { ...tx, person: draft.person, scope: draft.scope, category: draft.category, method: draft.method, paidFrom: draft.scope === 'personal' ? draft.person : draft.paidFrom };
@@ -111,7 +142,7 @@ export default {
       if (errs.length) { error = errs[0]; a.render(); return; }
       if (draft.editId) a.store.update(draft.editId, tx); else a.store.add(tx);
       a.setMonth(tx.date.slice(0, 7));
-      draft = null; error = '';
+      draft = null; error = ''; tplOpen = false;
       a.go('feed');
     };
   },
