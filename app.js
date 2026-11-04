@@ -77,11 +77,12 @@ const api = {
   name: nameOf,
   render: () => render(),
   go(r, opts = {}) {
+    SCREENS[route]?.leave?.();
     if (r === 'add' && !opts.keepDraft && !isEditing()) resetDraft();
     if (!opts.back) history.push(route);
     route = r; render(); window.scrollTo(0, 0);
   },
-  back() { route = history.pop() || 'more'; render(); window.scrollTo(0, 0); },
+  back() { SCREENS[route]?.leave?.(); route = history.pop() || 'more'; render(); window.scrollTo(0, 0); },
   editTx(t) { startEdit(t, store.get()); route = 'add'; render(); window.scrollTo(0, 0); },
   openTx: (id) => openSheet(id),
   toast,
@@ -110,11 +111,15 @@ function openSheet(id) {
   if (t.type === 'transfer') rows += kv('Откуда', esc(WALLETS[t.from])) + kv('Куда', esc(WALLETS[t.to]));
   if (t.note && mine) rows += kv('Заметка', esc(t.note));
   sheet.hidden = false;
-  sheet.innerHTML = `<div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div><div class="row" style="justify-content:flex-start;gap:12px">${v.icon}<div><b style="font-size:18px">${esc(v.title)}</b></div></div>
+  sheet.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-label="Операция"><div class="grab"></div><div class="row" style="justify-content:flex-start;gap:12px">${v.icon}<div><b style="font-size:18px">${esc(v.title)}</b></div></div>
     <div class="big ${v.cls}" style="margin-top:12px">${v.amt}</div><div class="kvs">${rows}</div>
     <div class="btns">${confirmDel ? `<button data-sheet="cancel">Не удалять</button><button class="del" data-sheet="del2">Да, удалить</button>` : `<button data-sheet="edit" ${mine ? '' : 'disabled style="opacity:.4"'}>Изменить</button><button class="del" data-sheet="del">Удалить</button>`}</div></div>`;
-  const close = () => { sheet.hidden = true; sheet.innerHTML = ''; confirmDel = false; };
+  const opener = document.activeElement;
+  const close = () => { sheet.hidden = true; sheet.innerHTML = ''; confirmDel = false; document.removeEventListener('keydown', onKey); if (opener && opener.isConnected) opener.focus(); };
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey);
   sheet.onclick = (e) => { if (e.target === sheet) close(); };
+  $('.sheet button', sheet)?.focus({ preventScroll: true });
   $$('[data-sheet]', sheet).forEach((b) => (b.onclick = () => {
     const act = b.dataset.sheet;
     if (act === 'edit') { close(); api.editTx(t); }

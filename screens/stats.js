@@ -65,7 +65,7 @@ export default {
 
     // средний расход и прогноз
     const avg = dailyAverage(s.txs, a.month, today), fc = forecast(s.txs, a.month, today), days = elapsedDays(a.month, today);
-    const pace = avg === null || !(sp.card + sp.cash) ? '' : `<div class="card pace"><div><div class="muted sm">В среднем в день</div><b>${fm(avg)}</b><span class="muted sm">за ${days} ${days === 1 ? 'день' : days < 5 ? 'дня' : 'дней'}</span></div>${fc !== null ? `<div><div class="muted sm">К концу месяца, прогноз</div><b>${fm(fc)}</b><span class="muted sm">если тратить в том же темпе</span></div>` : ''}</div>`;
+    const pace = avg === null || !(sp.card + sp.cash) ? '' : `<div class="card pace"><div><div class="muted sm">В среднем в день</div><b>${fm(avg)}</b><span class="muted sm">за ${days} ${(days % 10 === 1 && days % 100 !== 11) ? 'день' : (days % 10 >= 2 && days % 10 <= 4 && (days % 100 < 12 || days % 100 > 14)) ? 'дня' : 'дней'}</span></div>${fc !== null ? `<div><div class="muted sm">К концу месяца, прогноз</div><b>${fm(fc)}</b><span class="muted sm">если тратить в том же темпе</span></div>` : ''}</div>`;
 
     // графики
     const series = monthlySeries(s.txs, a.month, 6), pot = potSeries(s.txs, a.month, 6);
@@ -91,7 +91,7 @@ export default {
     ${charts}
     <h2>Карта и наличные</h2><div class="card cmp"><div class="nums" style="color:var(--ink)"><span style="color:var(--ink)">${ic('card')} ${fm(sp.card)}</span><span style="color:var(--ink)">${fm(sp.cash)} ${ic('cash')}</span></div><div class="duo"><i style="width:${(sp.card / spTotal) * 100}%;background:var(--max)"></i><i style="width:${(sp.cash / spTotal) * 100}%;background:var(--joint)"></i></div></div>
     <h2>Куда уходят деньги</h2>
-    <div class="stack" style="margin-bottom:10px">${seg('scope', [['all', 'Все'], ['shared', 'Общие'], ['personal', 'Личные']])}${seg('who', [['me', 'Мои'], ['other', esc(a.name(her))], ['both', 'Обе']])}</div>
+    <div class="stack" style="margin-bottom:10px">${seg('scope', [['all', 'Все'], ['shared', 'Общие'], ['personal', 'Личные']])}${seg('who', [['me', 'Мои'], ['other', a.name(her)], ['both', 'Обе']])}</div>
     <div class="card">${catRows}${cats.length > 1 ? `<div class="row cat-total"><span class="muted">Всего</span><b>${fm(total)}</b></div>` : ''}</div>`;
   },
   bind(root, s, a) {

@@ -28,6 +28,14 @@ export const defaults = () => ({
 const migrate = (d) => {
   const base = defaults();
   const out = { ...base, ...d, profiles: { ...base.profiles, ...(d.profiles || {}) }, settings: { ...base.settings, ...(d.settings || {}) }, categories: { ...base.categories, ...(d.categories || {}) } };
+  // защита от повреждённой копии: коллекции должны быть нужного типа
+  const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
+  if (!Array.isArray(out.txs)) out.txs = [];
+  if (!Array.isArray(out.goals)) out.goals = [];
+  if (!Array.isArray(out.recurring)) out.recurring = [];
+  out.budgets = obj(out.budgets);
+  out.settings.pins = obj(out.settings.pins);
+  out.categories = { expense: Array.isArray(out.categories.expense) ? out.categories.expense : [], income: Array.isArray(out.categories.income) ? out.categories.income : [] };
   out.v = SCHEMA;
   if (d.txs && d.txs.length && !('onboarded' in (d.settings || {}))) out.settings.onboarded = true; // у уже пользующихся пропускаем знакомство
   return out;
@@ -49,7 +57,8 @@ export const store = {
   remove(id) { state.txs = state.txs.filter((t) => t.id !== id); save(); },
   restore(tx) { if (!state.txs.some((t) => t.id === tx.id)) { state.txs.push(tx); save(); } },
   setViewer(v) { state.viewer = v; save(); },
-  exportJson: () => JSON.stringify(state),
+  /** Резервная копия: без PIN-хэшей (их можно подобрать за миллисекунды; после восстановления PIN задаётся заново). */
+  exportJson: () => JSON.stringify({ ...state, settings: { ...state.settings, pins: {} } }),
   importJson(text) {
     const d = JSON.parse(text);
     if (!Array.isArray(d.txs)) throw new Error('bad');

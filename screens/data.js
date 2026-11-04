@@ -35,6 +35,7 @@ async function shareFile(name, mime, text, title) {
 }
 
 export default {
+  leave() { ui.del = 0; ui.pending = null; ui.out = null; ui.err = ''; },
   render(s, a) {
     const sm = dataSummary(s.txs);
     const monthCount = s.txs.filter((t) => t.date.startsWith(a.month)).length;

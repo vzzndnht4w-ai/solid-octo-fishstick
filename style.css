@@ -1,6 +1,6 @@
 /* «Мы» — тёплая вечерняя палитра: сине-розовый градиент двоих, янтарный общий котёл. */
 :root{
-  --bg:#f4f1f8;--surface:#ffffff;--surface2:#faf8fd;--ink:#1c1830;--muted:#7a7590;--line:#e9e4f1;
+  --bg:#f4f1f8;--surface:#ffffff;--surface2:#faf8fd;--ink:#1c1830;--muted:#645f7a;--line:#e9e4f1;
   --max:#3d6cf2;--max2:#7aa9ff;--dinara:#ec4f7e;--dinara2:#ff98b0;--joint:#e59a2c;--joint2:#ffd27a;
   --pos:#14996a;--neg:#e0445a;--brand:linear-gradient(135deg,var(--max),var(--dinara));
   --hero:linear-gradient(145deg,#241c46 0%,#43286f 60%,#7d3a84 100%);
@@ -36,7 +36,7 @@ svg.i{width:1em;height:1em;flex:none;fill:none;stroke:currentColor;stroke-width:
 .av.max{background:linear-gradient(135deg,var(--max),var(--max2))}.av.dinara{background:linear-gradient(135deg,var(--dinara),var(--dinara2))}.av.joint{background:linear-gradient(135deg,var(--joint),var(--joint2));color:#3a2600}
 .av.sm{width:28px;height:28px;font-size:12px}
 .month{display:flex;align-items:center;justify-content:center;gap:4px;margin:0 auto 16px;width:fit-content;background:var(--surface);border-radius:99px;padding:4px;box-shadow:var(--shadow)}
-.month button{background:none;border:0;width:36px;height:36px;border-radius:50%;font-size:18px;display:flex;align-items:center;justify-content:center}
+.month button{background:none;border:0;width:44px;height:44px;border-radius:50%;font-size:18px;display:flex;align-items:center;justify-content:center}
 .month b{min-width:130px;text-align:center;font-weight:600;font-size:15px}
 
 /* котёл */
@@ -102,7 +102,7 @@ label.l{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:1
 input,textarea,select{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px;outline:none}
 input:focus{border-color:var(--max)}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--line);background:var(--surface);border-radius:99px;padding:8px 14px;font-weight:600;font-size:14.5px}
+.chip{min-height:44px;display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--line);background:var(--surface);border-radius:99px;padding:8px 14px;font-weight:600;font-size:14.5px}
 .chip.on{border-color:transparent;background:var(--ink);color:var(--bg)}
 .chip.on.max{background:linear-gradient(135deg,var(--max),var(--max2));color:#fff}.chip.on.dinara{background:linear-gradient(135deg,var(--dinara),var(--dinara2));color:#fff}.chip.on.joint{background:linear-gradient(135deg,var(--joint),var(--joint2));color:#3a2600}
 .cats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}

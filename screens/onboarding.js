@@ -74,7 +74,7 @@ export default {
       if (step === 2) { if (!d.me) { err = 'Выберите, кто вы'; moved = true; a.render(); return; } return go(3); }
       a.store.mutate((x) => {
         for (const p of ['max', 'dinara']) { x.profiles[p].name = d.name[p].trim().slice(0, NAME_MAX); x.profiles[p].female = d.female[p]; }
-        x.viewer = d.me; x.settings.defaultShare = d.share; x.settings.onboarded = true;
+        if (!x.settings.onboarded) x.viewer = d.me; x.settings.defaultShare = d.share; x.settings.onboarded = true;
       });
       step = 1; d = null; err = '';
       a.toast('Готово! Всё это можно поменять в настройках');

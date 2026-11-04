@@ -30,7 +30,7 @@ const P = {
   bulb: 'M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z',
 };
 /** Добавить свои иконки из другого модуля: registerIcons({ имя: 'svg path d' }). */
-export const registerIcons = (more) => Object.assign(P, more);
+export const registerIcons = (more) => { for (const k of Object.keys(more)) if (!(k in P)) P[k] = more[k]; };
 export const ic = (n) => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="${P[n] || P.other}"/></svg>`;
 
 // Категории: иконка и оттенок плитки.

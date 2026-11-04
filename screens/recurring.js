@@ -92,12 +92,20 @@ function form(rec, s, a) {
       sh.close();
       a.store.mutate((st) => { st.recurring = isNew ? [...st.recurring, item] : st.recurring.map((x) => (x.id === item.id ? item : x)); });
     };
-    const tg = g('r-toggle'); if (tg) tg.onclick = () => { sh.close(); a.store.mutate((st) => { st.recurring = st.recurring.map((x) => (x.id === rec.id ? { ...x, active: x.active === false } : x)); }); };
+    const tg = g('r-toggle'); if (tg) tg.onclick = () => { sh.close(); a.store.mutate((st) => { st.recurring = st.recurring.map((x) => (x.id === rec.id ? resumeToggle(x, a.today()) : x)); }); };
     const d = g('r-del'); if (d) d.onclick = () => { read(); confirm = true; draw(); };
     const k = g('r-keep'); if (k) k.onclick = () => { read(); confirm = false; draw(); };
     const d2 = g('r-del2'); if (d2) d2.onclick = () => { sh.close(); a.store.mutate((st) => { st.recurring = st.recurring.filter((x) => x.id !== rec.id); }); };
   };
   draw();
+}
+
+/** Пауза/возобновление: пропущенные за паузу месяцы не добираются, отсчёт идёт с прошлого месяца. */
+function resumeToggle(x, today) {
+  if (x.active !== false) return { ...x, active: false };
+  const d = new Date(+today.slice(0, 4), +today.slice(5, 7) - 2, 1);
+  const prev = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  return { ...x, active: true, lastRun: !x.lastRun || x.lastRun < prev ? prev : x.lastRun };
 }
 
 export default {

@@ -73,7 +73,7 @@ export function pinPad(opts) {
       const pin = value;
       let res = true;
       if (opts.check) {
-        res = await opts.check(pin);
+        try { res = await opts.check(pin); } catch { res = 'Не удалось проверить PIN-код. Откройте приложение по https-ссылке'; }
         if (key) {
           const t = loadT(key), now = Date.now();
           if (res === true) saveT(key, recordSuccess());
@@ -166,7 +166,10 @@ export async function lockScreen(s, api) {
       if (store.get().settings.pins?.[partner]) {
         const ok = await confirmPin(partner, { title: `Сброс PIN: нужен PIN ${nameOf(partner)}`, sub: `Партнёр подтверждает, что это вы. PIN-код «${nameOf(me)}» будет отключён.`, cancelable: true });
         if (ok !== true) continue;
-      } else if (!window.confirm(`Отключить PIN-код профиля «${nameOf(me)}»? Данные не пострадают.`)) continue;
+      } else {
+        api.toast(`Сброс возможен через PIN партнёра: войдите как «${nameOf(partner)}», задайте ему PIN в профиле и вернитесь сюда`);
+        continue;
+      }
       store.mutate((st) => { delete st.settings.pins[me]; });
       saveT(me, newThrottle());
       api.toast('PIN-код отключён. Задайте новый в профиле');

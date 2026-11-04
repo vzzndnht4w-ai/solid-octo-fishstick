@@ -57,7 +57,7 @@ export function matches(t, f, viewer) {
   if (q) {
     const rub = String(t.amount / 100);
     const digits = q.replace(/[\s ]/g, '').replace(',', '.');
-    const byAmount = /^\d+(\.\d*)?$/.test(digits) && rub.includes(digits);
+    const byAmount = /^\d+(\.\d*)?$/.test(digits) && (rub.includes(digits) || (t.amount / 100).toFixed(2).includes(digits));
     const text = secret ? '' : norm(`${txView(t, viewer).title} ${t.category || ''} ${t.note || ''}`);
     if (!byAmount && !text.includes(q)) return false;
   }

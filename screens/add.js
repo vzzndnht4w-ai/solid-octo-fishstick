@@ -12,11 +12,11 @@ export const isEditing = () => !!(draft && draft.editId);
 /** Открыть форму с заготовкой (например, из шаблона регулярного платежа). */
 export const startWith = (partial, s) => { draft = { ...newDraft(s), ...partial }; error = ''; };
 
-const chips = (name, items, cur, cls = () => '') => `<div class="chips" data-chips="${name}">${items.map(([v, l]) => `<button type="button" data-v="${v}" class="chip ${cls(v)} ${String(cur) === String(v) ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+const chips = (name, items, cur, cls = () => '') => `<div class="chips" data-chips="${name}">${items.map(([v, l]) => `<button type="button" data-v="${v}" class="chip ${cls(v)} ${String(cur) === String(v) ? 'on' : ''}" aria-pressed="${String(cur) === String(v)}">${l}</button>`).join('')}</div>`;
 const personChips = (name, cur) => chips(name, ['max', 'dinara'].map((p) => [p, `${av(p, 'sm')}${esc(nameOf(p))}`]), cur, (v) => v);
 const walletChips = (name, cur) => chips(name, Object.entries(WALLETS).map(([w, l]) => [w, esc(l)]), cur, (v) => v);
 const methodChips = (name, cur) => chips(name, [['card', `${ic('card')} Карта`], ['cash', `${ic('cash')} Наличные`]], cur);
-const catGrid = (list, cur) => `<div class="cats" data-chips="category">${list.map((c) => { const [i, h] = catOf(c); return `<button type="button" data-v="${esc(c)}" class="catb ${cur === c ? 'on' : ''}" style="--h:${h}"><span class="tile" style="--h:${h}">${ic(i)}</span>${esc(c)}</button>`; }).join('')}</div>`;
+const catGrid = (list, cur) => `<div class="cats" data-chips="category">${list.map((c) => { const [i, h] = catOf(c); return `<button type="button" data-v="${esc(c)}" class="catb ${cur === c ? 'on' : ''}" aria-pressed="${cur === c}" style="--h:${h}"><span class="tile" style="--h:${h}">${ic(i)}</span>${esc(c)}</button>`; }).join('')}</div>`;
 
 function readForm() {
   if (!draft) return;
@@ -44,18 +44,18 @@ export default {
     const dr = draft;
     const cats = (kind, base) => [...base, ...(s.categories[kind] || [])];
     let h = `<div class="top"><h1>${dr.editId ? 'Изменить' : 'Новая операция'}</h1>${dr.editId ? `<button class="av joint" data-cancel aria-label="Отмена">${ic('x')}</button>` : ''}</div>
-    <div class="seg" data-chips="type">${[['expense', 'Расход'], ['income', 'Доход'], ['transfer', 'Перевод']].map(([v, l]) => `<button type="button" data-v="${v}" class="${dr.type === v ? 'on' : ''}">${l}</button>`).join('')}</div>
+    <div class="seg" data-chips="type">${[['expense', 'Расход'], ['income', 'Доход'], ['transfer', 'Перевод']].map(([v, l]) => `<button type="button" data-v="${v}" class="${dr.type === v ? 'on' : ''}" aria-pressed="${dr.type === v}">${l}</button>`).join('')}</div>
     <div class="card amount" style="margin-top:12px"><input id="f-amount" inputmode="decimal" placeholder="0" value="${esc(dr.amount)}" aria-label="Сумма"><span>${esc(s.settings.currency)}</span></div>`;
     if (dr.type !== 'transfer') h += `<label class="l">Кто</label>${personChips('person', dr.person)}`;
     if (dr.type === 'expense') {
       h += `<label class="l">Категория</label>${catGrid(cats('expense', EXPENSE_CATEGORIES), dr.category)}
       <label class="l">Чья это трата</label><div class="opts" data-chips="scope">
-        <button type="button" data-v="personal" class="opt ${dr.scope === 'personal' ? 'on' : ''}"><b>${ic('user')} Личная</b><small>Только ${esc(nameOf(dr.person))}. Общий баланс и долги не меняются.</small></button>
-        <button type="button" data-v="shared" class="opt ${dr.scope === 'shared' ? 'on' : ''}"><b>${ic('users')} Общая</b><small>Делим на двоих в нужной пропорции.</small></button></div>
+        <button type="button" data-v="personal" class="opt ${dr.scope === 'personal' ? 'on' : ''}" aria-pressed="${dr.scope === 'personal'}"><b>${ic('user')} Личная</b><small>Только ${esc(nameOf(dr.person))}. Общий баланс и долги не меняются.</small></button>
+        <button type="button" data-v="shared" class="opt ${dr.scope === 'shared' ? 'on' : ''}" aria-pressed="${dr.scope === 'shared'}"><b>${ic('users')} Общая</b><small>Делим на двоих в нужной пропорции.</small></button></div>
       <label class="l">Чем заплатили</label>${methodChips('method', dr.method)}`;
       if (dr.scope === 'personal') h += `<div class="preview">Спишется из «${esc(WALLETS[dr.person])}». Общий котёл не затрагивается.</div>`;
       else h += `<label class="l">Откуда деньги</label>${walletChips('paidFrom', dr.paidFrom)}
-        <label class="l" id="f-sharelabel"></label><input type="range" id="f-share" min="0" max="100" step="5" value="${dr.shareMax}" aria-label="Доля первого человека">
+        <label class="l" id="f-sharelabel" for="f-share"></label><input type="range" id="f-share" min="0" max="100" step="5" value="${dr.shareMax}" aria-label="Доля первого человека">
         <div class="chips" style="margin-top:10px"><button type="button" class="chip" data-share="50">50/50</button><button type="button" class="chip" data-share="60">60/40</button><button type="button" class="chip" data-share="70">70/30</button><button type="button" class="chip" data-share="income">По доходам</button></div>
         <div class="preview" id="f-preview"></div>`;
     } else if (dr.type === 'income') {
@@ -67,7 +67,7 @@ export default {
       <label class="l">Куда</label>${walletChips('to', dr.to)}<div style="height:8px"></div>${methodChips('toMethod', dr.toMethod)}
       <div class="preview">Перевод в «Общий котёл» — пополнение, а не расход. Между вашими кошельками — взаиморасчёт, он гасит долг.</div>`;
     }
-    h += `<label class="l">Дата</label><input type="date" id="f-date" value="${dr.date}"><label class="l">Заметка</label><input id="f-note" placeholder="Необязательно" value="${esc(dr.note)}">`;
+    h += `<label class="l" for="f-date">Дата</label><input type="date" id="f-date" value="${dr.date}"><label class="l" for="f-note">Заметка</label><input id="f-note" placeholder="Необязательно" value="${esc(dr.note)}">`;
     if (dr.type !== 'transfer') h += `<label class="switch"><span>Скрыть детали от партнёра<br><span class="muted sm">Будет видна только сумма</span></span><input type="checkbox" id="f-hidden" ${dr.hidden ? 'checked' : ''}></label>`;
     return h + `${error ? `<div class="error">${esc(error)}</div>` : ''}<button class="primary" id="f-save">${dr.editId ? 'Сохранить изменения' : 'Добавить'}</button>`;
   },
