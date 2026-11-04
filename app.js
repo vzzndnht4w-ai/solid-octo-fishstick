@@ -19,6 +19,7 @@ import { applyTheme, applyAccents } from './lib/appearance.js';
 import { shouldLock } from './lib/pin.js';
 import './lib/profile-icons.js';
 import { method as methodOf } from './ledger.js';
+import { runRecurring } from './lib/recurring.js';
 
 const SCREENS = { home, feed, stats, add, more, settings, budgets, goals, recurring, data, profile };
 const TAB_OF = { settings: 'more', budgets: 'more', goals: 'more', recurring: 'more', data: 'more', profile: 'more' };
@@ -169,4 +170,8 @@ function restoreFocus(fk) {
 
 store.subscribe(() => { applyAll(store.get()); render(); });
 render();
+// Регулярные платежи: проводим пропущенное при запуске и при возвращении в приложение.
+const runRec = () => { const n = runRecurring(store, todayStr()); if (n) toast(`Добавлено регулярных платежей: ${n}`); };
+runRec();
+document.addEventListener('visibilitychange', () => { if (!document.hidden) runRec(); });
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});

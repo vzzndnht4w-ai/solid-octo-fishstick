@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
-      - run: mkdir _site && cp -r index.html style.css app.js core.js icons.js ledger.js store.js sw.js manifest.webmanifest icons screens widgets lib css _site/
+      - run: mkdir _site && cp index.html style.css *.js manifest.webmanifest _site/ && cp -r icons screens widgets lib css _site/
       - uses: actions/upload-pages-artifact@v3
         with: { path: _site }
       - id: d

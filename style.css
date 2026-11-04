@@ -49,9 +49,9 @@ svg.i{width:1em;height:1em;flex:none;fill:none;stroke:currentColor;stroke-width:
 .hero .sum{font-size:44px;font-weight:800;letter-spacing:-.03em;margin:6px 0 14px}
 .split{display:flex;gap:8px}.split span{flex:1;background:rgba(255,255,255,.12);border-radius:14px;padding:8px 12px;font-size:13px;display:flex;flex-direction:column;gap:1px;backdrop-filter:blur(6px)}
 .split b{font-size:16px;font-weight:700}.split em{font-style:normal;opacity:.75;display:flex;align-items:center;gap:6px}
-.settle{display:flex;align-items:center;gap:12px}
+.settle{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.settle .chip{width:100%;justify-content:center;margin-top:4px}
 .settle .arrow{color:var(--muted);font-size:20px}
-.settle .t{flex:1}.settle .t b{font-size:20px;display:block;font-weight:800}
+.settle .t{flex:1;min-width:0}.settle .t b{font-size:20px;display:block;font-weight:800}
 
 /* люди */
 .people{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -60,7 +60,7 @@ svg.i{width:1em;height:1em;flex:none;fill:none;stroke:currentColor;stroke-width:
 .kv{display:flex;flex-direction:column;gap:1px}.kv small{color:var(--muted);font-size:12px}.kv b{font-size:17px;font-weight:700;white-space:nowrap}
 .mini{height:6px;border-radius:3px;background:var(--line);overflow:hidden}.mini i{display:block;height:100%;border-radius:3px}
 .max .mini i{background:linear-gradient(90deg,var(--max),var(--max2))}.dinara .mini i{background:linear-gradient(90deg,var(--dinara),var(--dinara2))}
-.wallet{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11.5px;color:var(--muted)}
+.wallet{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--muted)}
 .wallet span{display:flex;align-items:center;gap:4px;background:var(--surface2);border-radius:99px;padding:4px 7px;white-space:nowrap;min-width:0}
 
 /* лента */
