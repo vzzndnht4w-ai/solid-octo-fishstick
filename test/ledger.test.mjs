@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { balances, debt, stats, splitAmount, validate, shareByIncome, parseMoney, formatMoney } from '../ledger.js';
+import { balancesByMethod, spendByMethod, balances, debt, stats, splitAmount, validate, shareByIncome, parseMoney, formatMoney } from '../ledger.js';
 
 const d = '2026-11-04';
 const exp = (o) => ({ type: 'expense', date: d, ...o });
@@ -80,7 +80,7 @@ test('доля по доходам', () => {
 test('валидация', () => {
   assert.ok(validate({ type: 'expense', amount: 0 }).length > 0);
   assert.ok(validate(exp({ amount: 1, scope: 'personal', person: 'max', paidFrom: 'dinara' })).length > 0);
-  assert.equal(validate(exp({ amount: 1, scope: 'shared', person: 'max', paidFrom: 'joint', shareMax: 50 })).length, 0);
+  assert.equal(validate(exp({ amount: 1, scope: 'shared', person: 'max', paidFrom: 'joint', shareMax: 50, method: 'card' })).length, 0);
   assert.ok(validate(tr({ amount: 1, from: 'max', to: 'max' })).length > 0);
 });
 
@@ -88,4 +88,28 @@ test('ввод и формат денег', () => {
   assert.equal(parseMoney('1 234,5'), 123450);
   assert.equal(parseMoney('abc'), null);
   assert.equal(formatMoney(123450), '1 234,50 ₽');
+});
+
+test('карта и наличные: снятие со счёта, траты наличными', () => {
+  const txs = [
+    inc({ amount: 100_00, person: 'max', wallet: 'max', method: 'card' }),
+    tr({ amount: 30_00, from: 'max', to: 'max', fromMethod: 'card', toMethod: 'cash' }),
+    exp({ amount: 10_00, scope: 'personal', person: 'max', paidFrom: 'max', method: 'cash' }),
+    exp({ amount: 20_00, scope: 'personal', person: 'max', paidFrom: 'max', method: 'card' }),
+  ];
+  assert.deepEqual(balancesByMethod(txs).max, { card: 50_00, cash: 20_00 });
+  assert.equal(balances(txs).max, 70_00);
+  assert.deepEqual(spendByMethod(txs), { card: 20_00, cash: 10_00 });
+  assert.equal(debt(txs), 0);
+});
+
+test('старые записи без способа считаются картой', () => {
+  const txs = [inc({ amount: 5_00, person: 'max', wallet: 'max' })];
+  assert.equal(balancesByMethod(txs).max.card, 5_00);
+});
+
+test('валидация: перевод между своей картой и наличными допустим', () => {
+  assert.equal(validate(tr({ amount: 1, from: 'max', to: 'max', fromMethod: 'card', toMethod: 'cash' })).length, 0);
+  assert.ok(validate(tr({ amount: 1, from: 'max', to: 'max', fromMethod: 'card', toMethod: 'card' })).length > 0);
+  assert.ok(validate(inc({ amount: 1, person: 'max', wallet: 'max', method: 'x' })).length > 0);
 });

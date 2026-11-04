@@ -1,137 +1,195 @@
-import { PEOPLE, WALLETS, EXPENSE_CATEGORIES, INCOME_CATEGORIES, other, balances, debt, stats, splitAmount, shareByIncome, inMonth, validate, formatMoney as fm, parseMoney } from './ledger.js';
+import { PEOPLE, WALLETS, EXPENSE_CATEGORIES, INCOME_CATEGORIES, other, balancesByMethod, debt, stats, spendByMethod, splitAmount, shareByIncome, inMonth, validate, method as methodOf, formatMoney as fm, parseMoney } from './ledger.js';
 import { store } from './store.js';
+import { ic, catOf } from './icons.js';
 
 const $ = (s, r = document) => r.querySelector(s);
-const view = $('#view');
+const view = $('#view'), nav = $('#tabs'), sheet = $('#sheet');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const pad = (n) => String(n).padStart(2, '0');
-const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const todayStr = () => ymd(new Date());
 const MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+const MONTHS_GEN = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
 const monthLabel = (ym) => `${MONTHS[+ym.slice(5) - 1]} ${ym.slice(0, 4)}`;
 const shiftMonth = (ym, d) => { const t = new Date(+ym.slice(0, 4), +ym.slice(5) - 1 + d, 1); return `${t.getFullYear()}-${pad(t.getMonth() + 1)}`; };
-const CAT_ICON = { 'Продукты': '🛒', 'Еда вне дома': '🍽️', 'Транспорт': '🚇', 'Машина': '🚗', 'Жильё': '🏠', 'Здоровье': '💊', 'Развлечения': '🎬', 'Одежда': '👕', 'Подарки': '🎁', 'Путешествия': '✈️', 'Зарплата': '💼', 'Подработка': '🧰', 'Другое': '📦' };
+const dayLabel = (s) => {
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  if (s === todayStr()) return 'Сегодня';
+  if (s === ymd(y)) return 'Вчера';
+  return `${+s.slice(8)} ${MONTHS_GEN[+s.slice(5, 7) - 1]}`;
+};
+const nameOf = (p) => PEOPLE[p];
+const init = (p) => nameOf(p)[0];
+const av = (p, cls = '') => `<span class="av ${p} ${cls}">${init(p)}</span>`;
+const feminine = (p) => (p === 'dinara' ? 'а' : '');
+const tile = (cat) => { const [i, h] = catOf(cat); return `<span class="tile" style="--h:${h}">${ic(i)}</span>`; };
+const methodTag = (m) => `<span class="tag">${ic(m === 'cash' ? 'cash' : 'card')}${m === 'cash' ? 'Наличные' : 'Карта'}</span>`;
 
 let tab = 'home';
 let month = todayStr().slice(0, 7);
 let draft = null;
 let error = '';
 
-const newDraft = (viewer) => ({ type: 'expense', amount: '', person: viewer, category: EXPENSE_CATEGORIES[0], scope: 'shared', paidFrom: viewer, shareMax: 50, note: '', hidden: false, wallet: viewer, from: viewer, to: 'joint', date: todayStr() });
+const newDraft = (viewer) => ({ editId: null, type: 'expense', amount: '', person: viewer, category: EXPENSE_CATEGORIES[0], scope: 'shared', paidFrom: viewer, method: 'card', shareMax: 50, note: '', hidden: false, wallet: viewer, from: viewer, fromMethod: 'card', to: 'joint', toMethod: 'card', date: todayStr() });
+const draftFrom = (t) => ({ ...newDraft(t.person || t.from || 'max'), ...t, editId: t.id, amount: String(t.amount / 100).replace('.', ','), method: methodOf(t), fromMethod: methodOf(t, 'from'), toMethod: methodOf(t, 'to'), note: t.note || '', hidden: !!t.hidden });
 
-const nameOf = (p) => PEOPLE[p];
-const dotPill = (p, text) => `<span class="pill ${p}" style="--c:var(--${p})">${esc(text ?? nameOf(p))}</span>`;
-
-// ---------- Экраны ----------
+// ---------- Экран выбора ----------
 function renderWho() {
-  view.innerHTML = `<h1>Привет! 👋</h1><p class="muted">Кто сейчас пользуется телефоном?</p>
-  <div class="grid2"><button class="primary" data-who="max" style="background:var(--max)">Я — Максим</button><button class="primary" data-who="dinara" style="background:var(--dinara)">Я — Динара</button></div>`;
+  nav.innerHTML = '';
+  view.innerHTML = `<div class="stack" style="padding-top:12vh;text-align:center">
+    <div class="empty" style="padding-bottom:0"><div class="big">${ic('users')}</div><h1>Мы</h1><p class="muted">Деньги вдвоём: у каждого своё, и общее тоже.<br>Кто сейчас с телефоном?</p></div>
+    <button class="primary" data-who="max" style="background:linear-gradient(135deg,var(--max),var(--max2))">Я — Максим</button>
+    <button class="primary" data-who="dinara" style="margin-top:0;background:linear-gradient(135deg,var(--dinara),var(--dinara2))">Я — Динара</button></div>`;
   view.querySelectorAll('[data-who]').forEach((b) => (b.onclick = () => { store.setViewer(b.dataset.who); draft = null; }));
-  $('#tabs').style.display = 'none';
 }
+
+// ---------- Главная ----------
+const monthSwitch = () => `<div class="month"><button data-m="-1" aria-label="Предыдущий месяц">${ic('left')}</button><b>${monthLabel(month)}</b><button data-m="1" aria-label="Следующий месяц">${ic('right')}</button></div>`;
 
 function renderHome(s) {
-  const all = s.txs, b = balances(all), d = debt(all);
+  const all = s.txs, bm = balancesByMethod(all), d = debt(all);
   const ms = stats(inMonth(all, month));
-  const debtText = d === 0 ? 'Вы квиты 🤝' : d > 0 ? `Динара должна Максиму <b>${fm(d)}</b>` : `Максим должен Динаре <b>${fm(-d)}</b>`;
-  const person = (p) => `<div class="card ${p}" style="--c:var(--${p})"><div class="muted"><span class="dot" style="background:var(--c)"></span>${nameOf(p)}</div>
-    <div class="row"><span class="muted">Заработал${p === 'dinara' ? 'а' : ''}</span><b class="pos">${fm(ms[p].earned)}</b></div>
-    <div class="row"><span class="muted">Личные траты</span><b>${fm(ms[p].personal)}</b></div>
-    <div class="row"><span class="muted">Доля общих</span><b>${fm(ms[p].sharedShare)}</b></div>
-    <div class="row"><span class="muted">В котёл</span><b>${fm(ms[p].toJoint)}</b></div>
-    <div class="row"><span class="muted">Кошелёк</span><b>${fm(b[p])}</b></div></div>`;
-  return `<div class="month"><button data-m="-1">‹</button><b>${monthLabel(month)}</b><button data-m="1">›</button></div>
-  <div class="card joint" style="--c:var(--joint)"><div class="muted">🏦 Общий котёл</div><div class="big">${fm(b.joint)}</div>
-    <div class="muted">Меняется только когда платите из него или пополняете</div></div>
-  <div class="card"><div class="muted">Кто кому должен</div><div style="font-size:18px;margin-top:4px">${debtText}</div></div>
-  <h2>За ${monthLabel(month).toLowerCase()}</h2><div class="grid2">${person('max')}${person('dinara')}</div>`;
+  const jointTotal = bm.joint.card + bm.joint.cash;
+  const hero = `<section class="hero"><div class="lab">${ic('bank')} Общий котёл</div><div class="sum">${fm(jointTotal)}</div>
+    <div class="split"><span><em>${ic('card')} Карта</em><b>${fm(bm.joint.card)}</b></span><span><em>${ic('cash')} Наличные</em><b>${fm(bm.joint.cash)}</b></span></div></section>`;
+  const settle = d === 0
+    ? `<div class="settle"><span class="av joint">${ic('users')}</span><div class="t"><b>Вы квиты</b><span class="muted sm">Никто никому не должен</span></div></div>`
+    : `<div class="settle">${av(d > 0 ? 'dinara' : 'max')}<span class="arrow">${ic('arrow')}</span>${av(d > 0 ? 'max' : 'dinara')}<div class="t"><b>${fm(Math.abs(d))}</b><span class="muted sm">${d > 0 ? 'Динара должна Максиму' : 'Максим должен Динаре'}</span></div></div>`;
+  const person = (p) => {
+    const spent = ms[p].personal + ms[p].sharedShare, left = ms[p].earned - spent;
+    const pct = ms[p].earned ? Math.min(100, Math.round((spent / ms[p].earned) * 100)) : spent ? 100 : 0;
+    return `<div class="pcard ${p}"><div class="h">${av(p, 'sm')}${nameOf(p)}</div>
+      <div class="kv"><small>Заработал${feminine(p)}</small><b class="pos">${fm(ms[p].earned)}</b></div>
+      <div class="kv"><small>Потратил${feminine(p)}</small><b>${fm(spent)}</b></div>
+      <div class="mini" title="${pct}% дохода потрачено"><i style="width:${pct}%"></i></div>
+      <div class="kv"><small>Остаток за месяц</small><b class="${left < 0 ? 'neg' : ''}">${fm(left)}</b></div>
+      <div class="wallet"><span>${ic('card')}${fm(bm[p].card)}</span><span>${ic('cash')}${fm(bm[p].cash)}</span></div></div>`;
+  };
+  const first = !all.length ? `<div class="tip"><span class="tile">${ic('bulb')}</span><div><b>Начните с дохода</b><br><span class="muted">Нажмите «+», выберите «Доход» и запишите зарплату. Потом пополните общий котёл переводом.</span></div></div>` : '';
+  return `<div class="top"><div class="hello"><div class="muted">Привет,</div><b>${nameOf(s.viewer)}</b></div><button class="av ${s.viewer}" data-switch aria-label="Сменить пользователя">${init(s.viewer)}</button></div>
+  ${monthSwitch()}<div class="stack">${first}${hero}<div class="card">${settle}</div></div>
+  <h2>За ${monthLabel(month).split(' ')[0].toLowerCase()}</h2><div class="people">${person('max')}${person('dinara')}</div>`;
 }
 
-function txRow(t, viewer) {
+// ---------- Лента ----------
+function txView(t, viewer) {
   const secret = t.hidden && t.person !== viewer;
-  let icon, title, sub, amt, cls = '';
   if (t.type === 'transfer') {
-    icon = '🔁'; title = `${WALLETS[t.from]} → ${WALLETS[t.to]}`;
-    const settle = (t.from === 'max' && t.to === 'dinara') || (t.from === 'dinara' && t.to === 'max');
-    sub = settle ? 'Взаиморасчёт' : 'Перевод'; amt = fm(t.amount);
-  } else if (t.type === 'income') {
-    icon = secret ? '🔒' : CAT_ICON[t.category] || '💰'; title = secret ? 'Скрыто' : t.category; sub = `${dotPill(t.person)} → ${WALLETS[t.wallet]}`; amt = '+' + fm(t.amount); cls = 'pos';
-  } else {
-    icon = secret ? '🔒' : CAT_ICON[t.category] || '📦'; title = secret ? 'Скрыто' : t.category;
-    sub = t.scope === 'personal' ? `${dotPill(t.person)} личное` : `${dotPill('joint', 'Общее')} ${100 - t.shareMax === 0 ? '' : `${t.shareMax}/${100 - t.shareMax}`} · платил${t.paidFrom === 'dinara' ? 'а' : ''}: ${t.paidFrom === 'joint' ? 'котёл' : nameOf(t.paidFrom)}`;
-    amt = '−' + fm(t.amount);
+    const cashOut = t.from === t.to && methodOf(t, 'to') === 'cash', settle = t.from !== t.to && t.from !== 'joint' && t.to !== 'joint';
+    const mf = methodOf(t, 'from'), mt = methodOf(t, 'to');
+    const title = t.from === t.to ? (cashOut ? 'Снятие наличных' : 'Внесение на карту') : settle ? 'Взаиморасчёт' : t.to === 'joint' ? 'В общий котёл' : t.from === 'joint' ? 'Из общего котла' : 'Перевод';
+    const route = t.from === t.to ? `${nameOf(t.from) || 'Котёл'}` : `${WALLETS[t.from].split(' ').pop()} → ${WALLETS[t.to].split(' ').pop()}`;
+    return { icon: `<span class="tile" style="--h:#7b6cf0">${ic('swap')}</span>`, title, sub: `${route} · ${mf === mt ? (mf === 'cash' ? 'наличные' : 'карта') : (mf === 'cash' ? 'наличные' : 'карта') + ' → ' + (mt === 'cash' ? 'наличные' : 'карта')}`, amt: fm(t.amount), cls: '' };
   }
-  const note = !secret && t.note ? `<div class="muted">${esc(t.note)}</div>` : '';
-  return `<div class="row" data-id="${t.id}"><div style="display:flex;gap:10px;align-items:center;min-width:0"><span style="font-size:24px">${icon}</span><div style="min-width:0"><div>${esc(title)}</div><div class="muted">${sub}</div>${note}</div></div><b class="${cls}">${amt}</b></div>`;
+  const m = methodTag(methodOf(t));
+  const icon = secret ? `<span class="tile" style="--h:#858aa0">${ic('lock')}</span>` : tile(t.category);
+  const title = secret ? 'Скрыто' : t.category;
+  const note = !secret && t.note ? `<span>${esc(t.note)}</span>` : '';
+  if (t.type === 'income') return { icon, title, sub: `<span class="tag ${t.person}">${nameOf(t.person)}</span>${m}${note}`, amt: '+' + fm(t.amount), cls: 'pos' };
+  const who = t.scope === 'personal' ? `<span class="tag ${t.person}">${nameOf(t.person)} · лично</span>` : `<span class="tag joint">Общее ${t.shareMax}/${100 - t.shareMax}</span><span class="tag ${t.paidFrom}">${t.paidFrom === 'joint' ? 'из котла' : 'платил' + feminine(t.paidFrom) + ' ' + nameOf(t.paidFrom)}</span>`;
+  return { icon, title, sub: `${who}${m}${note}`, amt: '−' + fm(t.amount), cls: '' };
 }
 
 function renderFeed(s) {
   const list = inMonth(s.txs, month).sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
-  let html = `<div class="month"><button data-m="-1">‹</button><b>${monthLabel(month)}</b><button data-m="1">›</button></div>`;
-  if (!list.length) return html + `<div class="empty">Операций пока нет.<br>Нажмите + чтобы добавить.</div>`;
-  let cur = '';
-  for (const t of list) {
-    if (t.date !== cur) { cur = t.date; html += `<h2>${cur.slice(8)}.${cur.slice(5, 7)}</h2>`; }
-    html += `<div class="card" style="padding:4px 16px">${txRow(t, s.viewer)}</div>`;
+  let html = monthSwitch();
+  if (!list.length) return html + `<div class="empty card"><div class="big">${ic('list')}</div><b>В этом месяце пусто</b><span class="muted">Нажмите «+», чтобы записать первую операцию</span></div>`;
+  const groups = [];
+  for (const t of list) { const g = groups[groups.length - 1]; if (g && g.date === t.date) g.items.push(t); else groups.push({ date: t.date, items: [t] }); }
+  for (const g of groups) {
+    const dayNet = g.items.reduce((a, t) => a + (t.type === 'income' ? t.amount : t.type === 'expense' ? -t.amount : 0), 0);
+    html += `<div class="day"><span>${dayLabel(g.date)}</span><span>${dayNet ? (dayNet > 0 ? '+' : '') + fm(dayNet) : ''}</span></div><div class="list">`;
+    for (const t of g.items) { const v = txView(t, s.viewer); html += `<button class="tx" data-id="${t.id}">${v.icon}<div class="mid"><b>${esc(v.title)}</b><div class="sub">${v.sub}</div></div><span class="amt ${v.cls}">${v.amt}</span></button>`; }
+    html += '</div>';
   }
-  return html + `<p class="muted" style="text-align:center">Нажмите на операцию, чтобы удалить</p>`;
+  return html;
 }
 
+// ---------- Итоги ----------
 function renderStats(s) {
-  const txs = inMonth(s.txs, month), st = stats(txs);
-  const bar = (a, b) => { const t = a + b || 1; return `<div class="bar"><i style="width:${(a / t) * 100}%;background:var(--max)"></i><i style="width:${(b / t) * 100}%;background:var(--dinara)"></i></div>`; };
-  const cmp = (label, k) => `<div class="card"><div class="row" style="border:0"><span>${label}</span></div>
-    <div class="row" style="border:0;padding:0"><span class="muted"><span class="dot" style="background:var(--max)"></span>${fm(st.max[k])}</span><span class="muted">${fm(st.dinara[k])}<span class="dot" style="background:var(--dinara);margin:0 0 0 6px"></span></span></div>${bar(st.max[k], st.dinara[k])}</div>`;
+  const txs = inMonth(s.txs, month), st = stats(txs), sp = spendByMethod(txs);
+  const cmp = (label, k) => { const a = st.max[k], b = st.dinara[k], t = a + b || 1; return `<div class="card cmp"><div class="muted sm">${label}</div><div class="nums"><span>${fm(a)}</span><span>${fm(b)}</span></div><div class="duo"><i style="width:${(a / t) * 100}%"></i><i style="width:${(b / t) * 100}%"></i></div></div>`; };
   const byCat = {};
-  for (const t of txs) if (t.type === 'expense' && (t.scope === 'shared' || t.person === s.viewer)) { const k = t.scope === 'shared' ? 'Общее · ' + t.category : 'Моё · ' + t.category; byCat[k] = (byCat[k] || 0) + t.amount; }
-  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
-  const total = cats.reduce((a, [, v]) => a + v, 0) || 1;
-  return `<div class="month"><button data-m="-1">‹</button><b>${monthLabel(month)}</b><button data-m="1">›</button></div>
-  ${cmp('Заработали', 'earned')}${cmp('Личные траты', 'personal')}${cmp('Доля в общих тратах', 'sharedShare')}
-  <h2>Куда уходят деньги (общее + ваше личное)</h2><div class="card">${cats.length ? cats.map(([k, v]) => `<div class="row"><span>${esc(k)}</span><span><b>${fm(v)}</b> <span class="muted">${Math.round((v / total) * 100)}%</span></span></div>`).join('') : '<div class="muted">Нет данных</div>'}</div>`;
+  for (const t of txs) if (t.type === 'expense' && !(t.hidden && t.person !== s.viewer)) { const k = t.category; byCat[k] = (byCat[k] || 0) + (t.scope === 'shared' ? t.amount : t.amount); }
+  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]), top = cats[0]?.[1] || 1;
+  const spTotal = sp.card + sp.cash || 1;
+  return `${monthSwitch()}<div class="stack">
+    <div class="row sm muted" style="padding:0 6px"><span>${av('max', 'sm')} Максим</span><span>Динара ${av('dinara', 'sm')}</span></div>
+    ${cmp('Заработали', 'earned')}${cmp('Личные траты', 'personal')}${cmp('Доля в общих тратах', 'sharedShare')}</div>
+  <h2>Карта и наличные</h2><div class="card cmp"><div class="nums" style="color:var(--ink)"><span style="color:var(--ink)">${ic('card')} ${fm(sp.card)}</span><span style="color:var(--ink)">${fm(sp.cash)} ${ic('cash')}</span></div><div class="duo"><i style="width:${(sp.card / spTotal) * 100}%;background:var(--max)"></i><i style="width:${(sp.cash / spTotal) * 100}%;background:var(--joint)"></i></div></div>
+  <h2>Куда уходят деньги</h2><div class="card">${cats.length ? cats.map(([k, v]) => { const [, h] = catOf(k); return `<div class="cat" style="--h:${h}">${tile(k)}<div class="g"><div class="row"><b style="font-weight:600">${esc(k)}</b><b>${fm(v)}</b></div><div class="bar"><i style="width:${(v / top) * 100}%"></i></div></div></div>`; }).join('') : '<div class="muted" style="text-align:center;padding:12px">Расходов пока нет</div>'}</div>`;
 }
 
-function chips(name, items, cur) { return `<div class="chips" data-chips="${name}">${items.map(([v, l]) => `<button type="button" data-v="${v}" class="${String(cur) === String(v) ? 'on' : ''}">${l}</button>`).join('')}</div>`; }
-const personOpts = Object.entries(PEOPLE);
-const walletOpts = Object.entries(WALLETS);
+// ---------- Форма ----------
+const chips = (name, items, cur, cls = () => '') => `<div class="chips" data-chips="${name}">${items.map(([v, l]) => `<button type="button" data-v="${v}" class="chip ${cls(v)} ${String(cur) === String(v) ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+const personChips = (name, cur) => chips(name, Object.keys(PEOPLE).map((p) => [p, `${av(p, 'sm')}${nameOf(p)}`]), cur, (v) => v);
+const walletChips = (name, cur) => chips(name, Object.entries(WALLETS).map(([w, l]) => [w, l]), cur, (v) => v);
+const methodChips = (name, cur) => chips(name, [['card', `${ic('card')} Карта`], ['cash', `${ic('cash')} Наличные`]], cur);
+const catGrid = (list, cur) => `<div class="cats" data-chips="category">${list.map((c) => { const [i, h] = catOf(c); return `<button type="button" data-v="${c}" class="catb ${cur === c ? 'on' : ''}" style="--h:${h}"><span class="tile" style="--h:${h}">${ic(i)}</span>${c}</button>`; }).join('')}</div>`;
 
-function renderAdd(s) {
+function renderAdd() {
   const dr = draft;
-  const types = [['expense', 'Расход'], ['income', 'Доход'], ['transfer', 'Перевод']];
-  let h = `<h1>Новая операция</h1><div class="seg" data-chips="type">${types.map(([v, l]) => `<button type="button" data-v="${v}" class="${dr.type === v ? 'on' : ''}">${l}</button>`).join('')}</div>
-  <div class="card"><input class="amount" id="f-amount" inputmode="decimal" placeholder="0 ₽" value="${esc(dr.amount)}"></div>`;
-  if (dr.type !== 'transfer') h += `<label>Кто</label>${chips('person', personOpts, dr.person)}`;
+  let h = `<div class="top"><h1>${dr.editId ? 'Изменить' : 'Новая операция'}</h1>${dr.editId ? `<button class="av joint" data-cancel aria-label="Отмена">${ic('x')}</button>` : ''}</div>
+  <div class="seg" data-chips="type">${[['expense', 'Расход'], ['income', 'Доход'], ['transfer', 'Перевод']].map(([v, l]) => `<button type="button" data-v="${v}" class="${dr.type === v ? 'on' : ''}">${l}</button>`).join('')}</div>
+  <div class="card amount" style="margin-top:12px"><input id="f-amount" inputmode="decimal" placeholder="0" value="${esc(dr.amount)}" aria-label="Сумма"><span>₽</span></div>`;
+  if (dr.type !== 'transfer') h += `<label class="l">Кто</label>${personChips('person', dr.person)}`;
   if (dr.type === 'expense') {
-    h += `<label>Категория</label><select id="f-category">${EXPENSE_CATEGORIES.map((c) => `<option ${c === dr.category ? 'selected' : ''}>${c}</option>`).join('')}</select>
-    <label>Тип траты</label>${chips('scope', [['personal', '👤 Личное'], ['shared', '👥 Общее']], dr.scope)}`;
-    if (dr.scope === 'personal') h += `<p class="muted">Спишется с кошелька: ${esc(WALLETS[dr.person])}. На общий баланс и долги не влияет.</p>`;
-    else {
-      h += `<label>Откуда заплатили</label>${chips('paidFrom', walletOpts, dr.paidFrom)}
-      <label id="f-sharelabel"></label>
-      <input type="range" id="f-share" min="0" max="100" step="5" value="${dr.shareMax}">
-      <div class="chips" style="margin-top:8px"><button type="button" data-share="50">50/50</button><button type="button" data-share="60">60/40</button><button type="button" data-share="70">70/30</button><button type="button" data-share="income">По доходам</button></div>
-      <p class="muted" id="f-preview"></p>`;
-    }
+    h += `<label class="l">Категория</label>${catGrid(EXPENSE_CATEGORIES, dr.category)}
+    <label class="l">Чья это трата</label><div class="opts" data-chips="scope">
+      <button type="button" data-v="personal" class="opt ${dr.scope === 'personal' ? 'on' : ''}"><b>${ic('user')} Личная</b><small>Только ${nameOf(dr.person)}. Общий баланс и долги не меняются.</small></button>
+      <button type="button" data-v="shared" class="opt ${dr.scope === 'shared' ? 'on' : ''}"><b>${ic('users')} Общая</b><small>Делим на двоих в нужной пропорции.</small></button></div>
+    <label class="l">Чем заплатили</label>${methodChips('method', dr.method)}`;
+    if (dr.scope === 'personal') h += `<div class="preview">Спишется из «${WALLETS[dr.person]}». Общий котёл не затрагивается.</div>`;
+    else h += `<label class="l">Откуда деньги</label>${walletChips('paidFrom', dr.paidFrom)}
+      <label class="l" id="f-sharelabel"></label><input type="range" id="f-share" min="0" max="100" step="5" value="${dr.shareMax}" aria-label="Доля Максима">
+      <div class="chips" style="margin-top:10px"><button type="button" class="chip" data-share="50">50/50</button><button type="button" class="chip" data-share="60">60/40</button><button type="button" class="chip" data-share="70">70/30</button><button type="button" class="chip" data-share="income">По доходам</button></div>
+      <div class="preview" id="f-preview"></div>`;
   } else if (dr.type === 'income') {
-    h += `<label>Категория</label><select id="f-category">${INCOME_CATEGORIES.map((c) => `<option ${c === dr.category ? 'selected' : ''}>${c}</option>`).join('')}</select>
-    <label>Куда пришли деньги</label>${chips('wallet', walletOpts, dr.wallet)}`;
+    h += `<label class="l">Категория</label>${catGrid(INCOME_CATEGORIES, dr.category)}
+    <label class="l">Куда пришли деньги</label>${walletChips('wallet', dr.wallet)}<label class="l">Способ</label>${methodChips('method', dr.method)}`;
   } else {
-    h += `<label>Откуда</label>${chips('from', walletOpts, dr.from)}<label>Куда</label>${chips('to', walletOpts, dr.to)}
-    <p class="muted">Перевод в «Общий котёл» — это пополнение, а не расход. Перевод между вашими кошельками считается взаиморасчётом и гасит долг.</p>`;
+    h += `<label class="l">Быстро</label><div class="chips"><button type="button" class="chip" data-preset="cash">${ic('cash')} Снял(а) наличные</button><button type="button" class="chip" data-preset="joint">${ic('bank')} В общий котёл</button><button type="button" class="chip" data-preset="settle">${ic('swap')} Вернул(а) долг</button></div>
+    <label class="l">Откуда</label>${walletChips('from', dr.from)}<div style="height:8px"></div>${methodChips('fromMethod', dr.fromMethod)}
+    <label class="l">Куда</label>${walletChips('to', dr.to)}<div style="height:8px"></div>${methodChips('toMethod', dr.toMethod)}
+    <div class="preview">Перевод в «Общий котёл» — пополнение, а не расход. Между вашими кошельками — взаиморасчёт, он гасит долг.</div>`;
   }
-  h += `<label>Дата</label><input type="date" id="f-date" value="${dr.date}"><label>Заметка</label><input id="f-note" placeholder="Необязательно" value="${esc(dr.note)}">`;
-  if (dr.type !== 'transfer') h += `<label style="display:flex;gap:8px;align-items:center;color:var(--text)"><input type="checkbox" id="f-hidden" style="width:auto" ${dr.hidden ? 'checked' : ''}> Скрыть детали от партнёра (будет видна только сумма)</label>`;
-  h += `${error ? `<div class="error">${esc(error)}</div>` : ''}<button class="primary" id="f-save">Сохранить</button>`;
-  return h;
+  h += `<label class="l">Дата</label><input type="date" id="f-date" value="${dr.date}"><label class="l">Заметка</label><input id="f-note" placeholder="Необязательно" value="${esc(dr.note)}">`;
+  if (dr.type !== 'transfer') h += `<label class="switch"><span>Скрыть детали от партнёра<br><span class="muted sm">Будет видна только сумма</span></span><input type="checkbox" id="f-hidden" ${dr.hidden ? 'checked' : ''}></label>`;
+  return h + `${error ? `<div class="error">${esc(error)}</div>` : ''}<button class="primary" id="f-save">${dr.editId ? 'Сохранить изменения' : 'Добавить'}</button>`;
 }
 
 function renderMore(s) {
-  return `<h1>Ещё</h1><div class="card"><div class="row"><span>Вы</span><b>${nameOf(s.viewer)}</b></div>
-  <div class="row"><button class="ghost" id="switch">Сменить пользователя</button></div></div>
-  <h2>Данные</h2><div class="card"><div class="row"><span>Операций</span><b>${s.txs.length}</b></div>
-  <div class="row"><button class="ghost" id="export">Скопировать резервную копию</button></div>
-  <div class="row"><button class="ghost" id="import">Восстановить из копии</button></div>
-  <div class="row"><button class="ghost danger" id="reset">Удалить все операции</button></div></div>
-  <p class="muted">Версия 0.1. Пока данные хранятся только на этом телефоне; синхронизация между вами — следующий шаг.</p>`;
+  return `<div class="top"><h1>Ещё</h1></div><div class="stack">
+  <div class="card"><div class="row"><span class="row" style="gap:10px;justify-content:flex-start">${av(s.viewer)}<span><b>${nameOf(s.viewer)}</b><br><span class="muted sm">сейчас пользуется</span></span></span><button class="chip" id="switch">Сменить</button></div></div>
+  <h2 style="margin-bottom:0">Данные</h2>
+  <button class="ghost" id="export">Скопировать резервную копию</button><button class="ghost" id="import">Восстановить из копии</button><button class="ghost danger" id="reset">Удалить все операции</button>
+  <p class="muted sm" style="text-align:center">Операций: ${s.txs.length}. Версия 0.2.<br>Пока данные хранятся только на этом телефоне.</p></div>`;
+}
+
+// ---------- Шторка операции ----------
+let confirmDel = false;
+function openSheet(id) {
+  const s = store.get(), t = s.txs.find((x) => x.id === id); if (!t) return;
+  const v = txView(t, s.viewer), mine = !t.hidden || t.person === s.viewer;
+  const kv = (k, val) => `<div class="row"><span class="muted">${k}</span><b>${val}</b></div>`;
+  let rows = kv('Дата', `${dayLabel(t.date)}, ${t.date.slice(8)}.${t.date.slice(5, 7)}.${t.date.slice(0, 4)}`);
+  if (t.type === 'expense') rows += kv('Кто', nameOf(t.person)) + kv('Тип', t.scope === 'personal' ? 'Личная' : `Общая, ${t.shareMax}/${100 - t.shareMax}`) + kv('Откуда', WALLETS[t.paidFrom]) + kv('Способ', methodOf(t) === 'cash' ? 'Наличные' : 'Карта');
+  if (t.type === 'income') rows += kv('Кто', nameOf(t.person)) + kv('Куда', WALLETS[t.wallet]) + kv('Способ', methodOf(t) === 'cash' ? 'Наличные' : 'Карта');
+  if (t.type === 'transfer') rows += kv('Откуда', WALLETS[t.from]) + kv('Куда', WALLETS[t.to]);
+  if (t.note && mine) rows += kv('Заметка', esc(t.note));
+  sheet.hidden = false;
+  sheet.innerHTML = `<div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div><div class="row" style="justify-content:flex-start;gap:12px">${v.icon}<div><b style="font-size:18px">${esc(v.title)}</b></div></div>
+    <div class="big ${v.cls}" style="margin-top:12px">${v.amt}</div><div class="kvs">${rows}</div>
+    <div class="btns">${confirmDel ? `<button data-sheet="cancel">Не удалять</button><button class="del" data-sheet="del2">Да, удалить</button>` : `<button data-sheet="edit" ${mine ? '' : 'disabled style="opacity:.4"'}>Изменить</button><button class="del" data-sheet="del">Удалить</button>`}</div></div>`;
+  const close = () => { sheet.hidden = true; sheet.innerHTML = ''; confirmDel = false; };
+  sheet.onclick = (e) => { if (e.target === sheet) close(); };
+  sheet.querySelectorAll('[data-sheet]').forEach((b) => (b.onclick = () => {
+    const a = b.dataset.sheet;
+    if (a === 'edit') { close(); draft = draftFrom(t); tab = 'add'; render(); window.scrollTo(0, 0); }
+    else if (a === 'del') { confirmDel = true; openSheet(id); }
+    else if (a === 'cancel') { confirmDel = false; openSheet(id); }
+    else if (a === 'del2') { close(); store.remove(id); }
+  }));
 }
 
 // ---------- Работа формы ----------
@@ -139,7 +197,6 @@ function readForm() {
   if (!draft) return;
   const g = (id) => $('#' + id);
   if (g('f-amount')) draft.amount = g('f-amount').value;
-  if (g('f-category')) draft.category = g('f-category').value;
   if (g('f-note')) draft.note = g('f-note').value;
   if (g('f-date')) draft.date = g('f-date').value;
   if (g('f-hidden')) draft.hidden = g('f-hidden').checked;
@@ -151,21 +208,25 @@ function updatePreview() {
   if (!lab || !pv) return;
   readForm();
   const sp = splitAmount(parseMoney(draft.amount) || 0, draft.shareMax), pf = draft.paidFrom;
-  lab.textContent = `Как делим: Максим ${draft.shareMax}% / Динара ${100 - draft.shareMax}%`;
-  const debtor = other(pf), word = debtor === 'max' ? 'будет должен' : 'будет должна';
-  pv.innerHTML = `Максим: ${fm(sp.max)} · Динара: ${fm(sp.dinara)}<br>` + (pf === 'joint' ? 'Платим из котла — долгов не возникает.' : `Платил${pf === 'dinara' ? 'а' : ''} ${nameOf(pf)} — ${nameOf(debtor)} ${word} свою долю. Котёл не меняется.`);
+  lab.textContent = `Как делим: Максим ${draft.shareMax}% · Динара ${100 - draft.shareMax}%`;
+  const debtor = other(pf);
+  pv.innerHTML = `Максим: <b>${fm(sp.max)}</b> · Динара: <b>${fm(sp.dinara)}</b><br>` + (pf === 'joint' ? 'Платим из котла — долгов не возникает.' : `Платил${feminine(pf)} ${nameOf(pf)}: ${nameOf(debtor)} ${debtor === 'max' ? 'будет должен' : 'будет должна'} свою долю. Котёл не меняется.`);
 }
 
 function setChip(name, v) {
   readForm(); error = '';
-  if (name === 'type') {
-    draft.type = v;
-    draft.category = v === 'income' ? INCOME_CATEGORIES[0] : EXPENSE_CATEGORIES[0];
-  } else if (name === 'person') {
-    draft.person = v; draft.wallet = v; draft.paidFrom = v; draft.from = v;
-  } else draft[name] = v;
-  if (name === 'scope' && v === 'personal') draft.paidFrom = draft.person;
-  if (name === 'scope' && v === 'shared') draft.paidFrom = draft.person;
+  draft[name] = v;
+  if (name === 'type') draft.category = v === 'income' ? INCOME_CATEGORIES[0] : EXPENSE_CATEGORIES[0];
+  if (name === 'person') { draft.wallet = v; draft.paidFrom = v; draft.from = v; }
+  if (name === 'scope') draft.paidFrom = draft.person;
+  render();
+}
+
+function preset(kind) {
+  readForm(); const p = draft.person || store.get().viewer;
+  if (kind === 'cash') Object.assign(draft, { from: p, fromMethod: 'card', to: p, toMethod: 'cash' });
+  if (kind === 'joint') Object.assign(draft, { from: p, fromMethod: 'card', to: 'joint', toMethod: 'card' });
+  if (kind === 'settle') Object.assign(draft, { from: p, fromMethod: 'card', to: other(p), toMethod: 'card' });
   render();
 }
 
@@ -173,25 +234,30 @@ function save() {
   readForm();
   const amount = parseMoney(draft.amount);
   let tx = { type: draft.type, amount, date: draft.date || todayStr(), note: draft.note.trim(), hidden: draft.hidden && draft.type !== 'transfer' };
-  if (draft.type === 'income') tx = { ...tx, person: draft.person, wallet: draft.wallet, category: draft.category };
+  if (draft.type === 'income') tx = { ...tx, person: draft.person, wallet: draft.wallet, category: draft.category, method: draft.method };
   else if (draft.type === 'expense') {
-    tx = { ...tx, person: draft.person, scope: draft.scope, category: draft.category, paidFrom: draft.scope === 'personal' ? draft.person : draft.paidFrom };
+    tx = { ...tx, person: draft.person, scope: draft.scope, category: draft.category, method: draft.method, paidFrom: draft.scope === 'personal' ? draft.person : draft.paidFrom };
     if (draft.scope === 'shared') tx.shareMax = draft.shareMax;
-  } else tx = { ...tx, from: draft.from, to: draft.to };
+  } else tx = { ...tx, from: draft.from, to: draft.to, fromMethod: draft.fromMethod, toMethod: draft.toMethod };
   const errs = validate(tx);
   if (errs.length) { error = errs[0]; render(); return; }
-  store.add(tx);
+  if (draft.editId) store.update(draft.editId, tx); else store.add(tx);
   month = tx.date.slice(0, 7);
-  draft = null; error = ''; tab = 'feed'; render();
+  draft = null; error = ''; tab = 'feed'; render(); window.scrollTo(0, 0);
 }
 
 // ---------- Рендер ----------
+function renderNav() {
+  const b = (t, i, l) => `<button data-tab="${t}" class="${tab === t ? 'on' : ''}">${ic(i)}<span>${l}</span></button>`;
+  nav.innerHTML = `<div class="dock">${b('home', 'home', 'Мы')}${b('feed', 'list', 'Лента')}<button class="plus" data-tab="add" aria-label="Добавить операцию">${ic('plus')}</button>${b('stats', 'chart', 'Итоги')}${b('more', 'more', 'Ещё')}</div>`;
+  nav.querySelectorAll('[data-tab]').forEach((el) => (el.onclick = () => { readForm(); tab = el.dataset.tab; if (tab === 'add' && draft && draft.editId) draft = null; if (tab !== 'add') error = ''; render(); window.scrollTo(0, 0); }));
+}
+
 function render() {
   const s = store.get();
   if (!s.viewer) return renderWho();
-  $('#tabs').style.display = '';
-  document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
   if (tab === 'add' && !draft) draft = newDraft(s.viewer);
+  renderNav();
   view.innerHTML = { home: renderHome, feed: renderFeed, stats: renderStats, add: renderAdd, more: renderMore }[tab](s);
   bind(s);
 }
@@ -199,6 +265,7 @@ function render() {
 function bind(s) {
   view.querySelectorAll('[data-m]').forEach((b) => (b.onclick = () => { month = shiftMonth(month, +b.dataset.m); render(); }));
   view.querySelectorAll('[data-chips]').forEach((box) => box.querySelectorAll('button').forEach((b) => (b.onclick = () => setChip(box.dataset.chips, b.dataset.v))));
+  view.querySelectorAll('[data-preset]').forEach((b) => (b.onclick = () => preset(b.dataset.preset)));
   view.querySelectorAll('[data-share]').forEach((b) => (b.onclick = () => {
     readForm();
     draft.shareMax = b.dataset.share === 'income' ? shareByIncome(inMonth(s.txs, draft.date.slice(0, 7))) : +b.dataset.share;
@@ -209,14 +276,14 @@ function bind(s) {
   const amt = $('#f-amount'); if (amt) amt.oninput = updatePreview;
   updatePreview();
   const sv = $('#f-save'); if (sv) sv.onclick = save;
-  view.querySelectorAll('[data-id]').forEach((r) => (r.onclick = () => { if (confirm('Удалить эту операцию?')) store.remove(r.dataset.id); }));
-  const sw = $('#switch'); if (sw) sw.onclick = () => { store.setViewer(other(s.viewer)); draft = null; };
+  const cn = $('[data-cancel]'); if (cn) cn.onclick = () => { draft = null; tab = 'feed'; render(); };
+  view.querySelectorAll('[data-id]').forEach((r) => (r.onclick = () => openSheet(r.dataset.id)));
+  const sw = $('#switch') || $('[data-switch]'); if (sw) sw.onclick = () => { store.setViewer(other(s.viewer)); draft = null; };
   const ex = $('#export'); if (ex) ex.onclick = async () => { try { await navigator.clipboard.writeText(store.exportJson()); alert('Копия в буфере обмена. Вставьте её в заметки.'); } catch { prompt('Скопируйте текст:', store.exportJson()); } };
   const im = $('#import'); if (im) im.onclick = () => { const t = prompt('Вставьте резервную копию:'); if (!t) return; try { store.importJson(t); alert('Готово'); } catch { alert('Не получилось прочитать копию'); } };
   const rs = $('#reset'); if (rs) rs.onclick = () => { if (confirm('Удалить ВСЕ операции на этом телефоне?')) store.reset(); };
 }
 
-document.querySelectorAll('#tabs button').forEach((b) => (b.onclick = () => { readForm(); tab = b.dataset.tab; if (tab !== 'add') error = ''; render(); window.scrollTo(0, 0); }));
 store.subscribe(render);
 render();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});

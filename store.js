@@ -13,6 +13,7 @@ export const store = {
   get: () => state,
   subscribe: (f) => listeners.add(f),
   add(tx) { state.txs.push({ id: crypto.randomUUID(), createdAt: Date.now(), ...tx }); save(); },
+  update(id, tx) { state.txs = state.txs.map((t) => (t.id === id ? { ...t, ...tx, id } : t)); save(); },
   remove(id) { state.txs = state.txs.filter((t) => t.id !== id); save(); },
   setViewer(v) { state.viewer = v; save(); },
   exportJson: () => JSON.stringify(state),
