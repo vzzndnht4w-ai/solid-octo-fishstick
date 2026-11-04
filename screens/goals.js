@@ -1,6 +1,7 @@
 import { parseMoney, validate } from '../ledger.js';
 import { ic, esc, money as fm, subHeader, MONTHS_GEN, $, $$ } from '../core.js';
 import { goalSaved, goalState } from '../lib/plan.js';
+import { celebrate } from '../lib/confetti.js';
 import { openSheet, ring, pbar, personChips, bindChips, amountField, kopToInput, dateRu } from '../planui.js';
 
 const EMOJI = ['🎯', '✈️', '🏖️', '🏠', '🚗', '💍', '🎓', '💻', '📱', '🛋️', '🐶', '🎉', '👶', '🎸', '🛡️', '🎁'];
@@ -30,6 +31,7 @@ function fund(g, s, a) {
       sh.close(); a.store.add(tx);
       const after = goalSaved(a.store.get().txs, g.id);
       a.toast(after >= g.target ? `Цель «${g.name}» достигнута!` : `Отложено ${fm(tx.amount)}`);
+      if (after >= g.target && !st.done) celebrate();
     };
     if (!amount) setTimeout(() => inp.focus(), 60);
   };

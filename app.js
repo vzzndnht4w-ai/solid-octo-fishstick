@@ -28,6 +28,7 @@ import './lib/profile-icons.js';
 import { method as methodOf } from './ledger.js';
 import { runRecurring } from './lib/recurring.js';
 import { sheetBlock, bindSheetBlock } from './lib/together-ui.js';
+import { initBadges } from './lib/badges.js';
 
 const SCREENS = { home, feed, stats, add, more, settings, budgets, goals, recurring, data, profile, sync: syncScreen, date: dateScreen, challenges, wrapped, templates, calendar };
 const TAB_OF = { settings: 'more', budgets: 'more', goals: 'more', recurring: 'more', data: 'more', profile: 'more', sync: 'more', date: 'more', challenges: 'more', wrapped: 'more', templates: 'more', calendar: 'more' };
@@ -187,6 +188,7 @@ render();
 // Регулярные платежи: проводим пропущенное при запуске и при возвращении в приложение.
 const runRec = () => { const n = runRecurring(store, todayStr()); if (n) toast(`Добавлено регулярных платежей: ${n}`); };
 runRec();
+initBadges(store, toast, todayStr);   // новые достижения и пройденные челленджи: тост + конфетти
 sync.init();
 sync.subscribe(() => { if (route === 'sync' && sync.isConnected()) render(); });
 if (sync.peekPendingInvite() && store.get().viewer) { route = 'sync'; render(); }
