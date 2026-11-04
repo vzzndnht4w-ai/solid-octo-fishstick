@@ -1,5 +1,5 @@
 // Роутер и оболочка приложения. Каждый экран — модуль в screens/: { render(s, a) → html, bind(root, s, a) }.
-import { PEOPLE, WALLETS } from './ledger.js';
+import { PEOPLE, WALLETS, applyProfiles } from './ledger.js';
 import { store } from './store.js';
 import { $, $$, esc, ic, av, nameOf, dayLabel, todayStr, shiftMonth, money as fm } from './core.js';
 import home from './screens/home.js';
@@ -13,6 +13,11 @@ import goals from './screens/goals.js';
 import recurring from './screens/recurring.js';
 import data from './screens/data.js';
 import profile from './screens/profile.js';
+import onboarding from './screens/onboarding.js';
+import { lockScreen, confirmPin, closePad } from './screens/lock.js';
+import { applyTheme, applyAccents } from './lib/appearance.js';
+import { shouldLock } from './lib/pin.js';
+import './lib/profile-icons.js';
 import { method as methodOf } from './ledger.js';
 
 const SCREENS = { home, feed, stats, add, more, settings, budgets, goals, recurring, data, profile };
@@ -22,6 +27,44 @@ const view = $('#view'), nav = $('#tabs'), sheet = $('#sheet'), toastEl = $('#to
 let route = 'home';
 let month = todayStr().slice(0, 7);
 let history = [];
+
+// ---------- Профили, тема, блокировка ----------
+const needLock = (s) => !!(s.viewer && s.settings.pins?.[s.viewer]);
+let locked = needLock(store.get());   // при запуске PIN спрашивается всегда
+let locking = false, hiddenAt = 0;
+/** Имена, цвета и тема из сохранённых данных → ledger.js и CSS. Вызывается при старте и после каждого изменения. */
+const applyAll = (s) => { applyProfiles(s.profiles); applyAccents(s.profiles); applyTheme(s.settings.theme); };
+applyAll(store.get());
+
+async function runLock() {
+  if (locking) return;
+  locking = true;
+  const r = await lockScreen(store.get(), api);
+  locking = false;
+  if (r === 'cancelled') return render();
+  locked = false;
+  if (r === 'switched') { resetDraft(); route = 'home'; history = []; }
+  render();
+}
+function lockNow() {
+  if (!needLock(store.get())) return;
+  closePad(); sheet.hidden = true; sheet.innerHTML = '';
+  locked = true; render();
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { hiddenAt = Date.now(); return; }
+  const s = store.get();
+  if (!locked && needLock(s) && shouldLock({ hiddenAt, now: Date.now(), autoLockMin: s.settings.autoLockMin })) lockNow();
+  hiddenAt = 0;
+});
+
+/** Войти как другой человек; если у него есть PIN — сначала спрашиваем его. */
+async function chooseUser(p, { cancelable = true } = {}) {
+  const s = store.get();
+  if (s.settings.pins?.[p] && (await confirmPin(p, { title: `PIN-код: ${nameOf(p)}`, sub: 'Чтобы войти под этим именем', cancelable })) !== true) return;
+  locked = false; resetDraft(); route = 'home'; history = [];
+  store.setViewer(p);
+}
 
 // ---------- API для экранов ----------
 const api = {
@@ -41,6 +84,7 @@ const api = {
   editTx(t) { startEdit(t, store.get()); route = 'add'; render(); window.scrollTo(0, 0); },
   openTx: (id) => openSheet(id),
   toast,
+  lock: lockNow,
 };
 window.__app = api; // для тестов и отладки
 
@@ -87,7 +131,7 @@ function renderWho() {
     <div class="empty" style="padding-bottom:0"><div class="big">${ic('users')}</div><h1>Мы</h1><p class="muted">Деньги вдвоём: у каждого своё, и общее тоже.<br>Кто сейчас с телефоном?</p></div>
     <button class="primary" data-who="max" style="background:linear-gradient(135deg,var(--max),var(--max2))">Я — ${esc(s.profiles.max.name)}</button>
     <button class="primary" data-who="dinara" style="margin-top:0;background:linear-gradient(135deg,var(--dinara),var(--dinara2))">Я — ${esc(s.profiles.dinara.name)}</button></div>`;
-  $$('[data-who]', view).forEach((b) => (b.onclick = () => { store.setViewer(b.dataset.who); route = 'home'; }));
+  $$('[data-who]', view).forEach((b) => (b.onclick = () => chooseUser(b.dataset.who)));
 }
 
 // ---------- Рендер ----------
@@ -100,16 +144,29 @@ function renderNav() {
 
 function render() {
   const s = store.get();
+  const fk = document.activeElement?.dataset?.fk;   // чтобы фокус не терялся при перерисовке
+  if (!s.settings.onboarded) {
+    nav.innerHTML = ''; view.innerHTML = onboarding.render(s, api); onboarding.bind(view, s, api);
+    return restoreFocus(fk);
+  }
+  if (locked && !needLock(s)) locked = false;
+  if (locked) { nav.innerHTML = ''; view.innerHTML = ''; runLock(); return; }
   if (!s.viewer) return renderWho();
   const screen = SCREENS[route] || SCREENS.home;
   renderNav();
   view.innerHTML = screen.render(s, api);
   $$('[data-m]', view).forEach((b) => (b.onclick = () => { month = shiftMonth(month, +b.dataset.m); render(); }));
   $$('[data-back]', view).forEach((b) => (b.onclick = () => api.back()));
-  $$('[data-switch]', view).forEach((b) => (b.onclick = () => { store.setViewer(s.viewer === 'max' ? 'dinara' : 'max'); resetDraft(); route = 'home'; }));
+  $$('[data-switch]', view).forEach((b) => (b.onclick = () => chooseUser(s.viewer === 'max' ? 'dinara' : 'max')));
   screen.bind(view, s, api);
+  restoreFocus(fk);
+}
+function restoreFocus(fk) {
+  if (!fk) return;
+  const el = [...document.querySelectorAll('[data-fk]')].find((e) => e.dataset.fk === fk);
+  if (el && !el.disabled) el.focus({ preventScroll: true });
 }
 
-store.subscribe(render);
+store.subscribe(() => { applyAll(store.get()); render(); });
 render();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
