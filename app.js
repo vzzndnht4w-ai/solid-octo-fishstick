@@ -13,6 +13,8 @@ import goals from './screens/goals.js';
 import recurring from './screens/recurring.js';
 import data from './screens/data.js';
 import profile from './screens/profile.js';
+import syncScreen from './screens/sync.js';
+import * as sync from './lib/sync.js';
 import onboarding from './screens/onboarding.js';
 import { lockScreen, confirmPin, closePad } from './screens/lock.js';
 import { applyTheme, applyAccents } from './lib/appearance.js';
@@ -21,8 +23,8 @@ import './lib/profile-icons.js';
 import { method as methodOf } from './ledger.js';
 import { runRecurring } from './lib/recurring.js';
 
-const SCREENS = { home, feed, stats, add, more, settings, budgets, goals, recurring, data, profile };
-const TAB_OF = { settings: 'more', budgets: 'more', goals: 'more', recurring: 'more', data: 'more', profile: 'more' };
+const SCREENS = { home, feed, stats, add, more, settings, budgets, goals, recurring, data, profile, sync: syncScreen };
+const TAB_OF = { settings: 'more', budgets: 'more', goals: 'more', recurring: 'more', data: 'more', profile: 'more', sync: 'more' };
 const view = $('#view'), nav = $('#tabs'), sheet = $('#sheet'), toastEl = $('#toast');
 
 let route = 'home';
@@ -178,5 +180,8 @@ render();
 // Регулярные платежи: проводим пропущенное при запуске и при возвращении в приложение.
 const runRec = () => { const n = runRecurring(store, todayStr()); if (n) toast(`Добавлено регулярных платежей: ${n}`); };
 runRec();
+sync.init();
+sync.subscribe(() => { if (route === 'sync' && sync.isConnected()) render(); });
+if (sync.peekPendingInvite() && store.get().viewer) { route = 'sync'; render(); }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) runRec(); });
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});

@@ -120,3 +120,13 @@ input[aria-invalid="true"]{border-color:var(--neg)}
 .swatch{--k1:var(--c1);--k2:var(--c2);background:linear-gradient(135deg,var(--k1),var(--k2))}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .swatch{--k1:var(--d1);--k2:var(--d2)}}
 :root[data-theme="dark"] .swatch{--k1:var(--d1);--k2:var(--d2)}
+
+/* синхронизация */
+.sync-status{display:flex;gap:12px;align-items:center}
+.sync-dot{width:12px;height:12px;border-radius:50%;background:var(--muted);flex:none}
+.sync-ok .sync-dot{background:var(--pos)}.sync-bad .sync-dot{background:var(--neg)}.sync-warn .sync-dot{background:var(--joint)}
+.sync-busy .sync-dot{background:var(--max);animation:pulse 1s infinite alternate}
+@keyframes pulse{to{opacity:.3}}@media (prefers-reduced-motion:reduce){.sync-busy .sync-dot{animation:none}}
+.sync-code{font:600 18px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;margin-top:10px;word-break:break-all;user-select:all}
+.sync-join{border:1.5px solid var(--max)}
+textarea{resize:vertical;min-height:72px}
