@@ -2,7 +2,17 @@
 // Деньги хранятся в копейках (целые числа).
 
 export const PEOPLE = { max: 'Максим', dinara: 'Динара' };
-export const WALLETS = { max: 'Кошелёк Максима', dinara: 'Кошелёк Динары', joint: 'Общий котёл' };
+export const WALLETS = { max: 'Кошелёк · Максим', dinara: 'Кошелёк · Динара', joint: 'Общий котёл' };
+
+/** Подставляет имена из профилей в PEOPLE и WALLETS (объекты мутируются на месте, ссылки остаются прежними). */
+export function applyProfiles(profiles) {
+  for (const p of ['max', 'dinara']) {
+    const name = String(profiles?.[p]?.name ?? '').trim();
+    if (!name) continue;
+    PEOPLE[p] = name;
+    WALLETS[p] = `Кошелёк · ${name}`;
+  }
+}
 
 export const EXPENSE_CATEGORIES = ['Продукты', 'Еда вне дома', 'Транспорт', 'Машина', 'Жильё', 'Здоровье', 'Развлечения', 'Одежда', 'Подарки', 'Путешествия', 'Другое'];
 export const INCOME_CATEGORIES = ['Зарплата', 'Подработка', 'Подарок', 'Другое'];
