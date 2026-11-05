@@ -130,6 +130,7 @@ function openSheet(id) {
   let rows = kv('Дата', `${dayLabel(t.date)}, ${t.date.slice(8)}.${t.date.slice(5, 7)}.${t.date.slice(0, 4)}`);
   if (t.type === 'expense') rows += kv('Кто', esc(nameOf(t.person))) + kv('Тип', t.scope === 'personal' ? 'Личная' : `Общая, ${t.shareMax}/${100 - t.shareMax}`) + kv('Откуда', esc(WALLETS[t.paidFrom])) + kv('Способ', mname(methodOf(t)));
   if (t.type === 'income') rows += kv('Кто', esc(nameOf(t.person))) + kv('Куда', esc(WALLETS[t.wallet])) + kv('Способ', mname(methodOf(t)));
+  if (t.type === 'saving') rows += kv('Кто', esc(nameOf(t.person))) + kv(t.amount > 0 ? 'Откуда' : 'Куда', esc(WALLETS[t.wallet])) + kv('Способ', mname(methodOf(t)));
   if (t.type === 'transfer') rows += kv('Откуда', esc(WALLETS[t.from])) + kv('Куда', esc(WALLETS[t.to]));
   if (t.note && mine) rows += kv('Заметка', esc(t.note));
   sheet.hidden = false;

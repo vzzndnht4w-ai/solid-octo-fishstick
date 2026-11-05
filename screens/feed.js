@@ -10,6 +10,11 @@ registerIcons({ search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4' });
 /** Как показать операцию в списке и в шторке. */
 export function txView(t, viewer) {
   const secret = isSecret(t, viewer);
+  if (t.type === 'saving') {
+    const sv = (store.get().savings || []).find((x) => x.id === t.savingId), nm = sv ? sv.name : 'накопления';
+    const wn = t.wallet === 'joint' ? 'общий баланс' : nameOf(t.wallet);
+    return { icon: `<span class="tile" style="--h:#2aa874">${ic('bank')}</span>`, title: t.amount > 0 ? `В накопления «${esc(nm)}»` : `Из накоплений «${esc(nm)}»`, sub: `${t.amount > 0 ? 'из' : 'в'}: ${esc(wn)} · ${methodOf(t) === 'cash' ? 'наличные' : 'карта'}${t.note ? ' · ' + esc(t.note) : ''}`, amt: fm(Math.abs(t.amount)), cls: '' };
+  }
   const mname = (m) => (m === 'cash' ? 'наличные' : 'карта');
   if (t.type === 'transfer') {
     const same = t.from === t.to, mf = methodOf(t, 'from'), mt = methodOf(t, 'to');

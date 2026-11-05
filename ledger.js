@@ -32,6 +32,8 @@ export function splitAmount(amount, shareMax) {
  *            personal — только person, платит из своего кошелька;
  *            shared   — делится по shareMax (% Максима), платит paidFrom (свой кошелёк любого из вас или joint)
  *  transfer: { type, amount, from, to }                               — между кошельками
+ *  saving:   { type, amount, savingId, wallet, method, person }       — связь кошелька с накоплениями:
+ *            amount > 0 — отложили из wallet на счёт накоплений, amount < 0 — вернули на wallet
  * Перевод между личными кошельками Максима и Динары считается взаиморасчётом (гасит долг).
  */
 export function validate(tx) {
@@ -39,7 +41,8 @@ export function validate(tx) {
   // Резерв под цель: перевод «общий баланс → общий баланс» с goalId. Деньги не двигаются, часть баланса помечается как отложенная
   // (отрицательная сумма возвращает резерв в свободный остаток).
   const isReserve = tx.type === 'transfer' && !!tx.goalId && tx.from === 'joint' && tx.to === 'joint';
-  if (isReserve ? !Number.isInteger(tx.amount) || tx.amount === 0 : !Number.isInteger(tx.amount) || tx.amount <= 0) errors.push('Сумма должна быть больше нуля');
+  if (tx.type === 'saving') { /* сумму проверяет ветка ниже: может быть отрицательной */ }
+  else if (isReserve ? !Number.isInteger(tx.amount) || tx.amount === 0 : !Number.isInteger(tx.amount) || tx.amount <= 0) errors.push('Сумма должна быть больше нуля');
   const isW = (w) => w in WALLETS;
   const isP = (p) => p in PEOPLE;
   const isM = (m) => m === 'card' || m === 'cash';
@@ -56,6 +59,12 @@ export function validate(tx) {
       if (!(tx.shareMax >= 0 && tx.shareMax <= 100)) errors.push('Доля должна быть от 0 до 100');
     }
     if (!isM(tx.method)) errors.push('Не указан способ: карта или наличные');
+  } else if (tx.type === 'saving') {
+    if (!isP(tx.person)) errors.push('Не указано, кто откладывает');
+    if (!isW(tx.wallet)) errors.push('Не указан кошелёк');
+    if (!isM(tx.method)) errors.push('Не указан способ: карта или наличные');
+    if (!tx.savingId) errors.push('Не указан счёт накоплений');
+    if (!Number.isInteger(tx.amount) || tx.amount === 0) errors.push('Сумма не должна быть нулевой');
   } else if (tx.type === 'transfer') {
     if (!isW(tx.from) || !isW(tx.to)) errors.push('Не указаны кошельки');
     else if (!isM(method(tx, 'from')) || !isM(method(tx, 'to'))) errors.push('Не указан способ: карта или наличные');
@@ -75,6 +84,7 @@ export function balancesByMethod(txs) {
     if (t.type === 'income') b[t.wallet][method(t)] += t.amount;
     else if (t.type === 'expense') b[t.paidFrom][method(t)] -= t.amount;
     else if (t.type === 'transfer') { b[t.from][method(t, 'from')] -= t.amount; b[t.to][method(t, 'to')] += t.amount; }
+    else if (t.type === 'saving') b[t.wallet][method(t)] -= t.amount;
   }
   return b;
 }
@@ -159,3 +169,6 @@ export const reservedInGoals = (txs) => txs.reduce((s, t) => s + (t.type === 'tr
 
 /** Свободно в общем балансе: общий баланс минус отложенное в цели. */
 export const freeJoint = (txs) => balances(txs).joint - reservedInGoals(txs);
+
+/** Сколько денег кошельков перетекло на счёт накоплений (отложено минус возвращено). */
+export const savingFlow = (txs, savingId) => txs.reduce((s, t) => s + (t.type === 'saving' && t.savingId === savingId ? t.amount : 0), 0);
