@@ -19,6 +19,8 @@ import challenges from './screens/challenges.js';
 import wrapped from './screens/wrapped.js';
 import templates from './screens/templates.js';
 import calendar from './screens/calendar.js';
+import inbox from './screens/inbox.js';
+import { initInbox } from './lib/inbox-ui.js';
 import * as sync from './lib/sync.js';
 import onboarding from './screens/onboarding.js';
 import { lockScreen, confirmPin, closePad } from './screens/lock.js';
@@ -32,8 +34,8 @@ import { initBadges } from './lib/badges.js';
 import { parseQuickLink, findTemplate, isSecret } from './lib/tools.js';
 import { quickAdd } from './lib/tools-ui.js';
 
-const SCREENS = { home, feed, stats, add, more, settings, budgets, goals, recurring, data, profile, sync: syncScreen, date: dateScreen, challenges, wrapped, templates, calendar };
-const TAB_OF = { settings: 'more', budgets: 'more', goals: 'more', recurring: 'more', data: 'more', profile: 'more', sync: 'more', date: 'more', challenges: 'more', wrapped: 'more', templates: 'more', calendar: 'more' };
+const SCREENS = { home, feed, stats, add, more, settings, budgets, goals, recurring, data, profile, sync: syncScreen, date: dateScreen, challenges, wrapped, templates, calendar, inbox };
+const TAB_OF = { settings: 'more', budgets: 'more', goals: 'more', recurring: 'more', data: 'more', profile: 'more', sync: 'more', date: 'more', challenges: 'more', wrapped: 'more', templates: 'more', calendar: 'more', inbox: 'more' };
 const view = $('#view'), nav = $('#tabs'), sheet = $('#sheet'), toastEl = $('#toast');
 
 let route = 'home';
@@ -208,6 +210,7 @@ render();
 const runRec = () => { const n = runRecurring(store, todayStr()); if (n) toast(`Добавлено регулярных платежей: ${n}`); };
 runRec();
 initBadges(store, toast, todayStr);   // новые достижения и пройденные челленджи: тост + конфетти
+initInbox(store, api, todayStr);   // «Что нового»: напоминания, значок на иконке, тост про новое
 sync.init();
 sync.subscribe(() => { if (route === 'sync' && sync.isConnected()) render(); });
 if (sync.peekPendingInvite() && store.get().viewer) { route = 'sync'; render(); }

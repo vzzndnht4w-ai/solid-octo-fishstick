@@ -1,4 +1,5 @@
 import { ic, av, esc, nameOf, $ } from '../core.js';
+import { load as loadInbox, unreadCount } from '../lib/inbox.js';
 
 // Группы меню: [заголовок, цвет плиток, [маршрут, иконка, название, описание]…]
 const GROUPS = [
@@ -15,6 +16,7 @@ const GROUPS = [
     ['calendar', 'list', 'Календарь платежей', 'Что спишется в ближайшие дни'],
   ]],
   ['Приложение', '#3d6cf2', [
+    ['inbox', 'bell', 'Что нового', 'Действия партнёра и напоминания'],
     ['settings', 'bulb', 'Настройки', 'Тема, валюта, категории, автоблокировка'],
     ['sync', 'cloud', 'Синхронизация', 'Общие данные на двух телефонах'],
     ['data', 'download', 'Данные', 'Резервная копия, экспорт'],
@@ -23,9 +25,10 @@ const GROUPS = [
 
 export default {
   render(s) {
+    const unread = unreadCount(loadInbox(s.viewer));
     return `<div class="top"><h1>Ещё</h1></div><div class="stack">
     <button class="card profile-row" data-go="profile"><span class="row" style="justify-content:flex-start;gap:12px">${av(s.viewer)}<span style="text-align:left"><b>${esc(nameOf(s.viewer))}</b><br><span class="muted sm">Мой профиль</span></span></span><span class="muted">${ic('right')}</span></button>
-    ${GROUPS.map(([h, color, items]) => `<h2 style="margin-bottom:0">${h}</h2><div class="list">${items.map(([r, i, t, d]) => `<button class="tx" data-go="${r}"><span class="tile" style="--h:${color}">${ic(i)}</span><div class="mid"><b>${t}</b><div class="sub">${d}</div></div><span class="muted">${ic('right')}</span></button>`).join('')}</div>`).join('')}
+    ${GROUPS.map(([h, color, items]) => `<h2 style="margin-bottom:0">${h}</h2><div class="list">${items.map(([r, i, t, d]) => `<button class="tx" data-go="${r}"><span class="tile" style="--h:${color}">${ic(i)}</span><div class="mid"><b>${t}</b><div class="sub">${d}</div></div>${r === 'inbox' && unread ? `<span class="mcount" aria-label="Непрочитанных: ${unread}">${unread}</span>` : ''}<span class="muted">${ic('right')}</span></button>`).join('')}</div>`).join('')}
     <button class="ghost" data-switch>Я — ${esc(nameOf(s.viewer === 'max' ? 'dinara' : 'max'))}</button>
     <p class="muted sm" style="text-align:center">Версия 0.4 · данные хранятся на этом телефоне</p></div>`;
   },

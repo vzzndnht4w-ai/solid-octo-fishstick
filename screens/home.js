@@ -2,6 +2,7 @@ import { PEOPLE, balancesByMethod, debt, stats, inMonth, other } from '../ledger
 import { ic, av, esc, nameOf, init, feminine, money as fm, monthSwitch, monthLabel, $ } from '../core.js';
 import widgets from '../widgets/index.js';
 import { debtAgeDays, plural } from '../lib/tools.js';
+import { load as loadInbox, unreadCount } from '../lib/inbox.js';
 
 const OLD_DEBT_DAYS = 14, OLD_DEBT_MIN = 100000;
 /** Мягкое напоминание, если долг висит дольше 14 дней и больше 1 000 ₽. */
@@ -13,6 +14,12 @@ export function debtNote(txs, d, today) {
   const age = days < 60 ? `${w} ${plural(w, 'неделю', 'недели', 'недель')}` : `около ${m} ${plural(m, 'месяца', 'месяцев', 'месяцев')}`;
   return `<p class="debtnote" role="note">Долг висит ${age} — самое время рассчитаться</p>`;
 }
+
+/** Колокольчик «Что нового» с числом непрочитанных. */
+const bell = (viewer) => {
+  const n = unreadCount(loadInbox(viewer));
+  return `<button class="bell" data-inbox aria-label="Что нового${n ? `: непрочитанных ${n}` : ''}">${ic('bell')}${n ? `<span class="bn" aria-hidden="true">${n > 99 ? '99+' : n}</span>` : ''}</button>`;
+};
 
 export default {
   render(s, a) {
@@ -36,11 +43,13 @@ export default {
     };
     const first = !all.length ? `<div class="tip"><span class="tile">${ic('bulb')}</span><div><b>Начните с дохода</b><br><span class="muted">Нажмите «+», выберите «Доход» и запишите зарплату. Потом пополните общий котёл переводом.</span></div></div>` : '';
     const extra = widgets.map((w) => w.render(s, a)).join('');
-    return `<div class="top"><div class="hello"><div class="muted">Привет,</div><b>${esc(nameOf(s.viewer))}</b></div><button class="av ${s.viewer}" data-switch aria-label="Сменить пользователя">${init(s.viewer)}</button></div>
+    return `<div class="top"><div class="hello"><div class="muted">Привет,</div><b>${esc(nameOf(s.viewer))}</b></div><div class="topr">${bell(s.viewer)}<button class="av ${s.viewer}" data-switch aria-label="Сменить пользователя">${init(s.viewer)}</button></div></div>
     ${monthSwitch(a.month)}<div class="stack">${first}${hero}<div class="card">${settle}</div>${extra}</div>
     <h2>За ${monthLabel(a.month).split(' ')[0].toLowerCase()}</h2><div class="people">${person('max')}${person('dinara')}</div>`;
   },
   bind(root, s, a) {
+    const bl = $('[data-inbox]', root);
+    if (bl) bl.onclick = () => a.go('inbox');
     const st = $('[data-settle]', root);
     if (st) st.onclick = () => {
       const d = debt(s.txs); if (!d) return;
