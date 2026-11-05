@@ -97,7 +97,7 @@
 .pc-weeks{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:6px}
 .pc-wk{position:relative;min-height:44px;border-radius:var(--r-sm);border:1.5px solid var(--line);background:var(--surface2);color:var(--muted);font-size:var(--t-sm);font-weight:700;padding:0;display:flex;align-items:center;justify-content:center}
 .pc-wk.now{border-color:var(--dinara);color:var(--ink)}
-.pc-wk.on{border-color:transparent;color:#fff}.pc-wk.on.max{background:var(--max)}.pc-wk.on.dinara{background:var(--dinara)}
+.pc-wk.on{border-color:transparent}.pc-wk.on.max{background:var(--max);color:var(--on-max)}.pc-wk.on.dinara{background:var(--dinara);color:var(--on-dinara)}
 .pc-wk svg.i{position:absolute;right:3px;top:3px;font-size:var(--t-xs);stroke-width:3}
 .pc-del{align-self:flex-start;color:var(--muted)!important;font-weight:600!important;font-size:13px!important;min-height:32px}
 .pc-tpls{display:flex;flex-direction:column;gap:8px;margin-top:14px}

@@ -4,12 +4,12 @@
   /* поверхности и текст (светлая тема) */
   --bg:#f2f5f4;--surface:#ffffff;--surface2:#f6f8f7;--ink:#13181a;--muted:#5a6762;--line:#dde4e1;
   /* люди и общее */
-  --max:#168a58;--max2:#3dbd7d;--dinara:#675c8a;--dinara2:#9a8fc0;--joint:#a8780f;--joint2:#d4a93f;--joint-t:#7a5508;
+  --max:#138050;--max2:#3dbd7d;--dinara:#675c8a;--dinara2:#9a8fc0;--joint:#a8780f;--joint2:#d4a93f;--joint-t:#7a5508;
   /* смысловые */
   --pos:#12794f;--neg:#c93a3a;
   /* акцент (кнопки, активные элементы) и герой-блок: плоский цвет и один градиент */
-  --accent:#168a58;--on-accent:#ffffff;--brand:#168a58;
-  --fmax:#168a58;--fdin:#675c8a;--on-max:#ffffff;--on-dinara:#ffffff;
+  --accent:#138050;--on-accent:#ffffff;--brand:#138050;
+  --on-max:#ffffff;--on-dinara:#ffffff;
   --on-joint:#241a00;
   --hero:linear-gradient(150deg,#1f8a5b 0%,#17734c 55%,#0f5c3d 100%);--on-hero:#eafff3;
   --shadow:0 1px 2px rgba(10,30,22,.06),0 10px 28px rgba(10,30,22,.08);
@@ -22,13 +22,13 @@
   --bg:#0c0b10;--surface:#15141b;--surface2:#1d1b25;--ink:#f2f0f6;--muted:#9692a3;--line:#292731;
   --max:#3dbd7d;--max2:#6fd9a0;--dinara:#d8d3e6;--dinara2:#b9b2d0;--joint:#d4a93f;--joint2:#e6c453;--joint-t:#d4a93f;
   --pos:#4cc98a;--neg:#ef6a6a;
-  --accent:#3dbd7d;--on-accent:#06210f;--brand:#3dbd7d;--fmax:#3dbd7d;--fdin:#d8d3e6;--on-max:#06210f;--on-dinara:#1a1726;
+  --accent:#3dbd7d;--on-accent:#06210f;--brand:#3dbd7d;--on-max:#06210f;--on-dinara:#1a1726;
   --shadow:0 1px 2px rgba(0,0,0,.45),0 10px 28px rgba(0,0,0,.4);color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0c0b10;--surface:#15141b;--surface2:#1d1b25;--ink:#f2f0f6;--muted:#9692a3;--line:#292731;
   --max:#3dbd7d;--max2:#6fd9a0;--dinara:#d8d3e6;--dinara2:#b9b2d0;--joint:#d4a93f;--joint2:#e6c453;--joint-t:#d4a93f;
   --pos:#4cc98a;--neg:#ef6a6a;
-  --accent:#3dbd7d;--on-accent:#06210f;--brand:#3dbd7d;--fmax:#3dbd7d;--fdin:#d8d3e6;--on-max:#06210f;--on-dinara:#1a1726;
+  --accent:#3dbd7d;--on-accent:#06210f;--brand:#3dbd7d;--on-max:#06210f;--on-dinara:#1a1726;
   --shadow:0 1px 2px rgba(0,0,0,.45),0 10px 28px rgba(0,0,0,.4);color-scheme:dark}
 :root[data-theme="light"]{color-scheme:light}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -106,13 +106,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;heigh
 .switch input{appearance:none;-webkit-appearance:none;width:50px;height:30px;padding:0;border:0;border-radius:var(--r-md);background:var(--line);position:relative;flex:none}
 .switch input::after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .switch input:checked{background:var(--pos)}.switch input:checked::after{left:23px}
-.primary{width:100%;background:var(--brand);color:#fff;border:0;border-radius:var(--r-md);padding:16px;font-size:var(--t-lg);font-weight:700;margin-top:22px;box-shadow:0 8px 20px rgba(236,79,126,.3)}
+.primary{width:100%;background:var(--brand);color:var(--on-accent);border:0;border-radius:var(--r-md);padding:16px;font-size:var(--t-lg);font-weight:700;margin-top:22px;box-shadow:0 8px 20px rgba(236,79,126,.3)}
 .ghost{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:12px 14px;font-weight:600;width:100%;text-align:left}
 .ghost.danger{color:var(--neg)}
 .error{color:var(--neg);font-size:var(--t-sm);margin-top:12px;font-weight:600}
 
 /* пусто и подсказки */
-.empty{text-align:center;padding:36px 20px}.empty .big{width:72px;height:72px;margin:0 auto 14px;border-radius:var(--r-lg);background:var(--brand);color:#fff;font-size:34px;display:flex;align-items:center;justify-content:center}
+.empty{text-align:center;padding:36px 20px}.empty .big{width:72px;height:72px;margin:0 auto 14px;border-radius:var(--r-lg);background:var(--brand);color:var(--on-accent);font-size:34px;display:flex;align-items:center;justify-content:center}
 .empty b{font-size:19px;display:block;margin-bottom:4px}
 .tip{display:flex;gap:12px;align-items:center;background:color-mix(in srgb,var(--joint) 14%,var(--surface));border-radius:var(--r-md);padding:12px 14px;font-size:var(--t-sm)}
 .tip .tile{--h:var(--joint)}
