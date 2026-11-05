@@ -26,6 +26,10 @@
 
 Скилл `prompt-master` (MIT, https://github.com/nidhinjs/prompt-master, только SKILL.md и references/templates.md): «напиши / улучши промпт для Midjourney, Cursor, ChatGPT, Claude Code…». Срабатывает только на явную просьбу про промпт.
 
+Скиллы `hl-verify` и `hl-debug` (MIT, https://github.com/HugoLopes45/hl-skills, только SKILL.md): `hl-verify` — перед словами «готово» сверяет каждое требование с реальным результатом команд (пройдено / провалено / не проверено); `hl-debug` — сначала быстрый способ воспроизвести ошибку, потом опыты, исправление только через падающий тест.
+
+Рассмотрено и не взято: `senior-engineering-partner` (92 КБ, другой стек, скрипты), `apple-design-skill` (123 страницы текста Apple в репозитории: чужие авторские права), `ux-ui-agent-skills` (npm-пакет, 52 проверки с браузером, пересекается с `impeccable`), остальные скиллы `hl-skills` (дублируют `simplify` и `code-review`).
+
 Скиллы: `ecc-design-system` (аудит токенов цвета и отступов), `ecc-e2e-testing` (устойчивые сквозные тесты на Playwright), `ecc-ai-regression-testing` (против слепых зон, когда один и тот же ИИ пишет и проверяет код).
 
 ## Не ставили намеренно
