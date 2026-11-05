@@ -1,0 +1,66 @@
+/* polish: дизайн-аудит. Подключается последним и выравнивает то, что разные авторы сделали по-своему:
+   контраст (WCAG AA), цели касания 44px, iOS (клавиатура, безопасные зоны, зум полей), переполнение на 375px. */
+
+/* ---- контраст: белый текст на цветных заливках только на тёмных оттенках ---- */
+.av.max,.chip.on.max,.fchip.on.max,.pc-wk.on.max{background:var(--fmax)}
+.av.dinara,.chip.on.dinara,.fchip.on.dinara,.pc-wk.on.dinara{background:var(--fdin)}
+.max .mini i,.duo i:first-child,.pc-split .max{background:linear-gradient(90deg,var(--max),var(--max2))}
+.tag.joint{--c:var(--joint-t)}
+.tag{background:color-mix(in srgb,var(--c,var(--muted)) 11%,var(--surface))}
+.lvl-warn .cap,.wb.lvl-warn .cap{color:var(--joint-t)}
+.pc-streak{color:var(--joint-t)}
+.hero .lab{opacity:.9}
+
+/* ---- глобально: iOS и доступность ---- */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior-y:contain}
+main{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+nav{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+/* поля ввода никогда не меньше 16px: иначе Safari увеличивает страницу при фокусе */
+input,textarea,select,.dout textarea,#rText{font-size:max(16px,1em)}
+.dout textarea,#rText{font-size:16px;line-height:1.35}
+/* когда открыта клавиатура, плавающее меню прячем: оно не прыгает и не закрывает поле */
+body:has(:is(input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=date]):not([type=file]),textarea):focus) nav{display:none}
+body:has(:is(input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=date]):not([type=file]),textarea):focus) main{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+.toast{bottom:calc(104px + env(safe-area-inset-bottom));width:max-content}
+a:focus-visible,summary:focus-visible,select:focus-visible,textarea:focus-visible,[role=button]:focus-visible,.chip:focus-visible,.tx:focus-visible{outline:3px solid color-mix(in srgb,var(--max) 60%,transparent);outline-offset:2px}
+
+/* ---- цели касания ≥ 44px ---- */
+.back{width:44px;height:44px;flex:none}
+.top>button.av{width:44px;height:44px;font-size:17px}
+.linkbtn,.lnk{min-height:44px;padding-top:0;padding-bottom:0}
+.whead{margin-top:-10px;margin-bottom:-6px}
+.fchip{min-height:44px;padding:8px 14px}
+.seg button{min-height:44px}
+.iconbtn{position:relative}
+.iconbtn::after{content:"";position:absolute;inset:-5px}
+.pc-del{min-height:44px!important}
+.vz-table summary{min-height:44px;display:flex;align-items:center}
+.sm-btn,.ghost{min-height:44px}
+.flab{width:84px}
+
+/* ---- переполнение на узком экране: суммы сжимаются, а не вылезают ---- */
+.hero .sum{font-size:clamp(30px,10.5vw,44px);white-space:nowrap}
+.split b{font-size:clamp(14px,4.4vw,16px);white-space:nowrap}
+.split span{min-width:0}
+.kv b{font-size:clamp(14px,4.5vw,17px)}
+.pace b{font-size:clamp(15px,4.6vw,22px);white-space:nowrap}
+.amount input{max-width:100%;font-size:clamp(30px,10.5vw,46px)}
+.sheet .big{font-size:clamp(26px,9vw,34px);overflow-wrap:anywhere}
+.tx .amt{font-size:clamp(14px,4.4vw,16px)}
+.top.sub{align-items:center}
+.top.sub h1{font-size:24px;line-height:1.15;min-width:0;text-wrap:balance}
+.hello b{overflow-wrap:anywhere}
+.settle .t b{overflow-wrap:anywhere}
+
+/* ---- главная: личные итоги сразу под котлом, виджеты ниже ---- */
+.people.first{margin-top:0}
+.wquick .qnote{display:none}
+
+/* ---- пользовательские окна ---- */
+.sheet .kvs .row b{text-align:right;min-width:0;overflow-wrap:anywhere}
+
+/* ---- движение: уважаем настройку «уменьшить движение» ---- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .card:active,.tx:active,.chip:active,.opt:active,.catb:active,.primary:active,.ghost:active{transform:none}
+}

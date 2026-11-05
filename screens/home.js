@@ -37,8 +37,8 @@ export default {
     const first = !all.length ? `<div class="tip"><span class="tile">${ic('bulb')}</span><div><b>Начните с дохода</b><br><span class="muted">Нажмите «+», выберите «Доход» и запишите зарплату. Потом пополните общий котёл переводом.</span></div></div>` : '';
     const extra = widgets.map((w) => w.render(s, a)).join('');
     return `<div class="top"><div class="hello"><div class="muted">Привет,</div><b>${esc(nameOf(s.viewer))}</b></div><button class="av ${s.viewer}" data-switch aria-label="Сменить пользователя">${init(s.viewer)}</button></div>
-    ${monthSwitch(a.month)}<div class="stack">${first}${hero}<div class="card">${settle}</div>${extra}</div>
-    <h2>За ${monthLabel(a.month).split(' ')[0].toLowerCase()}</h2><div class="people">${person('max')}${person('dinara')}</div>`;
+    ${monthSwitch(a.month)}<div class="stack">${first}${hero}<div class="card">${settle}</div>
+    <div><h2 style="margin-top:14px">За ${monthLabel(a.month).split(' ')[0].toLowerCase()}</h2><div class="people first">${person('max')}${person('dinara')}</div></div>${extra}</div>`;
   },
   bind(root, s, a) {
     const st = $('[data-settle]', root);
