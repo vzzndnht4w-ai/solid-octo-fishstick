@@ -24,6 +24,8 @@
 
 Скилл `impeccable`: «покритикуй интерфейс», «отполируй экран», «подтяни типографику / отступы / тексты» (команды critique, polish, typeset, layout, clarify, onboard, harden, adapt).
 
+Скилл `prompt-master` (MIT, https://github.com/nidhinjs/prompt-master, только SKILL.md и references/templates.md): «напиши / улучши промпт для Midjourney, Cursor, ChatGPT, Claude Code…». Срабатывает только на явную просьбу про промпт.
+
 Скиллы: `ecc-design-system` (аудит токенов цвета и отступов), `ecc-e2e-testing` (устойчивые сквозные тесты на Playwright), `ecc-ai-regression-testing` (против слепых зон, когда один и тот же ИИ пишет и проверяет код).
 
 ## Не ставили намеренно
