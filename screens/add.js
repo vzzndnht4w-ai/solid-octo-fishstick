@@ -57,7 +57,7 @@ export default {
     if (!draft) draft = newDraft(s);
     const dr = draft;
     const cats = (kind, base) => [...base, ...(s.categories[kind] || [])];
-    let h = `<div class="addv"><div class="top"><h1>${dr.editId ? 'Изменить' : 'Новая операция'}</h1>${dr.editId ? `<button class="av joint" data-cancel aria-label="Отмена">${ic('x')}</button>` : ''}</div>
+    let h = `<div class="addv"><div class="top"><h1>${dr.editId ? 'Изменить' : 'Новая операция'}</h1>${dr.editId ? `<button class="av joint" data-cancel aria-label="Отмена">${ic('x')}</button>` : `<button class="ib scanbtn" data-scan aria-label="Сканировать QR чека">${ic('qr')}</button>`}</div>
     ${slideSeg('type', [['expense', 'Расход'], ['income', 'Доход'], ['transfer', 'Перевод']], dr.type)}
     <div class="amount"><input id="f-amount" inputmode="decimal" placeholder="0" value="${esc(dr.amount)}" aria-label="Сумма"><span>${esc(s.settings.currency)}</span></div>`;
     if (dr.type !== 'transfer') h += `<label class="l">Кто</label>${personChips('person', dr.person)}`;
@@ -137,6 +137,7 @@ export default {
     const amt = $('#f-amount'); if (amt) amt.oninput = updatePreview;
     updatePreview();
     const cn = $('[data-cancel]', root); if (cn) cn.onclick = () => { draft = null; a.go('feed'); };
+    const sc = $('[data-scan]', root); if (sc) sc.onclick = () => { readForm(); a.go('scan'); };
     const sv = $('#f-save', root);
     if (sv) sv.onclick = () => {
       readForm();
@@ -148,7 +149,9 @@ export default {
         tx = { ...tx, person: draft.person, scope: draft.scope, category: draft.category, method: draft.method, paidFrom: draft.scope === 'personal' ? draft.person : draft.paidFrom };
         if (draft.scope === 'shared') tx.shareMax = draft.shareMax;
       } else tx = { ...tx, from: draft.from, to: draft.to, fromMethod: draft.fromMethod, toMethod: draft.toMethod };
+      if (draft.receipt) tx.receipt = draft.receipt;   // номер чека из QR: тот же чек второй раз не добавить
       const errs = validate(tx);
+      if (draft.receipt && s.txs.some((t) => t.receipt === draft.receipt && t.id !== draft.editId)) errs.push('Этот чек уже добавлен');
       if (errs.length) { error = errs[0]; a.render(); return; }
       if (draft.editId) a.store.update(draft.editId, tx); else a.store.add(tx);
       a.setMonth(tx.date.slice(0, 7));
