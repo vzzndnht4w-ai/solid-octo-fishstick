@@ -1,9 +1,9 @@
 // Накопления: наличные, карты, счета, вклады, инвестиции. Отдельный учёт — не влияет на баланс и долги.
 import '../lib/savings-icons.js';
-import { parseMoney } from '../ledger.js';
+import { parseMoney, validate, balances, balancesByMethod } from '../ledger.js';
 import { ic, esc, nameOf, av, money as fm, subHeader, MONTHS_GEN, $, $$ } from '../core.js';
 import { openSheet, chips, bindChips, amountField, kopToInput } from '../planui.js';
-import { KINDS, KIND_ORDER, kindOf, isMasked, totalFor, byOwner, groupItems, yearlyYield, daysLeft, parseRate, applyOp, withPoint, chartSeries } from '../lib/savings.js';
+import { KINDS, KIND_ORDER, kindOf, isMasked, totalFor, byOwner, groupItems, yearlyYield, daysLeft, parseRate, applyOp, withPoint, chartSeries, balanceOf, linkedTxs, savedFromWallets, checkMove } from '../lib/savings.js';
 
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
 const MODE_KEY = 'we-savings-mode';
@@ -16,7 +16,7 @@ const ownerChips = (cur) => chips('owner', ['max', 'dinara', 'joint'].map((p) =>
 const kindIcon = (k) => `<span class="tile" style="--h:${kindOf(k).color}">${ic(kindOf(k).icon)}</span>`;
 
 /** Подпись вклада: «под 7,5% · до 12 мар» и расчёт годовой доходности. */
-function depositLine(it, today) {
+function depositLine(it, today, txs) {
   if (it.kind !== 'deposit') return '';
   const parts = [];
   if (Number(it.rate) > 0) parts.push(`под ${String(it.rate).replace('.', ',')}%`);
@@ -24,20 +24,24 @@ function depositLine(it, today) {
     const d = daysLeft(it.until, today);
     parts.push(d !== null && d < 0 ? `срок вышел ${untilShort(it.until)}` : `до ${untilShort(it.until)}`);
   }
-  const y = yearlyYield(it);
+  const y = yearlyYield(it, txs);
   return (parts.length ? `<div class="svsub">${esc(parts.join(' · '))}</div>` : '') + (y ? `<div class="svsub">≈ ${fm(y)} за год</div>` : '');
 }
+
+const walletName = (w) => (w === 'joint' ? 'Общий баланс' : nameOf(w));
+const signed = (n) => `${n > 0 ? '+' : '−'}${fm(Math.abs(n))}`;
+const flowLine = (it, txs) => { const f = savedFromWallets(it, txs); return linkedTxs(it, txs, 1).length ? `<div class="svsub">Отложено с кошельков: ${fm(f)}</div>` : ''; };
 
 function tileHtml(it, s, today) {
   if (isMasked(it, s.viewer)) {
     return `<div class="svitem masked">${kindIcon(it.kind)}<div class="g"><b>${esc(it.name)}</b><div class="svsub">${esc(kindOf(it.kind).label)}</div></div><span class="svamt hid">${ic('lock')} Скрыто</span></div>`;
   }
-  return `<button type="button" class="svitem" data-open="${esc(it.id)}" aria-label="${esc(`${it.name}, ${fm(it.amount)}. Открыть действия`)}">${kindIcon(it.kind)}<div class="g"><b>${esc(it.name)}</b>
-    <div class="svsub">${esc(kindOf(it.kind).label)}${mode === 'kinds' ? ` · ${esc(ownerName(it.owner))}` : ''}${it.hidden ? ` · скрыто от партнёра` : ''}</div>${depositLine(it, today)}</div><span class="svamt">${fm(it.amount)}</span></button>`;
+  return `<button type="button" class="svitem" data-open="${esc(it.id)}" aria-label="${esc(`${it.name}, ${fm(balanceOf(it, s.txs))}. Открыть действия`)}">${kindIcon(it.kind)}<div class="g"><b>${esc(it.name)}</b>
+    <div class="svsub">${esc(kindOf(it.kind).label)}${mode === 'kinds' ? ` · ${esc(ownerName(it.owner))}` : ''}${it.hidden ? ` · скрыто от партнёра` : ''}</div>${depositLine(it, today, s.txs)}${flowLine(it, s.txs)}</div><span class="svamt">${fm(balanceOf(it, s.txs))}</span></button>`;
 }
 
 function chartHtml(items, s) {
-  const pts = chartSeries(items, s.viewer, 12);
+  const pts = chartSeries(items, s.viewer, s.txs, 12);
   if (!pts.length) return '';
   const W = 320, H = 110, px = 8, top = 10, bot = 22;
   const vals = pts.map((p) => p.amount);
@@ -59,12 +63,20 @@ function chartHtml(items, s) {
 }
 
 function summaryHtml(items, s) {
-  const total = totalFor(items, s.viewer), o = byOwner(items, s.viewer);
+  const total = totalFor(items, s.viewer, s.txs), o = byOwner(items, s.viewer, s.txs);
   const parts = [['max', 'var(--max)'], ['dinara', 'var(--dinara)'], ['joint', 'var(--joint)']];
   const bar = total > 0 ? parts.filter(([k]) => o[k] > 0).map(([k, c]) => `<i style="flex:${o[k]};background:${c}"></i>`).join('') : '';
   const lab = parts.map(([k, c]) => `<div><span class="dot" style="background:${c}"></span><span class="muted sm">${esc(ownerName(k))}</span><b>${fm(o[k])}</b></div>`).join('');
   return `<section class="card svsum"><div class="muted sm">Всего накоплений</div><div class="svtotal">${fm(total)}</div>
     <div class="svbar" role="img" aria-label="${esc(parts.map(([k]) => `${ownerName(k)} ${fm(o[k])}`).join(', '))}">${bar}</div><div class="svlegend3">${lab}</div></section>`;
+}
+
+/** «Всего у вас»: кошельки (включая общий баланс) + накопления. */
+function overallHtml(items, s) {
+  const w = balances(s.txs), wallets = w.max + w.dinara + w.joint, sav = totalFor(items, s.viewer, s.txs);
+  return `<section class="card svall" aria-label="Всего у вас"><div class="muted sm">Всего у вас</div>
+    <dl class="svrows"><div><dt>На кошельках<small>Максим, Динара и общий баланс (он уже здесь)</small></dt><dd>${fm(wallets)}</dd></div>
+    <div><dt>В накоплениях</dt><dd>${fm(sav)}</dd></div><div class="tot"><dt>Всего</dt><dd>${fm(wallets + sav)}</dd></div></dl></section>`;
 }
 
 // ---------- шторки ----------
@@ -80,7 +92,7 @@ const head = (title, sub = '') => `<div class="row sheethead"><div><h1 style="fo
 function edit(it0, a, kind0) {
   const s = a.store.get(), isNew = !it0;
   const kind = it0?.kind || kind0 || 'cash';
-  const f = { kind, name: it0?.name ?? kindOf(kind).label, nameTouched: !isNew, owner: it0?.owner || s.viewer || 'max', amount: kopToInput(it0?.amount), rate: it0?.rate != null ? String(it0.rate).replace('.', ',') : '', until: it0?.until || '', note: it0?.note || '', hidden: !!it0?.hidden };
+  const f = { kind, name: it0?.name ?? kindOf(kind).label, nameTouched: !isNew, owner: it0?.owner || s.viewer || 'max', amount: kopToInput(it0 ? balanceOf(it0, s.txs) : 0), rate: it0?.rate != null ? String(it0.rate).replace('.', ',') : '', until: it0?.until || '', note: it0?.note || '', hidden: !!it0?.hidden };
   let err = '', confirm = false;
   const sh = openSheet('');
   sheetKeys(sh);
@@ -124,7 +136,7 @@ function edit(it0, a, kind0) {
       if (f.kind === 'deposit' && f.until) base.until = f.until; else delete base.until;
       if (!base.note) delete base.note;
       if (f.hidden && f.owner !== 'joint') base.hidden = true; else delete base.hidden;
-      const item = isNew || !it0 || it0.amount !== amount ? withPoint(base, amount) : base;
+      const item = isNew || !it0 || balanceOf(it0, a.store.get().txs) !== amount ? withPoint(base, amount) : base;
       sh.close();
       a.store.mutate((st) => { st.savings = isNew ? [...st.savings, item] : st.savings.map((x) => (x.id === item.id ? item : x)); });
       a.toast(isNew ? 'Счёт добавлен' : 'Сохранено');
@@ -138,8 +150,8 @@ function edit(it0, a, kind0) {
 }
 
 const OPS = {
-  in: { title: 'Пополнить', btn: 'Пополнить', hint: 'Сколько добавили на счёт', icon: 'plus' },
-  out: { title: 'Снять', btn: 'Снять', hint: 'Сколько сняли со счёта', icon: 'sv-minus' },
+  in: { title: 'Изменить остаток: добавить', btn: 'Добавить', hint: 'Сколько пришло извне (проценты, поступление)', icon: 'plus' },
+  out: { title: 'Изменить остаток: убрать', btn: 'Убрать', hint: 'Сколько ушло не на кошелёк', icon: 'sv-minus' },
   set: { title: 'Задать остаток', btn: 'Сохранить остаток', hint: 'Новый остаток — например, сверка с банком', icon: 'sv-pencil-eq' },
 };
 
@@ -150,8 +162,8 @@ function operate(id, op, a) {
   let err = '';
   const sh = openSheet('');
   sheetKeys(sh);
-  const draw = (val = op === 'set' ? kopToInput(it.amount) : '') => {
-    sh.el.innerHTML = `<div class="grab"></div>${head(cfg.title, `<div class="muted sm">${esc(it.name)} · сейчас ${fm(it.amount)}</div>`)}
+  const draw = (val = op === 'set' ? kopToInput(balanceOf(it, s.txs)) : '') => {
+    sh.el.innerHTML = `<div class="grab"></div>${head(cfg.title, `<div class="muted sm">${esc(it.name)} · сейчас ${fm(balanceOf(it, s.txs))}</div>`)}
       <label class="l" for="sv-op">${esc(cfg.hint)}</label>${amountField('sv-op', val, s.settings.currency)}
       ${err ? `<div class="error" role="alert">${esc(err)}</div>` : ''}<button class="primary" id="sv-go">${esc(cfg.btn)}</button>`;
     $('[data-x]', sh.el).onclick = sh.close;
@@ -159,10 +171,10 @@ function operate(id, op, a) {
     $('#sv-go', sh.el).onclick = () => {
       const raw = inp.value.trim();
       const v = raw === '' ? null : parseMoney(raw) ?? (/^0+([.,]0*)?$/.test(raw) ? 0 : null);
-      const r = applyOp(it, op, v);
+      const r = applyOp(it, op, v, Date.now(), a.store.get().txs);
       if (r.error) { err = r.error; draw(inp.value); return; }
       sh.close();
-      a.store.mutate((st) => { st.savings = st.savings.map((x) => (x.id === id ? applyOp(x, op, v).item || x : x)); });
+      a.store.mutate((st) => { st.savings = st.savings.map((x) => (x.id === id ? applyOp(x, op, v, Date.now(), st.txs).item || x : x)); });
       a.toast(`${it.name}: ${fm(r.item.amount)}`);
     };
     inp.onkeydown = (e) => { if (e.key === 'Enter') $('#sv-go', sh.el).click(); };
@@ -171,6 +183,48 @@ function operate(id, op, a) {
   draw();
 }
 
+function move(id, dir, a) {
+  const it0 = a.store.get().savings.find((x) => x.id === id); if (!it0) return;
+  const f = { wallet: a.store.get().viewer || 'max', method: 'card' };
+  let err = '';
+  const sh = openSheet('');
+  sheetKeys(sh);
+  const draw = (val = '') => {
+    const s = a.store.get(), it = s.savings.find((x) => x.id === id) || it0;
+    const bal = balanceOf(it, s.txs), free = balancesByMethod(s.txs)[f.wallet][f.method];
+    sh.el.innerHTML = `<div class="grab"></div>${head(dir > 0 ? 'Отложить с кошелька' : 'Вернуть на кошелёк', `<div class="muted sm">${esc(it.name)} · сейчас ${fm(bal)}</div>`)}
+      <label class="l" for="sv-mv">Сумма</label>${amountField('sv-mv', val, s.settings.currency)}
+      <label class="l">${dir > 0 ? 'С какого кошелька' : 'На какой кошелёк'}</label>${chips('wallet', ['max', 'dinara', 'joint'].map((w) => [w, `${w === 'joint' ? `<span class="av joint sm">${ic('users')}</span>` : av(w, 'sm')}${esc(walletName(w))}`]), f.wallet, (v) => v)}
+      <label class="l">Способ</label>${chips('method', [['card', `${ic('card')}Карта`], ['cash', `${ic('cash')}Наличные`]], f.method)}
+      <div class="preview" id="sv-hint">${dir > 0 ? `Свободно на кошельке: <b>${fm(free)}</b>` : `Можно вернуть до: <b>${fm(bal)}</b>`}</div>
+      ${err ? `<div class="error" role="alert">${esc(err)}</div>` : ''}<button class="primary" id="sv-go">${dir > 0 ? 'Отложить' : 'Вернуть'}</button>`;
+    $('[data-x]', sh.el).onclick = sh.close;
+    const inp = $('#sv-mv', sh.el);
+    bindChips(sh.el, (n, v) => { f[n] = v; err = ''; draw(inp.value); });
+    $('#sv-go', sh.el).onclick = () => {
+      const v = parseMoney(inp.value);
+      const e = checkMove(v, dir, dir > 0 ? free : bal);
+      if (e) { err = e; draw(inp.value); setTimeout(() => $('#sv-mv', sh.el)?.focus(), 30); return; }
+      const tx = { id: uid(), type: 'saving', savingId: id, wallet: f.wallet, method: f.method, person: s.viewer || 'max', amount: dir * v, date: a.today(), note: '', hidden: false };
+      const errs = validate(tx);
+      if (errs.length) { err = errs[0]; draw(inp.value); return; }
+      sh.close();
+      a.store.add(tx);
+      a.toast(`${dir > 0 ? 'Отложено' : 'Возвращено'} ${fm(v)}`, { label: 'Отменить', fn: () => a.store.remove(tx.id) });
+    };
+    inp.onkeydown = (e) => { if (e.key === 'Enter') $('#sv-go', sh.el).click(); };
+    setTimeout(() => inp.focus(), 60);
+  };
+  draw();
+}
+
+const linkedHtml = (it, txs) => {
+  const list = linkedTxs(it, txs, 3);
+  if (!list.length) return '';
+  const rows = list.map((t) => `<div class="row sm"><span class="muted">${esc(shortDate(new Date(t.date + 'T12:00:00').getTime()))} · ${esc(walletName(t.wallet))}, ${t.method === 'cash' ? 'наличные' : 'карта'}</span><b>${signed(t.amount)}</b></div>`).join('');
+  return `<div class="svsub svflow">Отложено с кошельков: <b>${fm(savedFromWallets(it, txs))}</b></div><label class="l">Последние операции с кошельков</label><div class="card svhist">${rows}</div>`;
+};
+
 function detail(id, a) {
   const it = a.store.get().savings.find((x) => x.id === id); if (!it) return;
   const s = a.store.get(), today = a.today();
@@ -178,26 +232,29 @@ function detail(id, a) {
   sheetKeys(sh);
   const hist = (it.history || []).slice(-3).reverse().map((h) => `<div class="row sm"><span class="muted">${esc(shortDate(h.at))}</span><b>${fm(h.amount)}</b></div>`).join('');
   sh.el.innerHTML = `<div class="grab"></div>${head(it.name, `<div class="muted sm">${esc(kindOf(it.kind).label)} · ${esc(ownerName(it.owner))}</div>`)}
-    <div class="svdetail-amt">${fm(it.amount)}</div>${depositLine(it, today)}${it.note ? `<div class="preview">${esc(it.note)}</div>` : ''}
-    <div class="svacts"><button class="ghost" data-op="in">${ic('plus')} Пополнить</button><button class="ghost" data-op="out">${ic('sv-minus')} Снять</button><button class="ghost" data-op="set">${ic('sv-pencil-eq')} Задать остаток</button><button class="ghost" data-op="edit">${ic('edit')} Изменить</button></div>
-    ${hist ? `<label class="l">Последние изменения</label><div class="card svhist">${hist}</div>` : ''}`;
+    <div class="svdetail-amt">${fm(balanceOf(it, s.txs))}</div>${depositLine(it, today, s.txs)}${it.note ? `<div class="preview">${esc(it.note)}</div>` : ''}
+    <div class="svacts"><button class="ghost" data-op="mv+">${ic('plus')} Отложить с кошелька</button><button class="ghost" data-op="mv-">${ic('sv-minus')} Вернуть на кошелёк</button><button class="ghost" data-op="set">${ic('sv-pencil-eq')} Задать остаток</button><button class="ghost" data-op="in">${ic('plus')} Изменить остаток</button><button class="ghost" data-op="edit">${ic('edit')} Изменить счёт</button></div>
+    ${linkedHtml(it, s.txs)}${hist ? `<label class="l">Ручные изменения остатка</label><div class="card svhist">${hist}</div>` : ''}`;
   $('[data-x]', sh.el).onclick = sh.close;
-  $$('[data-op]', sh.el).forEach((b) => (b.onclick = () => { sh.close(); b.dataset.op === 'edit' ? edit(it, a) : operate(id, b.dataset.op, a); }));
+  $$('[data-op]', sh.el).forEach((b) => (b.onclick = () => {
+    const o = b.dataset.op; sh.close();
+    if (o === 'edit') edit(it, a); else if (o === 'mv+') move(id, 1, a); else if (o === 'mv-') move(id, -1, a); else operate(id, o, a);
+  }));
   setTimeout(() => $('[data-op]', sh.el)?.focus(), 60);
 }
 
 export default {
   render(s, a) {
     const items = s.savings || [], today = a.today();
-    const note = '<p class="svnote muted sm">Накопления не влияют на баланс и долги — это отдельный учёт того, что у вас уже есть.</p>';
+    const note = '<p class="svnote muted sm">Накопления не влияют на баланс и долги. Кошелёк меняется, только когда вы откладываете на счёт или возвращаете деньги обратно.</p>';
     if (!items.length) {
       return subHeader('Накопления') + `<div class="empty card" style="margin-top:16px"><div class="big">${ic('bank')}</div><b>Что у вас уже накоплено?</b>
         <span class="muted">Наличные дома, деньги на карте или счёте, вклад — запишите, и вы всегда будете видеть общую картину.</span>
         <div class="svquick">${['cash', 'card', 'account', 'deposit'].map((k) => `<button type="button" class="chip" data-new="${k}">${ic(KINDS[k].icon)}${esc(KINDS[k].label)}</button>`).join('')}</div></div>${note}`;
     }
-    const groups = groupItems(items, mode, s.viewer);
+    const groups = groupItems(items, mode, s.viewer, s.txs);
     const gh = groups.map((g) => `<section class="svgroup" aria-label="${esc(mode === 'kinds' ? KINDS[g.key].label : ownerName(g.key))}"><div class="day"><span>${mode === 'kinds' ? esc(KINDS[g.key].label) : esc(ownerName(g.key))}</span><span>${fm(g.total)}</span></div><div class="list">${g.items.map((it) => tileHtml(it, s, today)).join('')}</div></section>`).join('');
-    return subHeader('Накопления') + `<button class="primary addbtn" data-new="">${ic('plus')} Добавить счёт</button><div class="stack" style="margin-top:16px">${summaryHtml(items, s)}${chartHtml(items, s)}
+    return subHeader('Накопления') + `<button class="primary addbtn" data-new="">${ic('plus')} Добавить счёт</button><div class="stack" style="margin-top:16px">${overallHtml(items, s)}${summaryHtml(items, s)}${chartHtml(items, s)}
       <div class="seg" role="group" aria-label="Группировка"><button type="button" data-mode="people" class="${mode === 'people' ? 'on' : ''}" aria-pressed="${mode === 'people'}">По людям</button><button type="button" data-mode="kinds" class="${mode === 'kinds' ? 'on' : ''}" aria-pressed="${mode === 'kinds'}">По типам</button></div></div>${gh}${note}`;
   },
   bind(root, s, a) {
