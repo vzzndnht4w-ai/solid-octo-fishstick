@@ -17,13 +17,13 @@ main{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env
 nav{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
 /* поля ввода никогда не меньше 16px: иначе Safari увеличивает страницу при фокусе */
 input,textarea,select,.dout textarea,#rText{font-size:max(16px,1em)}
-.dout textarea,#rText{font-size:16px;line-height:1.35}
+.dout textarea,#rText{font-size:var(--t-md);line-height:1.35}
 .toast{bottom:calc(104px + env(safe-area-inset-bottom));width:max-content}
 a:focus-visible,summary:focus-visible,select:focus-visible,textarea:focus-visible,[role=button]:focus-visible,.chip:focus-visible,.tx:focus-visible{outline:3px solid color-mix(in srgb,var(--max) 60%,transparent);outline-offset:2px}
 
 /* ---- цели касания ≥ 44px ---- */
 .back{width:44px;height:44px;flex:none}
-.top>button.av{width:44px;height:44px;font-size:17px}
+.top>button.av{width:44px;height:44px;font-size:var(--t-lg)}
 .linkbtn,.lnk{min-height:44px;padding-top:0;padding-bottom:0}
 .whead{margin-top:-10px;margin-bottom:-6px}
 .fchip{min-height:44px;padding:8px 14px}
@@ -74,5 +74,73 @@ a:focus-visible,summary:focus-visible,select:focus-visible,textarea:focus-visibl
 .dock .plus{box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .duo i:first-child{background:var(--max)}.duo i:last-child{background:var(--dinara)}
 .max .mini i{background:var(--max)}.dinara .mini i{background:var(--dinara)}
-h2{text-transform:none;letter-spacing:0;font-size:17px;font-weight:650;color:var(--ink);margin:28px 4px 10px}
+h2{text-transform:none;letter-spacing:0;font-size:var(--t-lg);font-weight:650;color:var(--ink);margin:28px 4px 10px}
 input[type=range]{height:28px;padding:10px 0;background-clip:content-box}
+
+/* ===== спокойный интерфейс: иерархия, плоские секции, токены, плоские заливки ===== */
+:root{--fmax:#2f5ce0;--fdin:#c72a5c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#8b8cf8;--on-accent:#0e0c16}}
+:root[data-theme="dark"]{--accent:#8b8cf8;--on-accent:#0e0c16}
+input,button,.amt,.sum,.kv b,.tg-p b{font-variant-numeric:tabular-nums}
+.tx .amt,.kv b,.tg-p b,.svamt,.rsum b,.wg .gpct,.gsum b,.up .upamt{font-weight:700}
+
+/* тень только у нижнего меню, шторки и тёмного баланса; у карточек — тонкая рамка */
+.card,.list,.tpl-card,.month,.back{box-shadow:none;border:1px solid var(--line)}
+.seg button.on{box-shadow:0 0 0 1px var(--line)}
+.sheet{box-shadow:0 -10px 34px rgba(10,6,24,.28)}
+
+/* главная: карточки только у баланса и долга, остальное — плоские секции */
+.sec{border-top:1px solid var(--line);padding-top:16px;margin-top:10px;display:flex;flex-direction:column;gap:12px}
+.sec.insights{gap:10px;padding-top:18px}
+.sec.insights .ins{padding-left:0;padding-right:0}
+.sec .whead{margin-top:-10px;margin-bottom:-6px}
+.whead>b{font-size:var(--t-lg);font-weight:650}
+.sec .qhint{margin:0}
+.stack>div:has(>.people){border-top:1px solid var(--line);margin-top:10px}
+.people{gap:0}
+.pcard{background:none;box-shadow:none;border:0;border-radius:0;padding:4px 14px}
+.pcard:first-child{padding-left:0}
+.pcard:last-child{padding-right:0;border-left:1px solid var(--line)}
+.wallet{display:block;font-size:var(--t-xs);color:var(--muted);line-height:1.4}
+
+/* «Справедливость»: две колонки с тонкой линией вместо карточек в карточке */
+.tg-pair{gap:0}
+.tg-p{background:none;border-radius:0;padding:0 14px}
+.tg-p:first-child{padding-left:0}
+.tg-p+.tg-p{border-left:1px solid var(--line)}
+.tg-lead{font-weight:600;font-size:var(--t-lg)}
+.tg-reacted{background:none;border:1px solid var(--line)}
+.tg-track{background:var(--line)}
+.tg-fill.max{background:var(--max)}.tg-fill.dinara{background:var(--dinara)}
+.tg-dot{box-shadow:none}
+
+/* Итоги: три строки в одной карточке */
+.cmp3{padding:4px 16px}
+.cmp3 .card.cmp{background:none;border:0;border-radius:0;padding:12px 0}
+.cmp3 .card.cmp+.card.cmp{border-top:1px solid var(--line)}
+
+/* форма добавления */
+.amount{padding:18px 4px 6px;justify-content:center}
+.amount input{font:700 44px/1.1 var(--font);font-size:44px;font-variant-numeric:tabular-nums}
+.amount input::placeholder{color:var(--muted);opacity:1}
+.amount span{font-size:var(--t-xl);font-weight:600;color:var(--muted)}
+.catb{border-color:var(--line)}
+.catb .tile{background:none;color:var(--muted)}
+.catb.on .tile{background:color-mix(in srgb,var(--h) 15%,var(--surface));color:var(--h)}
+.scopehint{margin:8px 4px 0;line-height:1.35}
+.savebar{position:sticky;bottom:calc(88px + env(safe-area-inset-bottom));z-index:5;background:var(--bg);padding:10px 0 8px;margin-top:14px}
+.savebar .primary{margin-top:0}
+
+/* лента: служебные пометки приглушены, цвет — для долгов, перерасхода и доходов */
+.tx .sub .tag.joint{background:none;color:var(--muted);padding:0;font-weight:500}
+
+/* градиенты только у баланса и «+» в меню; кнопки и активные чипы — плоский акцент */
+.primary,.tg-act,.empty .big{background:var(--accent);color:var(--on-accent);box-shadow:none}
+.chip.on,.fchip.on{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.chip.on.max,.fchip.on.max{background:var(--fmax);color:#fff}
+.chip.on.dinara,.fchip.on.dinara{background:var(--fdin);color:#fff}
+.chip.on.joint,.fchip.on.joint{background:var(--joint);color:#3a2600}
+.av.joint{background:var(--joint)}
+.pbar i{background:var(--rc,var(--max))}
+input[type=range]{background:var(--line)}
+.dt-dots li.cur{background:var(--accent)}

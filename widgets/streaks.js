@@ -15,7 +15,7 @@ export default {
       <span class="tile sm" style="--h:#7b6cf0">${ic(CHALLENGE_TYPES[c.type]?.icon || 'target')}</span>
       <span class="pg-mid"><span class="pg-line"><b>${esc(c.title)}</b><span class="pc-streak${p.streak ? '' : ' zero'}">${ic('flame')}<b>${p.streak}</b> ${plural(p.streak, ...p.unit)}</span></span>
       ${p.pct !== null ? `<span class="pbar lvl-ok"><i style="width:${Math.round(p.pct * 100)}%"></i></span>` : ''}<small class="muted">${esc(p.label)}</small></span></button>`).join('');
-    return `<section class="card pgw"><div class="row whead"><b>${ic('flame')} Челленджи</b><button class="linkbtn" type="button" data-pg-go>Все ${ic('right')}</button></div>${rows}</section>`;
+    return `<section class="sec pgw"><div class="row whead"><b>${ic('flame')} Челленджи</b><button class="linkbtn" type="button" data-pg-go>Все ${ic('right')}</button></div>${rows}</section>`;
   },
   bind(root, s, a) {
     root.querySelectorAll('[data-pg-go]').forEach((b) => (b.onclick = () => a.go('challenges')));

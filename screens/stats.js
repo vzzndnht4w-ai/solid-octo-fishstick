@@ -87,7 +87,7 @@ export default {
 
     return `${monthSwitch(a.month)}<div class="stack">
       <div class="row sm muted" style="padding:0 6px"><span>${av('max', 'sm')} ${esc(a.name('max'))}</span><span>${esc(a.name('dinara'))} ${av('dinara', 'sm')}</span></div>
-      ${cmp('Заработали', 'earned')}${cmp('Личные траты', 'personal')}${cmp('Доля в общих тратах', 'sharedShare')}${pace}</div>
+      <div class="card cmp3">${cmp('Заработали', 'earned')}${cmp('Личные траты', 'personal')}${cmp('Доля в общих тратах', 'sharedShare')}</div>${pace}</div>
     ${charts}
     <h2>Карта и наличные</h2><div class="card cmp"><div class="nums" style="color:var(--ink)"><span style="color:var(--ink)">${ic('card')} ${fm(sp.card)}</span><span style="color:var(--ink)">${fm(sp.cash)} ${ic('cash')}</span></div><div class="duo"><i style="width:${(sp.card / spTotal) * 100}%;background:var(--max)"></i><i style="width:${(sp.cash / spTotal) * 100}%;background:var(--joint)"></i></div></div>
     <h2>Куда уходят деньги</h2>

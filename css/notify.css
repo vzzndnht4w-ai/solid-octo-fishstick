@@ -1,35 +1,35 @@
 /* notify — экран «Уведомления» (мастер включения push). Цвета — только токены из style.css. */
 .nf-step{display:flex;flex-direction:column;gap:12px}
 .nf-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.nf-head h3{margin:0;font-size:17px;font-weight:700;flex:1;min-width:0}
-.nf-num{flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--ink);color:var(--bg);font-weight:700;font-size:14px}
-.nf-state{flex:none;font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--surface2);box-shadow:inset 0 0 0 1px var(--line);color:var(--muted)}
+.nf-head h3{margin:0;font-size:var(--t-lg);font-weight:700;flex:1;min-width:0}
+.nf-num{flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--ink);color:var(--bg);font-weight:700;font-size:var(--t-sm)}
+.nf-state{flex:none;font-size:var(--t-xs);font-weight:700;padding:4px 10px;border-radius:var(--r-pill);background:var(--surface2);box-shadow:inset 0 0 0 1px var(--line);color:var(--muted)}
 .nf-state.ok{color:var(--pos);box-shadow:inset 0 0 0 1px currentColor}
-.nf-p{margin:0;font-size:15px;line-height:1.45}
-.nf-ol{margin:0;padding-left:22px;font-size:15px;line-height:1.5;display:flex;flex-direction:column;gap:4px}
+.nf-p{margin:0;font-size:var(--t-md);line-height:1.45}
+.nf-ol{margin:0;padding-left:22px;font-size:var(--t-md);line-height:1.5;display:flex;flex-direction:column;gap:4px}
 .nf-btn{margin-top:0}
-.nf-sub{margin:6px 0 0;font-size:15px;font-weight:700}
+.nf-sub{margin:6px 0 0;font-size:var(--t-md);font-weight:700}
 .nf-step code{font:600 13px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--surface2);padding:1px 5px;border-radius:6px}
-.nf-det{background:var(--surface2);border-radius:16px;box-shadow:inset 0 0 0 1px var(--line);padding:0 14px}
+.nf-det{background:var(--surface2);border-radius:var(--r-md);box-shadow:inset 0 0 0 1px var(--line);padding:0 14px}
 .nf-det[open]{padding-bottom:14px}
-.nf-det summary{min-height:48px;display:flex;align-items:center;font-weight:600;font-size:15px;cursor:pointer}
+.nf-det summary{min-height:48px;display:flex;align-items:center;font-weight:600;font-size:var(--t-md);cursor:pointer}
 .nf-det .muted{margin:0 0 10px;line-height:1.4}
-.nf-code{margin:10px 0 0;max-height:220px;overflow:auto;padding:12px;border-radius:12px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;word-break:break-all;user-select:all;-webkit-user-select:all}
-.nf-keys{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:16px;background:color-mix(in srgb,var(--joint) 14%,var(--surface));box-shadow:inset 0 0 0 1.5px var(--joint)}
+.nf-code{margin:10px 0 0;max-height:220px;overflow:auto;padding:12px;border-radius:var(--r-sm);background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;word-break:break-all;user-select:all;-webkit-user-select:all}
+.nf-keys{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:var(--r-md);background:color-mix(in srgb,var(--joint) 14%,var(--surface));box-shadow:inset 0 0 0 1.5px var(--joint)}
 .nf-keys input{width:100%;font:600 13px ui-monospace,SFMono-Regular,Menlo,monospace}
 .nf-keys label.l{margin:6px 4px 4px}
-.nf-msg{padding:12px 14px;border-radius:14px;font-size:14.5px;font-weight:600;margin:0}
+.nf-msg{padding:12px 14px;border-radius:var(--r-md);font-size:var(--t-sm);font-weight:600;margin:0}
 .nf-msg.ok{background:color-mix(in srgb,var(--pos) 14%,var(--surface));color:var(--ink);box-shadow:inset 0 0 0 1px var(--pos)}
 .nf-msg.bad{background:color-mix(in srgb,var(--neg) 12%,var(--surface));box-shadow:inset 0 0 0 1px var(--neg)}
 .nf-set{display:flex;flex-direction:column}
 .nf-sw{margin-top:0;padding:12px 0;border-radius:0;background:none;min-height:56px}
 .nf-sw+.nf-sw,.nf-pick+.nf-sw{border-top:1px solid var(--line)}
 .nf-sw span{display:flex;flex-direction:column;gap:2px;min-width:0}
-.nf-sw small{color:var(--muted);font-size:12.5px;line-height:1.3;font-weight:400}
+.nf-sw small{color:var(--muted);font-size:var(--t-xs);line-height:1.3;font-weight:400}
 .nf-pick{display:flex;gap:10px;padding:0 0 12px}
 .nf-pick>div{flex:1;min-width:0}
-.nf-pick label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 4px 6px}
-.nf-pick select{width:100%;min-height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface2);color:var(--ink);font:inherit;font-size:16px;padding:0 10px}
+.nf-pick label{display:block;font-size:var(--t-sm);font-weight:600;color:var(--muted);margin:0 4px 6px}
+.nf-pick select{width:100%;min-height:44px;border-radius:var(--r-sm);border:1.5px solid var(--line);background:var(--surface2);color:var(--ink);font:inherit;font-size:var(--t-md);padding:0 10px}
 .nf-priv{margin:4px 8px 0;line-height:1.4}
 .nf button:focus-visible,.nf input:focus-visible,.nf select:focus-visible,.nf summary:focus-visible,.nf pre:focus-visible{outline:3px solid var(--max);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.nf *{transition:none!important}}

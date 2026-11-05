@@ -53,13 +53,14 @@ export default {
     const cats = (kind, base) => [...base, ...(s.categories[kind] || [])];
     let h = `<div class="top"><h1>${dr.editId ? 'Изменить' : 'Новая операция'}</h1>${dr.editId ? `<button class="av joint" data-cancel aria-label="Отмена">${ic('x')}</button>` : ''}</div>
     <div class="seg" data-chips="type">${[['expense', 'Расход'], ['income', 'Доход'], ['transfer', 'Перевод']].map(([v, l]) => `<button type="button" data-v="${v}" class="${dr.type === v ? 'on' : ''}" aria-pressed="${dr.type === v}">${l}</button>`).join('')}</div>
-    <div class="card amount" style="margin-top:12px"><input id="f-amount" inputmode="decimal" placeholder="0" value="${esc(dr.amount)}" aria-label="Сумма"><span>${esc(s.settings.currency)}</span></div>`;
+    <div class="amount" style="margin-top:12px"><input id="f-amount" inputmode="decimal" placeholder="0" value="${esc(dr.amount)}" aria-label="Сумма"><span>${esc(s.settings.currency)}</span></div>`;
     if (dr.type !== 'transfer') h += `<label class="l">Кто</label>${personChips('person', dr.person)}`;
     if (dr.type === 'expense') {
       h += `<label class="l">Категория</label>${catGrid(cats('expense', EXPENSE_CATEGORIES), dr.category)}
-      <label class="l">Чья это трата</label><div class="opts" data-chips="scope">
-        <button type="button" data-v="personal" class="opt ${dr.scope === 'personal' ? 'on' : ''}" aria-pressed="${dr.scope === 'personal'}"><b>${ic('user')} Личная</b><small>Только ${esc(nameOf(dr.person))}. Общий баланс и долги не меняются.</small></button>
-        <button type="button" data-v="shared" class="opt ${dr.scope === 'shared' ? 'on' : ''}" aria-pressed="${dr.scope === 'shared'}"><b>${ic('users')} Общая</b><small>Делим на двоих в нужной пропорции.</small></button></div>
+      <label class="l">Чья это трата</label><div class="seg" data-chips="scope">
+        <button type="button" data-v="personal" class="${dr.scope === 'personal' ? 'on' : ''}" aria-pressed="${dr.scope === 'personal'}">${ic('user')} Личная</button>
+        <button type="button" data-v="shared" class="${dr.scope === 'shared' ? 'on' : ''}" aria-pressed="${dr.scope === 'shared'}">${ic('users')} Общая</button></div>
+      <p class="muted sm scopehint">${dr.scope === 'personal' ? `Только ${esc(nameOf(dr.person))}. Общий баланс и долги не меняются.` : 'Делим на двоих в нужной пропорции.'}</p>
       <label class="l">Чем заплатили</label>${methodChips('method', dr.method)}`;
       if (dr.scope === 'personal') h += `<div class="preview">Спишется из «${esc(WALLETS[dr.person])}». Общий баланс не затрагивается.</div>`;
       else h += `<label class="l">Откуда деньги</label>${walletChips('paidFrom', dr.paidFrom)}
@@ -79,7 +80,7 @@ export default {
     if (dr.type !== 'transfer') h += `<label class="switch"><span>Скрыть детали от партнёра<br><span class="muted sm">Будет видна только сумма</span></span><input type="checkbox" id="f-hidden" ${dr.hidden ? 'checked' : ''}></label>`;
     if (dr.type !== 'transfer' && dr.hidden) h += revealBlock(dr);
     if (dr.type !== 'transfer') h += tplBlock(dr);
-    return h + `${error ? `<div class="error">${esc(error)}</div>` : ''}<button class="primary" id="f-save">${dr.editId ? 'Сохранить изменения' : 'Добавить'}</button>`;
+    return h + `${error ? `<div class="error">${esc(error)}</div>` : ''}<div class="savebar"><button class="primary" id="f-save">${dr.editId ? 'Сохранить изменения' : 'Добавить'}</button></div>`;
   },
   bind(root, s, a) {
     const setChip = (name, v) => {

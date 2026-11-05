@@ -6,7 +6,7 @@
 .svbar i{display:block;min-width:4px;height:100%}
 .svlegend3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
 .svlegend3>div{display:flex;flex-direction:column;gap:1px;min-width:0}
-.svlegend3 b{font-size:14.5px;font-weight:700;white-space:nowrap}
+.svlegend3 b{font-size:var(--t-sm);font-weight:700;white-space:nowrap}
 .svlegend3 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
 .svchart svg{display:block;width:100%;height:110px;margin:8px 0 4px;overflow:visible}
 .svgrid{stroke:var(--line);stroke-width:1}
@@ -14,15 +14,15 @@
 .svarea{fill:color-mix(in srgb,var(--max) 14%,transparent);stroke:none}
 .svdot{fill:var(--max);stroke:var(--surface);stroke-width:2}
 .svdot.last{r:4.5}
-.svtxt{fill:var(--muted);font-size:11px;font-family:var(--font)}
+.svtxt{fill:var(--muted);font-size:var(--t-xs);font-family:var(--font)}
 .svgroup .list{display:flex;flex-direction:column}
 .svitem{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;background:none;border:0;text-align:left;color:inherit;font:inherit;min-height:56px}
 .svitem+.svitem{border-top:1px solid var(--line)}
 .svitem .g{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
 .svitem .g b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.svsub{font-size:12.5px;color:var(--muted)}
-.svamt{font-weight:800;font-size:16px;white-space:nowrap}
-.svamt.hid{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-weight:600;font-size:14px}
+.svsub{font-size:var(--t-xs);color:var(--muted)}
+.svamt{font-weight:800;font-size:var(--t-md);white-space:nowrap}
+.svamt.hid{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-weight:600;font-size:var(--t-sm)}
 .svamt.hid .i{width:16px;height:16px}
 .svitem.masked{opacity:.85}
 .svitem:focus-visible,.svquick .chip:focus-visible,.svacts .ghost:focus-visible{outline:3px solid var(--max);outline-offset:-3px}
@@ -40,15 +40,15 @@
 .svrows{margin:8px 0 0;display:flex;flex-direction:column;gap:8px}
 .svrows>div{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .svrows dt{font-weight:600}
-.svrows dt small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.svrows dt small{display:block;font-weight:400;font-size:var(--t-xs);color:var(--muted)}
 .svrows dd{margin:0;font-weight:700;white-space:nowrap}
-.svrows .tot{border-top:1px solid var(--line);padding-top:8px;font-size:18px}
+.svrows .tot{border-top:1px solid var(--line);padding-top:8px;font-size:var(--t-lg)}
 .svrows .tot dd{font-weight:800}
-.svflow{margin-top:10px;font-size:14px}
-.svacts .ghost{font-size:14px}
+.svflow{margin-top:10px;font-size:var(--t-sm)}
+.svacts .ghost{font-size:var(--t-sm)}
 /* виджет на главной */
 .wsav .svbar{margin-top:10px;height:10px}
-.svlegend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:12.5px;color:var(--muted)}
+.svlegend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:var(--t-xs);color:var(--muted)}
 .svlegend span{display:inline-flex;align-items:center;gap:5px}
 .svlegend i{width:8px;height:8px;border-radius:50%;display:inline-block}
 @media (forced-colors:active){.svbar i{border:1px solid CanvasText}}

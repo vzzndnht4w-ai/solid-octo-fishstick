@@ -27,7 +27,7 @@ export default {
     const react = reacted
       ? `<button class="tg-reacted" data-tg-go="feed"><span class="tg-em" aria-hidden="true">${ic('chat')}</span><span>${esc(nameOf(them))} отреагировал${feminine(them)} на ${reacted} ${plural(reacted, 'операцию', 'операции', 'операций')}</span>${ic('right')}</button>` : '';
     if (!f && !react) return '';
-    if (!f) return `<section class="card tg-fair">${react}</section>`;
+    if (!f) return `<section class="sec tg-fair">${react}</section>`;
     const lead = f.lead, big = f.amount > f.total * 0.15;
     const head = f.level === 'even'
       ? 'В этом месяце вклады ровно по доходам. Так держать.'
@@ -38,7 +38,7 @@ export default {
       ? `<button class="tg-act" data-tg-fix="${under}">${ic('plus')} Пополнить баланс на ${fm(whole(f.amount))}</button>`
       : `<button class="tg-act" data-tg-fix="${under}">${ic('swap')} Записать пополнение · ${esc(nameOf(under))}</button>`;
     const hint = f.level === 'even' ? '' : `<p class="tg-hint">Чтобы выровнять, ${esc(nameOf(under))} может пополнить общий баланс на ${fm(whole(f.amount))}. Это не долг, а способ вложить поровну по доходам.</p>`;
-    return `<section class="card tg-fair" aria-label="Шкала справедливости"><div class="tg-head"><b>${ic('scale')} Справедливость</b><span class="muted sm">за месяц</span></div>
+    return `<section class="sec tg-fair" aria-label="Шкала справедливости"><div class="tg-head"><b>${ic('scale')} Справедливость</b><span class="muted sm">за месяц</span></div>
       <p class="tg-lead">${head}</p>${scale(f)}<div class="tg-pair">${per('max')}${per('dinara')}</div>${hint}${action}${react}</section>`;
   },
   bind(root, s, a) {

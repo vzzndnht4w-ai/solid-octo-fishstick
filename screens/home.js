@@ -39,7 +39,7 @@ export default {
         <div class="kv"><small>Потратил${feminine(p)}</small><b>${fm(spent)}</b></div>
         <div class="mini" title="${pct}% дохода потрачено"><i style="width:${pct}%"></i></div>
         <div class="kv"><small>Остаток за месяц</small><b class="${left < 0 ? 'neg' : ''}">${fm(left)}</b></div>
-        <div class="wallet"><span>${ic('card')}${fm(bm[p].card)}</span><span>${ic('cash')}${fm(bm[p].cash)}</span></div></div>`;
+        <div class="wallet">Карта ${fm(bm[p].card)} · Наличные ${fm(bm[p].cash)}</div></div>`;
     };
     const first = !all.length ? `<div class="tip"><span class="tile">${ic('bulb')}</span><div><b>Начните с дохода</b><br><span class="muted">Нажмите «+», выберите «Доход» и запишите зарплату. Потом пополните общий баланс переводом.</span></div></div>` : '';
     const extra = widgets.map((w) => w.render(s, a)).join('');
