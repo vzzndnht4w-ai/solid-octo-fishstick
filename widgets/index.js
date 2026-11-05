@@ -6,6 +6,7 @@ import insights from './insights.js';
 import fairness from './fairness.js';
 import upcoming from './upcoming.js';
 import streaks from './streaks.js';
+import savingsW from './savings.js';
 import quick from './quick.js';
 // Порядок по важности: быстрое действие, деньги месяца, ближайшее, наблюдения, долгие цели, пара, игры.
-export default [quick, budgets, upcoming, insights, goals, fairness, streaks];
+export default [savingsW, quick, budgets, upcoming, insights, goals, fairness, streaks];

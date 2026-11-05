@@ -19,6 +19,7 @@ import challenges from './screens/challenges.js';
 import wrapped from './screens/wrapped.js';
 import templates from './screens/templates.js';
 import calendar from './screens/calendar.js';
+import savings from './screens/savings.js';
 import inbox from './screens/inbox.js';
 import { initInbox } from './lib/inbox-ui.js';
 import notifications from './screens/notifications.js';
@@ -36,8 +37,8 @@ import { initBadges } from './lib/badges.js';
 import { parseQuickLink, findTemplate, isSecret } from './lib/tools.js';
 import { quickAdd } from './lib/tools-ui.js';
 
-const SCREENS = { home, feed, stats, add, more, settings, budgets, goals, recurring, data, profile, sync: syncScreen, date: dateScreen, challenges, wrapped, templates, calendar, inbox, notifications };
-const TAB_OF = { settings: 'more', budgets: 'more', goals: 'more', recurring: 'more', data: 'more', profile: 'more', sync: 'more', date: 'more', challenges: 'more', wrapped: 'more', templates: 'more', calendar: 'more', inbox: 'more', notifications: 'more' };
+const SCREENS = { home, feed, stats, add, more, settings, budgets, goals, recurring, data, profile, sync: syncScreen, date: dateScreen, challenges, wrapped, templates, calendar, inbox, notifications, savings };
+const TAB_OF = { settings: 'more', budgets: 'more', goals: 'more', recurring: 'more', data: 'more', profile: 'more', sync: 'more', date: 'more', challenges: 'more', wrapped: 'more', templates: 'more', calendar: 'more', inbox: 'more', notifications: 'more', savings: 'more' };
 const view = $('#view'), nav = $('#tabs'), sheet = $('#sheet'), toastEl = $('#toast');
 
 let route = 'home';

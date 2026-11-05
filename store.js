@@ -31,13 +31,14 @@ export const defaults = () => ({
   comments: [],                       // [{ id, txId, person, text?, emoji?, at }] — реакции и комментарии к операциям
   challenges: [],                     // [{ id, type, title, startedAt, ... }] — челленджи и их прогресс
   templates: [],                      // [{ id, title, tpl:{...операция без id/date} }] — быстрые шаблоны
+  savings: [],                        // [{ id, name, kind, owner:'max'|'dinara'|'joint', amount, rate?, until?, note?, hidden?, history:[{at, amount}] }] — накопления (вне операций)
   dateNotes: [],                      // [{ id, month|date, person, text, at }] — заметки «финансового свидания»
 });
 
 const migrate = (d) => {
   const base = defaults();
   const out = { ...base, ...d, profiles: { ...base.profiles, ...(d.profiles || {}) }, settings: { ...base.settings, ...(d.settings || {}) }, categories: { ...base.categories, ...(d.categories || {}) } };
-  for (const c of ['comments', 'challenges', 'templates', 'dateNotes']) out[c] = Array.isArray(d[c]) ? d[c] : [];
+  for (const c of ['comments', 'challenges', 'templates', 'dateNotes', 'savings']) out[c] = Array.isArray(d[c]) ? d[c] : [];
   // защита от повреждённой копии: коллекции должны быть нужного типа
   const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
   if (!Array.isArray(out.txs)) out.txs = [];
