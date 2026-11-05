@@ -19,6 +19,8 @@ import challenges from './screens/challenges.js';
 import wrapped from './screens/wrapped.js';
 import templates from './screens/templates.js';
 import calendar from './screens/calendar.js';
+import notifications from './screens/notifications.js';
+import * as push from './lib/push.js';
 import * as sync from './lib/sync.js';
 import onboarding from './screens/onboarding.js';
 import { lockScreen, confirmPin, closePad } from './screens/lock.js';
@@ -32,11 +34,16 @@ import { initBadges } from './lib/badges.js';
 import { parseQuickLink, findTemplate, isSecret } from './lib/tools.js';
 import { quickAdd } from './lib/tools-ui.js';
 
-const SCREENS = { home, feed, stats, add, more, settings, budgets, goals, recurring, data, profile, sync: syncScreen, date: dateScreen, challenges, wrapped, templates, calendar };
-const TAB_OF = { settings: 'more', budgets: 'more', goals: 'more', recurring: 'more', data: 'more', profile: 'more', sync: 'more', date: 'more', challenges: 'more', wrapped: 'more', templates: 'more', calendar: 'more' };
+const SCREENS = { home, feed, stats, add, more, settings, budgets, goals, recurring, data, profile, sync: syncScreen, date: dateScreen, challenges, wrapped, templates, calendar, notifications };
+const TAB_OF = { settings: 'more', budgets: 'more', goals: 'more', recurring: 'more', data: 'more', profile: 'more', sync: 'more', date: 'more', challenges: 'more', wrapped: 'more', templates: 'more', calendar: 'more', notifications: 'more' };
 const view = $('#view'), nav = $('#tabs'), sheet = $('#sheet'), toastEl = $('#toast');
 
 let route = 'home';
+// Переход из push-уведомления (?go=<экран>): открываем нужный экран после запуска.
+try {
+  const go = new URLSearchParams(location.search).get('go');
+  if (go && SCREENS[go]) { route = go; window.history.replaceState(null, '', location.pathname + location.hash); }
+} catch {}
 let shownRoute = null;
 let month = todayStr().slice(0, 7);
 let history = [];
@@ -209,6 +216,8 @@ const runRec = () => { const n = runRecurring(store, todayStr()); if (n) toast(`
 runRec();
 initBadges(store, toast, todayStr);   // новые достижения и пройденные челленджи: тост + конфетти
 sync.init();
+push.init();
+push.onNotificationGo((r) => { if (SCREENS[r] && !locked && store.get().viewer) api.go(r); });
 sync.subscribe(() => { if (route === 'sync' && sync.isConnected()) render(); });
 if (sync.peekPendingInvite() && store.get().viewer) { route = 'sync'; render(); }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) runRec(); });

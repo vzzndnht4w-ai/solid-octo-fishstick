@@ -18,6 +18,10 @@ export const defaults = () => ({
     pins: {},                         // { max: '<хэш>', dinara: '<хэш>' } — PIN каждого
     autoLockMin: 1,                   // через сколько минут в фоне блокировать (0 — выкл.)
     onboarded: false,
+    notify: {                         // push-уведомления этого телефона (см. lib/push-core.js, normPrefs)
+      enabled: false, partnerAdds: true, partnerReacts: true, payments: true,
+      date: { on: true, dow: 0, hour: 19 }, debt: true, evening: { on: false, hour: 21 }, quiet: { from: 22, to: 8 },
+    },
   },
   budgets: {},                        // { 'Продукты': 3000000 } — лимит на месяц, копейки
   goals: [],                          // [{ id, name, target, emoji, createdAt, deadline? }]
