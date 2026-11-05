@@ -67,8 +67,8 @@
 .lbox code{display:block;width:100%;padding:10px 12px;border-radius:var(--r-sm);box-shadow:inset 0 0 0 1px var(--line);user-select:all;-webkit-user-select:all}
 
 /* ---------- Календарь платежей ---------- */
-.cal-hero{background:var(--hero);color:#fff;border-radius:var(--r-lg);padding:20px 20px 18px;position:relative;overflow:hidden;box-shadow:0 14px 34px rgba(67,40,111,.35)}
-.cal-hero::before{content:"";position:absolute;width:200px;height:200px;right:-70px;top:-90px;border-radius:50%;background:radial-gradient(circle,rgba(255,152,176,.45),transparent 70%);pointer-events:none}
+.cal-hero{background:var(--hero);color:#fff;border-radius:var(--r-lg);padding:20px 20px 18px;position:relative;overflow:hidden}
+.cal-hero::before{content:"";position:absolute;width:200px;height:200px;right:-70px;top:-90px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%);pointer-events:none}
 .cal-hero>*{position:relative}
 .cal-hero .lab{display:flex;align-items:center;gap:8px;font-size:var(--t-sm);opacity:.85}
 .cal-hero .sum{font-size:40px;font-weight:800;letter-spacing:-.03em;margin:6px 0 4px}

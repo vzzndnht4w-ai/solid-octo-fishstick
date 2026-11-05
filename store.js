@@ -1,4 +1,5 @@
 // Хранилище (localStorage). Схема версии 2. Синхронизация между телефонами подключится здесь же.
+import { migrateColors, DEFAULT_COLORS } from './lib/appearance.js';
 const KEY = 'we-money-v1';
 export const SCHEMA = 2;
 
@@ -7,8 +8,8 @@ export const defaults = () => ({
   viewer: null,                       // 'max' | 'dinara' — кто сейчас за телефоном
   txs: [],                            // операции (см. ledger.js)
   profiles: {                         // профиль каждого: имя, цвет, пол (для окончаний: «заработал/а»)
-    max: { name: 'Максим', female: false, color: 'blue' },
-    dinara: { name: 'Динара', female: true, color: 'rose' },
+    max: { name: 'Максим', female: false, color: DEFAULT_COLORS.max },
+    dinara: { name: 'Динара', female: true, color: DEFAULT_COLORS.dinara },
   },
   settings: {
     theme: 'auto',                    // 'auto' | 'light' | 'dark'
@@ -47,6 +48,7 @@ const migrate = (d) => {
   out.budgets = obj(out.budgets);
   out.settings.pins = obj(out.settings.pins);
   out.categories = { expense: Array.isArray(out.categories.expense) ? out.categories.expense : [], income: Array.isArray(out.categories.income) ? out.categories.income : [] };
+  out.profiles = migrateColors(out.profiles); // старые 'blue'/'rose' и др. → новый набор цветов
   out.v = SCHEMA;
   if (d.txs && d.txs.length && !('onboarded' in (d.settings || {}))) out.settings.onboarded = true; // у уже пользующихся пропускаем знакомство
   return out;

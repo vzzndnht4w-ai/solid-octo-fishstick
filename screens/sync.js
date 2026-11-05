@@ -53,7 +53,7 @@ function renderSetup(s) {
       <button class="opt ${ui.mode === 'merge' ? 'on' : ''}" data-mode="merge" aria-pressed="${ui.mode === 'merge'}"><b>Объединить</b><small>Ваши операции добавятся к общим.</small></button></div>
       <button class="primary" id="sy-join" ${ui.busy ? 'disabled' : ''}>${ui.busy ? 'Подключаем…' : 'Присоединиться'}</button></div>` : '';
   return `${subHeader('Синхронизация')}<div class="stack">
-    <div class="card"><div class="row" style="justify-content:flex-start;gap:12px"><span class="tile" style="--h:#7b6cf0">${ic('cloud')}</span><div><b>Общие данные на двух телефонах</b><div class="muted sm">Операции, цели и бюджеты появляются у вас обоих. Всё шифруется на телефоне.</div></div></div></div>
+    <div class="card"><div class="row" style="justify-content:flex-start;gap:12px"><span class="tile" style="--h:var(--dinara)">${ic('cloud')}</span><div><b>Общие данные на двух телефонах</b><div class="muted sm">Операции, цели и бюджеты появляются у вас обоих. Всё шифруется на телефоне.</div></div></div></div>
     ${ui.err ? `<div class="error" role="alert">${esc(ui.err)}</div>` : ''}
     ${joinBlock}
     <h2>Первый телефон: создать пару</h2>

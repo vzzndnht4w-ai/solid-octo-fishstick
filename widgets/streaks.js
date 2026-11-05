@@ -12,7 +12,7 @@ export default {
       .sort((x, y) => y.p.streak - x.p.streak).slice(0, 2);
     if (!act.length) return '';
     const rows = act.map(({ c, p }) => `<button class="pg-row" type="button" data-pg-go aria-label="${esc(c.title)}: ${esc(p.label)}">
-      <span class="tile sm" style="--h:#7b6cf0">${ic(CHALLENGE_TYPES[c.type]?.icon || 'target')}</span>
+      <span class="tile sm" style="--h:var(--dinara)">${ic(CHALLENGE_TYPES[c.type]?.icon || 'target')}</span>
       <span class="pg-mid"><span class="pg-line"><b>${esc(c.title)}</b><span class="pc-streak${p.streak ? '' : ' zero'}">${ic('flame')}<b>${p.streak}</b> ${plural(p.streak, ...p.unit)}</span></span>
       ${p.pct !== null ? `<span class="pbar lvl-ok"><i style="width:${Math.round(p.pct * 100)}%"></i></span>` : ''}<small class="muted">${esc(p.label)}</small></span></button>`).join('');
     return `<section class="sec pgw"><div class="row whead"><b>${ic('flame')} Челленджи</b><button class="linkbtn" type="button" data-pg-go>Все ${ic('right')}</button></div>${rows}</section>`;

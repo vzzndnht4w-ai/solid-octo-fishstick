@@ -2,7 +2,7 @@ import { parseMoney, validate, freeJoint, reservedInGoals } from '../ledger.js';
 import { ic, esc, money as fm, subHeader, MONTHS_GEN, nameOf, $, $$ } from '../core.js';
 import { goalSaved, goalState } from '../lib/plan.js';
 import { celebrate } from '../lib/confetti.js';
-import { openSheet, ring, pbar, personChips, bindChips, amountField, kopToInput, dateRu } from '../planui.js';
+import { openSheet, ring, pbar, bindChips, amountField, kopToInput, dateRu } from '../planui.js';
 
 const EMOJI = ['🎯', '✈️', '🏖️', '🏠', '🚗', '💍', '🎓', '💻', '📱', '🛋️', '🐶', '🎉', '👶', '🎸', '🛡️', '🎁'];
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8));

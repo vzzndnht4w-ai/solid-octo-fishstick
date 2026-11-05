@@ -41,22 +41,24 @@ input[aria-invalid="true"]{border-color:var(--neg)}
 .addbtn{min-height:46px;padding:0 16px;flex:none}
 
 /* ---------- профиль ---------- */
-.pf-hero{position:relative;overflow:hidden;display:flex;align-items:center;gap:16px;padding:18px;border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--shadow)}
-.pf-hero::before{content:"";position:absolute;width:200px;height:200px;right:-60px;top:-90px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--c,var(--max)) 30%,transparent),transparent 70%);pointer-events:none}
+.pf-hero{display:flex;align-items:center;gap:16px;padding:18px;border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--shadow)}
 .pf-hero.dinara{--c:var(--dinara)}
-.pf-hero>*{position:relative}
 .pf-hero b{display:block;font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.15;overflow-wrap:anywhere}
 .pf-hero span:not(.av){color:var(--muted);font-size:var(--t-sm)}
-.av.xl{width:68px;height:68px;font-size:30px;box-shadow:0 8px 20px color-mix(in srgb,var(--c,var(--max)) 35%,transparent)}
+.av.xl{width:68px;height:68px;font-size:30px}
 .pf-hero.dinara .av.xl{--c:var(--dinara)}
+.av.max{color:var(--on-max)}.av.dinara{color:var(--on-dinara)}
 .av.lg{width:52px;height:52px;font-size:var(--t-xl)}
 .swatches{display:flex;flex-wrap:wrap;gap:14px}
-.swatch{width:46px;height:46px;border-radius:50%;border:0;padding:0;background:linear-gradient(135deg,var(--c1),var(--c2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:var(--t-xl)}
+.swatch{--k1:var(--c1);--kt:var(--t1);width:46px;height:46px;border-radius:50%;border:0;padding:0;background:var(--k1);color:var(--kt);display:flex;align-items:center;justify-content:center;font-size:var(--t-xl);transition:transform .15s,box-shadow .2s}
+.swatch:active{transform:scale(.97)}
 .swatch svg{opacity:0;transform:scale(.5);transition:.15s;stroke-width:2.6}
-.swatch.on{box-shadow:0 0 0 3px var(--surface),0 0 0 5.5px var(--c1)}
+.swatch.on{box-shadow:0 0 0 3px var(--surface),0 0 0 5.5px var(--k1)}
 .swatch.on svg{opacity:1;transform:none}
 .swatch:disabled{opacity:.32;cursor:not-allowed}
 @media (prefers-reduced-motion:reduce){.swatch svg{transition:none}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .swatch{--k1:var(--d1);--kt:var(--t2)}}
+:root[data-theme="dark"] .swatch{--k1:var(--d1);--kt:var(--t2)}
 
 /* ---------- экран PIN-кода ---------- */
 #lock[hidden]{display:none}
@@ -89,7 +91,7 @@ input[aria-invalid="true"]{border-color:var(--neg)}
 /* ---------- знакомство ---------- */
 .ob{min-height:calc(100dvh - 40px);display:flex;flex-direction:column;gap:18px;padding-top:4vh}
 .ob-top{display:flex;align-items:center;gap:10px}
-.ob-logo{width:34px;height:34px;border-radius:var(--r-sm);background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:var(--t-lg)}
+.ob-logo{width:34px;height:34px;border-radius:var(--r-sm);background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;font-size:var(--t-lg)}
 .ob-dots{margin-left:auto;display:flex;gap:6px}
 .ob-dots i{width:22px;height:6px;border-radius:3px;background:var(--line)}
 .ob-dots i.done{background:color-mix(in srgb,var(--max) 45%,var(--line))}
@@ -117,9 +119,6 @@ input[aria-invalid="true"]{border-color:var(--neg)}
 .toast{width:max-content}
 .s-cur{flex-wrap:nowrap;gap:6px}
 .s-cur .chip{flex:1;min-width:0;padding:8px 0}
-.swatch{--k1:var(--c1);--k2:var(--c2);background:linear-gradient(135deg,var(--k1),var(--k2))}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .swatch{--k1:var(--d1);--k2:var(--d2)}}
-:root[data-theme="dark"] .swatch{--k1:var(--d1);--k2:var(--d2)}
 
 /* синхронизация */
 .sync-status{display:flex;gap:12px;align-items:center}

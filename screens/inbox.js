@@ -34,7 +34,7 @@ export default {
     const empty = filter === 'all' ? ['Пока тихо', 'Здесь появятся действия партнёра и напоминания: бюджеты, платежи, долги, цели.']
       : filter === 'partner' ? ['От партнёра пока ничего', 'Когда партнёр добавит операцию или оставит реакцию, это появится здесь.'] : ['Напоминаний нет', 'Мы подскажем, когда бюджет будет на исходе или подойдёт платёж.'];
     return `${subHeader('Что нового')}<div class="stack">
-      <div class="ib-bar"><div class="ib-seg" role="group" aria-label="Фильтр">${FILTERS.map(([k, l]) => `<button data-f="${k}" aria-pressed="${filter === k}" class="${filter === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+      <div class="ib-bar"><div class="seg" role="group" aria-label="Фильтр">${FILTERS.map(([k, l]) => `<button data-f="${k}" aria-pressed="${filter === k}" class="${filter === k ? 'on' : ''}">${l}</button>`).join('')}</div>
       <button class="ib-all" data-readall ${n ? '' : 'disabled'}>${ic('check')}Отметить всё прочитанным</button></div>
       <p class="sr-only" role="status">${n ? `Непрочитанных: ${n}` : 'Всё прочитано'}</p>
       ${items.length ? days.map(({ d, list }) => `<h2 class="ib-day">${esc(dayLabel(d))}</h2><ul class="list ib-list">${list.map((e) => row(e, ctx)).join('')}</ul>`).join('')

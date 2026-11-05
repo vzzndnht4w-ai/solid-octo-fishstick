@@ -1,7 +1,7 @@
 /* insights: итоги, лента, данные, виджет-инсайт */
-:root{--vz-inc:#2a78d6;--vz-exp:#eb6834;--vz-line:#6250d6;--vz-grid:#ece8f3;--vz-axis:#cfc9dc}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--vz-inc:#3987e5;--vz-exp:#d95926;--vz-line:#9085e9;--vz-grid:#2b2639;--vz-axis:#3d3750}}
-:root[data-theme="dark"]{--vz-inc:#3987e5;--vz-exp:#d95926;--vz-line:#9085e9;--vz-grid:#2b2639;--vz-axis:#3d3750}
+:root{--vz-inc:var(--max);--vz-exp:#a39a86;--vz-line:var(--joint2);--vz-grid:#e3e9e6;--vz-axis:#c9d2ce}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--vz-inc:var(--max);--vz-exp:#8b8470;--vz-line:var(--joint2);--vz-grid:#24232c;--vz-axis:#34323d}}
+:root[data-theme="dark"]{--vz-inc:var(--max);--vz-exp:#8b8470;--vz-line:var(--joint2);--vz-grid:#24232c;--vz-axis:#34323d}
 
 /* ---- графики ---- */
 .vzc{padding:14px 12px 10px}
@@ -37,8 +37,7 @@ svg.vz{display:block;width:100%;height:auto;overflow:visible;user-select:none;-w
 .pace>div{display:flex;flex-direction:column;gap:1px;min-width:0}
 .pace b{font-size:var(--t-xl);font-weight:800;letter-spacing:-.02em}
 
-/* категории как кнопки */
-button.catb2,.catbtn{background:none;border:0;width:100%;text-align:left;color:var(--ink);border-radius:var(--r-md)}
+button.catbtn{background:none;border:0;width:100%;text-align:left;color:var(--ink);border-radius:var(--r-md)}
 .catbtn .chev{font-size:var(--t-md);flex:none}
 .catbtn:active{background:var(--surface2)}
 .cat-total{border-top:1px solid var(--line);margin-top:6px;padding-top:12px}
@@ -57,8 +56,8 @@ button.catb2,.catbtn{background:none;border:0;width:100%;text-align:left;color:v
 .fextra{margin-top:0}
 .fchip{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r-pill);padding:6px 12px;font-weight:600;font-size:var(--t-sm);min-height:34px}
 .fchip.on{border-color:transparent;background:var(--ink);color:var(--bg)}
-.fchip.on.max{background:linear-gradient(135deg,var(--max),var(--max2));color:#fff}
-.fchip.on.dinara{background:linear-gradient(135deg,var(--dinara),var(--dinara2));color:#fff}
+.fchip.on.max{background:var(--max);color:var(--on-max)}
+.fchip.on.dinara{background:var(--dinara);color:var(--on-dinara)}
 .lnk{background:none;border:0;padding:6px 4px;font-weight:700;font-size:var(--t-sm);color:var(--dinara)}
 .fsum{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:16px 4px 0;font-size:var(--t-sm)}
 .fsum b{font-size:var(--t-md)}.fsum span:not(.muted){font-weight:700}

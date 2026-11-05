@@ -1,15 +1,11 @@
 /* inbox — «Что нового», колокольчик, счётчик в меню. Цвета только из токенов style.css. */
-.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
 .topr{display:flex;align-items:center;gap:10px}
 .bell{position:relative;width:44px;height:44px;border-radius:50%;border:0;background:var(--surface);color:var(--ink);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font-size:var(--t-xl);flex:none}
 .bell .bn{position:absolute;top:-3px;right:-3px;min-width:20px;height:20px;padding:0 5px;border-radius:var(--r-sm);background:color-mix(in srgb,var(--neg) 78%,#000);color:#fff;font-size:var(--t-xs);font-weight:800;line-height:20px;text-align:center;box-shadow:0 0 0 2px var(--bg)}
-.bell:focus-visible,.ib-main:focus-visible,.ib-hide:focus-visible,.ib-all:focus-visible,.ib-seg button:focus-visible{outline:3px solid var(--max);outline-offset:2px}
+.bell:focus-visible,.ib-main:focus-visible,.ib-hide:focus-visible,.ib-all:focus-visible,.seg button:focus-visible{outline:3px solid var(--max);outline-offset:2px}
 
 .ib-bar{display:flex;flex-direction:column;gap:10px}
-.ib-seg{display:flex;background:var(--surface2);border-radius:var(--r-md);padding:4px;box-shadow:inset 0 0 0 1px var(--line)}
-.ib-seg button{flex:1;min-height:44px;border:0;background:none;padding:6px 4px;border-radius:var(--r-sm);font-weight:600;font-size:var(--t-sm);color:var(--muted)}
-.ib-seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
 .ib-all{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:8px 14px;font-weight:600;font-size:var(--t-sm);color:var(--ink)}
 .ib-all:disabled{opacity:.5}
 

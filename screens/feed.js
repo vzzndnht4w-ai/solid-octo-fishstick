@@ -1,4 +1,4 @@
-import { WALLETS, other, inMonth, method as methodOf } from '../ledger.js';
+import { inMonth, method as methodOf } from '../ledger.js';
 import { ic, esc, nameOf, feminine, tile, methodTag, money as fm, monthSwitch, dayLabel, $, $$ } from '../core.js';
 import { registerIcons } from '../icons.js';
 import { store } from '../store.js';
@@ -13,7 +13,7 @@ export function txView(t, viewer) {
   if (t.type === 'saving') {
     const sv = (store.get().savings || []).find((x) => x.id === t.savingId), nm = sv ? sv.name : 'накопления';
     const wn = t.wallet === 'joint' ? 'общий баланс' : nameOf(t.wallet);
-    return { icon: `<span class="tile" style="--h:#2aa874">${ic('bank')}</span>`, title: t.amount > 0 ? `В накопления «${esc(nm)}»` : `Из накоплений «${esc(nm)}»`, sub: `${t.amount > 0 ? 'из' : 'в'}: ${esc(wn)} · ${methodOf(t) === 'cash' ? 'наличные' : 'карта'}${t.note ? ' · ' + esc(t.note) : ''}`, amt: fm(Math.abs(t.amount)), cls: '' };
+    return { icon: `<span class="tile" style="--h:var(--max)">${ic('bank')}</span>`, title: t.amount > 0 ? `В накопления «${esc(nm)}»` : `Из накоплений «${esc(nm)}»`, sub: `${t.amount > 0 ? 'из' : 'в'}: ${esc(wn)} · ${methodOf(t) === 'cash' ? 'наличные' : 'карта'}${t.note ? ' · ' + esc(t.note) : ''}`, amt: fm(Math.abs(t.amount)), cls: '' };
   }
   const mname = (m) => (m === 'cash' ? 'наличные' : 'карта');
   if (t.type === 'transfer') {
@@ -22,15 +22,15 @@ export function txView(t, viewer) {
     const goal = t.goalId ? (store.get().goals || []).find((g) => g.id === t.goalId) : null;
     if (t.goalId) {
       const gn = goal ? goal.name : 'цель';
-      return { icon: `<span class="tile" style="--h:#e59a2c">${ic('bank')}</span>`, title: t.amount < 0 ? `Из цели «${esc(gn)}»` : `В цель «${esc(gn)}»`, sub: t.from === t.to ? (t.amount < 0 ? 'вернули в свободный баланс' : 'из общего баланса') : `с кошелька: ${esc(nameOf(t.from))}`, amt: fm(Math.abs(t.amount)), cls: '' };
+      return { icon: `<span class="tile" style="--h:var(--joint)">${ic('bank')}</span>`, title: t.amount < 0 ? `Из цели «${esc(gn)}»` : `В цель «${esc(gn)}»`, sub: t.from === t.to ? (t.amount < 0 ? 'вернули в свободный баланс' : 'из общего баланса') : `с кошелька: ${esc(nameOf(t.from))}`, amt: fm(Math.abs(t.amount)), cls: '' };
     }
     const title = same ? (mt === 'cash' ? 'Снятие наличных' : 'Внесение на карту') : settle ? 'Взаиморасчёт' : t.to === 'joint' ? 'В общий баланс' : t.from === 'joint' ? 'Из общего баланса' : 'Перевод';
     const short = (w) => (w === 'joint' ? 'баланс' : nameOf(w));
     const route = same ? short(t.from) : `${short(t.from)} → ${short(t.to)}`;
-    return { icon: `<span class="tile" style="--h:#7b6cf0">${ic('swap')}</span>`, title, sub: `${esc(route)} · ${mf === mt ? mname(mf) : mname(mf) + ' → ' + mname(mt)}`, amt: fm(t.amount), cls: '' };
+    return { icon: `<span class="tile" style="--h:var(--dinara)">${ic('swap')}</span>`, title, sub: `${esc(route)} · ${mf === mt ? mname(mf) : mname(mf) + ' → ' + mname(mt)}`, amt: fm(t.amount), cls: '' };
   }
   const m = methodTag(methodOf(t));
-  const icon = secret ? `<span class="tile" style="--h:#858aa0">${ic('lock')}</span>` : tile(t.category);
+  const icon = secret ? `<span class="tile" style="--h:var(--muted)">${ic('lock')}</span>` : tile(t.category);
   const title = secret ? 'Скрыто' : t.category;
   const sur = isPendingSurprise(t, viewer) ? `<span class="tag surprise">${ic('gift')}Сюрприз до ${shortDate(t.revealOn)}</span>` : '';
   const note = !secret && t.note ? `<span>${esc(t.note)}</span>` : '';

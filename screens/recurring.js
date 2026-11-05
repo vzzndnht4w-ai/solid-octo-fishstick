@@ -11,7 +11,7 @@ const ordinal = (d) => `${d}-го числа`;
 
 const titleOf = (t) => t.note || (t.type === 'transfer' ? 'Перевод' : t.category);
 function iconOf(t) {
-  if (t.type === 'transfer') return `<span class="tile" style="--h:#7b6cf0">${ic('swap')}</span>`;
+  if (t.type === 'transfer') return `<span class="tile" style="--h:var(--dinara)">${ic('swap')}</span>`;
   return tile(t.category);
 }
 

@@ -138,7 +138,7 @@ export async function renderShareImage(d) {
   cv.width = W; cv.height = H;
   const ctx = cv.getContext('2d'), F = 'Onest, -apple-system, system-ui, sans-serif';
   const g = ctx.createLinearGradient(0, 0, W, H);
-  g.addColorStop(0, '#2446c8'); g.addColorStop(0.55, '#6a3fb8'); g.addColorStop(1, '#c2305f');
+  g.addColorStop(0, '#0c1f18'); g.addColorStop(0.55, '#145a3d'); g.addColorStop(1, '#1f8a5b');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   for (const [x, y, r, c] of [[950, 120, 420, 'rgba(255,152,176,.35)'], [80, 1250, 460, 'rgba(122,169,255,.32)']]) {
     const rg = ctx.createRadialGradient(x, y, 0, x, y, r); rg.addColorStop(0, c); rg.addColorStop(1, 'rgba(255,255,255,0)');

@@ -1,0 +1,27 @@
+/* add — экран «Новая операция». Всё под .addv; грузится после polish.css. Цвета только из токенов. */
+.addv .amount{padding:16px 0 8px;gap:6px}
+.addv .amount input{font:700 44px/1.1 var(--font);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.addv .amount span{font-size:var(--t-xl);font-weight:600;color:var(--muted)}
+
+/* сегмент со скользящей пилюлей */
+.addv .seg.slide{position:relative;isolation:isolate}
+.addv .seg.slide .pill{position:absolute;z-index:-1;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / var(--n));transform:translateX(calc(var(--i) * 100%));background:var(--surface);border-radius:var(--r-sm);box-shadow:0 0 0 1px var(--line);transition:transform .25s cubic-bezier(.3,.8,.3,1)}
+.addv .seg.slide button{background:none;box-shadow:none;display:flex;align-items:center;justify-content:center;gap:6px;transition:color .2s,transform .15s}
+.addv .seg.slide button:active{transform:scale(.97)}
+.addv .seg.slide button.on{color:var(--accent)}
+.addv .seg.compact{padding:3px}
+.addv .seg.compact .pill{top:3px;bottom:3px;left:3px;width:calc((100% - 6px) / var(--n))}
+.addv .seg.compact button{min-height:38px;font-size:var(--t-sm)}
+.addv .scopehint{font-size:var(--t-xs);margin:6px 4px 0}
+
+/* категории: компактная сетка, цвет и подложка только у выбранной */
+.addv .cats{gap:4px}
+.addv .catb{border:0;background:none;color:var(--muted);padding:8px 2px 6px;gap:4px;transition:background .2s,color .2s,transform .15s}
+.addv .catb .tile{width:32px;height:32px;font-size:22px;background:none;color:var(--muted);transition:color .2s}
+.addv .catb:active{transform:scale(.97)}
+.addv .catb.on{background:color-mix(in srgb,var(--h) 16%,transparent);color:var(--ink)}
+.addv .catb.on .tile{background:none;color:var(--h)}
+
+@media (prefers-reduced-motion:reduce){
+  .addv .seg.slide .pill,.addv .seg.slide button,.addv .catb,.addv .catb .tile{transition:none}
+}

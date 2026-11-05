@@ -1,6 +1,6 @@
 // Общие кусочки интерфейса для бюджетов, целей и регулярных платежей: шторка, кольцо, полоса, чипы.
 import { registerIcons } from './icons.js';
-import { ic, av, esc, nameOf, money as fm, $, $$ } from './core.js';
+import { ic, esc, nameOf, money as fm, $, $$ } from './core.js';
 
 registerIcons({
   check: 'M5 12.5l4.5 4.5L19 7.5',

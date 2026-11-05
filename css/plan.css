@@ -8,7 +8,7 @@
 /* уровни: --rc — цвет кольца и полосы */
 .lvl-ok{--rc:var(--max)}.lvl-warn{--rc:var(--joint)}.lvl-over{--rc:var(--neg)}.lvl-done{--rc:var(--pos)}
 .pbar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:8px}
-.pbar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,color-mix(in srgb,var(--rc,var(--max)) 62%,#fff),var(--rc,var(--max)));min-width:0;transition:width .4s}
+.pbar i{display:block;height:100%;border-radius:4px;background:var(--rc,var(--max));min-width:0;transition:width .4s}
 .ring{position:relative;display:inline-flex;flex:none;color:var(--rc,var(--max))}
 .ring svg{display:block}
 .ring .rt{fill:none;stroke:var(--line)}

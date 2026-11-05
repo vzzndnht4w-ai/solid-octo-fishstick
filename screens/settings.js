@@ -14,7 +14,7 @@ const shareText = (v) => `Как делим: ${PEOPLE.max} ${v}% · ${PEOPLE.din
 
 const catBlock = ([kind, label, icon, base], s) => {
   const mine = s.categories[kind] || [];
-  return `<div class="srow col"><div class="top2"><span class="tile sm" style="--h:${kind === 'income' ? '#2aa874' : '#e2a63c'}">${ic(icon)}</span><span class="lbl"><b>${label}</b><small>Свои — с иконкой «Другое». Старые операции не меняются.</small></span></div>
+  return `<div class="srow col"><div class="top2"><span class="tile sm" style="--h:${kind === 'income' ? 'var(--max)' : 'var(--joint)'}">${ic(icon)}</span><span class="lbl"><b>${label}</b><small>Свои — с иконкой «Другое». Старые операции не меняются.</small></span></div>
     <ul class="cchips" aria-label="${label}">${base.map((c) => `<li class="cc base">${esc(c)}</li>`).join('')}${mine.map((c, i) => `<li class="cc mine">${esc(c)}<button type="button" data-delcat="${kind}:${i}" aria-label="Удалить категорию «${esc(c)}»">${ic('x')}</button></li>`).join('')}</ul>
     <form class="addrow" data-addcat="${kind}" novalidate><label class="sr" for="nc-${kind}">Новая категория</label><input id="nc-${kind}" class="txt" placeholder="Новая категория" maxlength="${CAT_MAX}" autocomplete="off" data-fk="nc-${kind}"><button type="submit" class="chip on addbtn" data-fk="nc-add-${kind}">Добавить</button></form>
     <p class="ferr" id="err-${kind}" role="alert"></p></div>`;
@@ -25,19 +25,19 @@ export default {
     const st = s.settings, share = st.defaultShare ?? 50;
     return `${subHeader('Настройки')}<div class="stack">
     ${group('Внешний вид',
-      ctl({ icon: 'sun', hue: '#e2a63c', label: 'Тема', control: seg('theme', [['auto', 'Авто'], ['light', 'Светлая'], ['dark', 'Тёмная']], st.theme || 'auto', 'Тема оформления') })
-      + ctl({ icon: 'globe', hue: '#36b0d4', label: 'Валюта', sub: 'Символ в суммах по всему приложению', control: `<div class="chips s-cur" role="group" aria-label="Валюта">${CURRENCIES.map((c) => `<button type="button" class="chip${st.currency === c ? ' on' : ''}" data-cur="${c}" data-fk="cur-${c}" aria-pressed="${st.currency === c}" aria-label="${c}">${c}</button>`).join('')}</div>` }))}
+      ctl({ icon: 'sun', hue: 'var(--joint)', label: 'Тема', control: seg('theme', [['auto', 'Авто'], ['light', 'Светлая'], ['dark', 'Тёмная']], st.theme || 'auto', 'Тема оформления') })
+      + ctl({ icon: 'globe', hue: 'var(--accent)', label: 'Валюта', sub: 'Символ в суммах по всему приложению', control: `<div class="chips s-cur" role="group" aria-label="Валюта">${CURRENCIES.map((c) => `<button type="button" class="chip${st.currency === c ? ' on' : ''}" data-cur="${c}" data-fk="cur-${c}" aria-pressed="${st.currency === c}" aria-label="${c}">${c}</button>`).join('')}</div>` }))}
     ${group('Общие траты',
-      ctl({ icon: 'pie', hue: '#9a6cff', label: 'Доля по умолчанию', sub: 'Подставляется в новую общую трату', control: `<p class="sharelab" id="s-sharelab" aria-live="polite">${esc(shareText(share))}</p><input type="range" id="s-share" min="0" max="100" step="5" value="${share}" aria-label="Доля ${esc(PEOPLE.max)} в процентах" aria-valuetext="${share}%"><div class="chips mt"><button type="button" class="chip" data-share="50">50/50</button><button type="button" class="chip" data-share="60">60/40</button><button type="button" class="chip" data-share="70">70/30</button></div>` })
-      + ctl({ icon: 'users', hue: '#2aa874', label: 'Делить общее по доходам', sub: 'Доля в новой общей трате — по доходам за последние 3 месяца', control: seg('splitInc', [['0', 'Выкл.'], ['1', 'Вкл.']], st.splitByIncome ? '1' : '0', 'Делить общее по доходам') })
-      + ctl({ icon: 'card', hue: '#4f86f0', label: 'Способ оплаты по умолчанию', control: seg('method', [['card', `${ic('card')} Карта`], ['cash', `${ic('cash')} Наличные`]], st.defaultMethod || 'card', 'Способ оплаты по умолчанию') }))}
+      ctl({ icon: 'pie', hue: 'var(--accent)', label: 'Доля по умолчанию', sub: 'Подставляется в новую общую трату', control: `<p class="sharelab" id="s-sharelab" aria-live="polite">${esc(shareText(share))}</p><input type="range" id="s-share" min="0" max="100" step="5" value="${share}" aria-label="Доля ${esc(PEOPLE.max)} в процентах" aria-valuetext="${share}%"><div class="chips mt"><button type="button" class="chip" data-share="50">50/50</button><button type="button" class="chip" data-share="60">60/40</button><button type="button" class="chip" data-share="70">70/30</button></div>` })
+      + ctl({ icon: 'users', hue: 'var(--max)', label: 'Делить общее по доходам', sub: 'Доля в новой общей трате — по доходам за последние 3 месяца', control: seg('splitInc', [['0', 'Выкл.'], ['1', 'Вкл.']], st.splitByIncome ? '1' : '0', 'Делить общее по доходам') })
+      + ctl({ icon: 'card', hue: 'var(--accent)', label: 'Способ оплаты по умолчанию', control: seg('method', [['card', `${ic('card')} Карта`], ['cash', `${ic('cash')} Наличные`]], st.defaultMethod || 'card', 'Способ оплаты по умолчанию') }))}
     ${group('Безопасность',
-      ctl({ icon: 'timer', hue: '#ef8a45', label: 'Автоблокировка', sub: 'Через сколько после ухода в фон спрашивать PIN-код', control: seg('lock', LOCKS, st.autoLockMin ?? 1, 'Автоблокировка') })
-      + row({ icon: 'shield', hue: '#2aa874', label: 'PIN-код', sub: 'Установить, сменить или отключить', value: st.pins?.[s.viewer] ? 'Включён' : 'Не задан', go: 'profile', fk: 'go-pin' }),
+      ctl({ icon: 'timer', hue: 'var(--joint)', label: 'Автоблокировка', sub: 'Через сколько после ухода в фон спрашивать PIN-код', control: seg('lock', LOCKS, st.autoLockMin ?? 1, 'Автоблокировка') })
+      + row({ icon: 'shield', hue: 'var(--max)', label: 'PIN-код', sub: 'Установить, сменить или отключить', value: st.pins?.[s.viewer] ? 'Включён' : 'Не задан', go: 'profile', fk: 'go-pin' }),
       'Приложение всегда просит PIN при запуске, если он задан. «Выкл.» — не блокировать при возврате из фона.')}
     ${group('Свои категории', KINDS.map((k) => catBlock(k, s)).join(''))}
-    ${group('Профиль', row({ icon: 'users', hue: '#7b6cf0', label: 'Имена, цвета, обращение', go: 'profile', fk: 'go-profile' }))}
-    ${group('Знакомство', row({ icon: 'refresh', hue: '#858aa0', label: confirmReset ? 'Точно пройти заново? Нажмите ещё раз' : 'Пройти знакомство заново', sub: 'Операции и цели не удаляются', go: 'reset-onb', fk: 'reset-onb', danger: confirmReset }))}
+    ${group('Профиль', row({ icon: 'users', hue: 'var(--dinara)', label: 'Имена, цвета, обращение', go: 'profile', fk: 'go-profile' }))}
+    ${group('Знакомство', row({ icon: 'refresh', hue: 'var(--muted)', label: confirmReset ? 'Точно пройти заново? Нажмите ещё раз' : 'Пройти знакомство заново', sub: 'Операции и цели не удаляются', go: 'reset-onb', fk: 'reset-onb', danger: confirmReset }))}
     </div>`;
   },
   bind(root, s, a) {

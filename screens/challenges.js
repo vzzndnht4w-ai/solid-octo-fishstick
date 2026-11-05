@@ -2,7 +2,7 @@
 import { parseMoney, validate, EXPENSE_CATEGORIES } from '../ledger.js';
 import { ic, esc, av, nameOf, money as fm, subHeader, $, $$ } from '../core.js';
 import { seg } from '../lib/ui.js';
-import { openSheet, chips, bindChips, amountField, kopToInput, pbar } from '../planui.js';
+import { openSheet, chips, bindChips, amountField, pbar } from '../planui.js';
 import { challengeProgress, visibleTxs, achievements, CHALLENGE_TYPES, piggyTotal, piggyWeekAmount, addDays, plural } from '../lib/play.js';
 import '../lib/play-icons.js';
 
@@ -79,7 +79,7 @@ function card(ch, s, a, txs) {
     ? `<div class="btns2"><button class="ghost" data-keep type="button" style="text-align:center">Оставить</button><button class="ghost danger" data-del2="${esc(ch.id)}" type="button" style="text-align:center">Да, удалить</button></div>`
     : `<button class="linkbtn pc-del" type="button" data-del="${esc(ch.id)}">Удалить</button>`;
   return `<article class="card pc lvl-${lvl}" data-cid="${esc(ch.id)}" aria-label="${esc(ch.title)}">
-    <div class="pc-head"><span class="tile pc-tile" style="--h:#7b6cf0">${ic(meta.icon)}</span><div class="pc-title"><b>${esc(ch.title)}</b><small>${esc(describe(ch, s))}</small></div>${badge || streak}</div>
+    <div class="pc-head"><span class="tile pc-tile" style="--h:var(--dinara)">${ic(meta.icon)}</span><div class="pc-title"><b>${esc(ch.title)}</b><small>${esc(describe(ch, s))}</small></div>${badge || streak}</div>
     ${p.pct !== null ? pbar(p.pct) : ''}
     <div class="pc-label"><span>${esc(p.label)}</span>${badge ? streak : ''}${p.pct !== null ? `<b>${Math.round(p.pct * 100)}%</b>` : ''}</div>
     <div class="pc-sect">Вклад каждого</div>${contribHtml(ch, p)}
@@ -108,7 +108,7 @@ function newSheet(s, a) {
   const goalChips = () => s.goals.length ? `<label class="l">Куда откладываем</label>${chips('goal', [['', 'Просто в общий баланс'], ...s.goals.map((g) => [g.id, `${esc(g.emoji || '🎯')} ${esc(g.name)}`])], f.goalId)}` : '';
   const draw = () => {
     if (!f.tpl) {
-      sh.el.innerHTML = `<div class="grab"></div><h1 style="font-size:22px">Новый челлендж</h1><div class="pc-tpls">${TEMPLATES.map((t) => `<button type="button" class="pc-tpl" data-tpl="${t.k}"><span class="tile" style="--h:#7b6cf0">${ic(t.icon)}</span><span><b>${esc(t.title)}</b><small>${esc(t.sub)}</small></span>${ic('right')}</button>`).join('')}</div>`;
+      sh.el.innerHTML = `<div class="grab"></div><h1 style="font-size:22px">Новый челлендж</h1><div class="pc-tpls">${TEMPLATES.map((t) => `<button type="button" class="pc-tpl" data-tpl="${t.k}"><span class="tile" style="--h:var(--dinara)">${ic(t.icon)}</span><span><b>${esc(t.title)}</b><small>${esc(t.sub)}</small></span>${ic('right')}</button>`).join('')}</div>`;
       $$('[data-tpl]', sh.el).forEach((b) => (b.onclick = () => {
         f.tpl = TEMPLATES.find((t) => t.k === b.dataset.tpl);
         if (f.tpl.k === 'impulse') f.category = 'Одежда';

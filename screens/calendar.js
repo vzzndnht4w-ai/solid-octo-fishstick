@@ -19,7 +19,7 @@ const weekday = (d) => new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 
 
 function item(c, s, today) {
   const t = c.tpl, secret = isSecret(t, s.viewer, today), title = chargeTitle(t, s.viewer, today);
-  const icon = t.type === 'transfer' ? `<span class="tile" style="--h:#7b6cf0">${ic('swap')}</span>` : secret ? `<span class="tile" style="--h:#858aa0">${ic('lock')}</span>` : tile(t.category);
+  const icon = t.type === 'transfer' ? `<span class="tile" style="--h:var(--dinara)">${ic('swap')}</span>` : secret ? `<span class="tile" style="--h:var(--muted)">${ic('lock')}</span>` : tile(t.category);
   const sg = t.type === 'income' ? '+' : t.type === 'expense' ? '−' : '';
   const label = `Пропустить «${title}» ${c.date.slice(0, 7) === today.slice(0, 7) ? 'в этом месяце' : `в ${MONTHS_GEN[+c.date.slice(5, 7) - 1]}`}`;
   return `<div class="cal-it">${icon}<div class="mid"><b>${esc(title)}</b><div class="sub muted sm">${t.type === 'income' ? 'Придёт' : t.type === 'transfer' ? 'Перевод' : t.scope === 'personal' ? 'Личное' : 'Общее'}</div></div><div class="cal-r"><span class="amt ${t.type === 'income' ? 'pos' : ''}">${sg}${fm(t.amount)}</span><button type="button" class="skipbtn" data-skip="${esc(c.recId)}" data-date="${esc(c.date)}" aria-label="${esc(label)}">${ic('qskip')} Пропустить</button></div></div>`;

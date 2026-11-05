@@ -105,7 +105,7 @@ export default {
     const ready = dev && sync.isConnected() && !!push.getVapidPublic();
     const on = p.enabled && ui.sub === true && push.permission() === 'granted';
     return `${subHeader('Уведомления')}<div class="stack nf">
-      <div class="card"><div class="row" style="justify-content:flex-start;gap:12px"><span class="tile" style="--h:#ec4f7e">${ic('bell')}</span><div><b>Напоминания и новости от партнёра</b><div class="muted sm">Нужен один раз пройти четыре шага ниже.</div></div></div></div>
+      <div class="card"><div class="row" style="justify-content:flex-start;gap:12px"><span class="tile" style="--h:var(--accent)">${ic('bell')}</span><div><b>Напоминания и новости от партнёра</b><div class="muted sm">Нужен один раз пройти четыре шага ниже.</div></div></div></div>
       <div id="nf-live" role="status" aria-live="polite">${ui.ok && ui.ok !== 'test' ? `<div class="nf-msg ok">${esc(ui.ok)}</div>` : ''}${ui.ok === 'test' ? `<div class="nf-msg ok">Сервер отправил тестовое уведомление. Если оно не пришло за минуту, проверьте разрешения в Настройки → Уведомления → Мы.</div>` : ''}</div>
       ${ui.err ? `<div class="error nf-msg bad" role="alert">${esc(ui.err)}</div>` : ''}
       ${stepDevice()}${stepServer()}${stepEnable(p, ready)}${stepTest(p, on)}

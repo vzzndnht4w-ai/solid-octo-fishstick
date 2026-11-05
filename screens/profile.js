@@ -1,6 +1,6 @@
 // Профиль: имя, обращение (окончания), цвет-акцент, PIN-код. Имена обоих видны во всём приложении.
 import { subHeader, av, esc, $, $$ } from '../core.js';
-import { ACCENTS } from '../lib/appearance.js';
+import { ACCENTS, onColor } from '../lib/appearance.js';
 import { createPinRecord } from '../lib/pin.js';
 import { seg, group, row } from '../lib/ui.js';
 import { askNewPin, confirmPin } from './lock.js';
@@ -10,7 +10,7 @@ const other = (p) => (p === 'max' ? 'dinara' : 'max');
 
 const swatches = (s, me) => `<div class="swatches" role="group" aria-label="Цвет профиля">${Object.entries(ACCENTS).map(([k, c]) => {
   const mine = s.profiles[me].color === k, takenBy = s.profiles[other(me)].color === k;
-  return `<button type="button" class="swatch${mine ? ' on' : ''}" data-color="${k}" data-fk="color-${k}" style="--c1:${c.light[0]};--c2:${c.light[1]};--d1:${c.dark[0]};--d2:${c.dark[1]}" aria-pressed="${mine}" ${takenBy ? `disabled title="Занят: ${esc(s.profiles[other(me)].name)}"` : ''} aria-label="${esc(c.label)}${takenBy ? ' (занят партнёром)' : ''}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></button>`;
+  return `<button type="button" class="swatch${mine ? ' on' : ''}" data-color="${k}" data-fk="color-${k}" style="--c1:${c.light[0]};--d1:${c.dark[0]};--t1:${onColor(c.light[0])};--t2:${onColor(c.dark[0])}" aria-pressed="${mine}" ${takenBy ? `disabled title="Занят: ${esc(s.profiles[other(me)].name)}"` : ''} aria-label="${esc(c.label)}${takenBy ? ' (занят партнёром)' : ''}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></button>`;
 }).join('')}</div>`;
 
 const nameField = (id, value, label) => `<div class="srow col"><label class="fl" for="${id}">${esc(label)}</label><input id="${id}" class="txt" value="${esc(value)}" maxlength="${NAME_MAX}" autocomplete="off" autocapitalize="words" enterkeyhint="done"></div>`;
@@ -27,8 +27,8 @@ export default {
     ${group('Обращение', `<div class="srow col">${genderSeg('gender', P[me].female, P[me].name)}<p class="gdemo" aria-live="polite">${demo}</p></div>`, 'Нужно для правильных окончаний: «заработал» или «заработала».')}
     ${group('Цвет', `<div class="srow col">${swatches(s, me)}</div>`, 'Цвет аватара и ваших цифр. Цвет партнёра занят.')}
     ${group('PIN-код', hasPin
-      ? row({ icon: 'shield', hue: '#2aa874', label: 'PIN-код включён', sub: 'Спрашивается при запуске и после паузы' }) + row({ icon: 'lock', hue: '#7b6cf0', label: 'Заблокировать сейчас', go: 'lock-now', fk: 'lock-now' }) + row({ icon: 'edit', label: 'Сменить PIN-код', go: 'pin-change', fk: 'pin-change' }) + row({ icon: 'x', hue: '#e0445a', label: 'Отключить PIN-код', go: 'pin-off', fk: 'pin-off', danger: true })
-      : row({ icon: 'lock', hue: '#858aa0', label: 'Защитить профиль', sub: '4 цифры, у каждого свой', go: 'pin-set', fk: 'pin-set' }),
+      ? row({ icon: 'shield', hue: 'var(--max)', label: 'PIN-код включён', sub: 'Спрашивается при запуске и после паузы' }) + row({ icon: 'lock', hue: 'var(--dinara)', label: 'Заблокировать сейчас', go: 'lock-now', fk: 'lock-now' }) + row({ icon: 'edit', label: 'Сменить PIN-код', go: 'pin-change', fk: 'pin-change' }) + row({ icon: 'x', hue: 'var(--neg)', label: 'Отключить PIN-код', go: 'pin-off', fk: 'pin-off', danger: true })
+      : row({ icon: 'lock', hue: 'var(--muted)', label: 'Защитить профиль', sub: '4 цифры, у каждого свой', go: 'pin-set', fk: 'pin-set' }),
     'Хранится только хэш, сам PIN нигде не записывается. Время автоблокировки — в настройках.')}
     ${group('Второй профиль', `${nameField('pf-pname', P[pt].name, 'Имя партнёра')}<div class="srow col">${genderSeg('pgender', P[pt].female, P[pt].name)}</div>`)}
     </div>`;
