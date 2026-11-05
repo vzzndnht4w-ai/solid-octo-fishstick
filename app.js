@@ -168,9 +168,20 @@ function renderWho() {
 // ---------- Рендер ----------
 function renderNav() {
   const tab = TAB_OF[route] || route;
-  const b = (t, i, l) => `<button data-tab="${t}" class="${tab === t ? 'on' : ''}" ${tab === t ? 'aria-current="page"' : ''}>${ic(i)}<span>${l}</span></button>`;
-  nav.innerHTML = `<div class="dock">${b('home', 'home', 'Мы')}${b('feed', 'list', 'Лента')}<button class="plus" data-tab="add" aria-label="Добавить операцию">${ic('plus')}</button>${b('stats', 'chart', 'Итоги')}${b('more', 'more', 'Ещё')}</div>`;
-  $$('[data-tab]', nav).forEach((el) => (el.onclick = () => { history = []; api.go(el.dataset.tab); }));
+  if (!$('.dock', nav)) {   // меню строится один раз, дальше только переезжает индикатор
+    const b = (t, i, l) => `<button data-tab="${t}" aria-label="${l}">${ic(i)}</button>`;
+    nav.innerHTML = `<div class="dock"><i class="glow"></i>${b('home', 'home', 'Главная')}${b('feed', 'list', 'Лента')}<button class="plus" data-tab="add" aria-label="Добавить операцию">${ic('plus')}</button>${b('stats', 'chart', 'Итоги')}${b('more', 'more', 'Ещё')}</div>`;
+    $$('[data-tab]', nav).forEach((el) => (el.onclick = () => { history = []; api.go(el.dataset.tab); }));
+  }
+  const glow = $('.glow', nav);
+  $$('[data-tab]', nav).forEach((el) => {
+    const on = el.dataset.tab === tab;
+    el.classList.toggle('on', on);
+    if (on) el.setAttribute('aria-current', 'page'); else el.removeAttribute('aria-current');
+    if (on && tab !== 'add') glow.style.transform = `translate(${el.offsetLeft - 7}px,0)`;
+  });
+  glow.classList.toggle('shown', tab !== 'add');
+  requestAnimationFrame(() => glow.classList.add('ready'));   // первый показ — без анимации
 }
 
 function render() {
@@ -187,7 +198,8 @@ function render() {
   renderNav();
   view.innerHTML = screen.render(s, api);
   if (!view.querySelector('h1')) view.insertAdjacentHTML('afterbegin', `<h1 class="sr-only">${({ home: 'Главная', feed: 'Лента операций', stats: 'Итоги' })[route] || 'Мы'}</h1>`);
-  if (shownRoute !== route) { shownRoute = route; view.classList.remove('enter'); void view.offsetWidth; view.classList.add('enter'); }
+  view.classList.toggle('enter', shownRoute !== route);   // анимация появления — только при переходе, не при перерисовке
+  shownRoute = route;
   $$('[data-m]', view).forEach((b) => (b.onclick = () => { month = shiftMonth(month, +b.dataset.m); render(); }));
   $$('[data-back]', view).forEach((b) => (b.onclick = () => api.back()));
   $$('[data-switch]', view).forEach((b) => (b.onclick = () => chooseUser(s.viewer === 'max' ? 'dinara' : 'max')));

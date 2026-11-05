@@ -16,7 +16,7 @@ export default {
       const t = x.tpl, amt = `${sign(t)}${fm(t.amount)}`;
       return `<div class="qt"><button type="button" class="qmain" data-qt="${esc(x.id)}" aria-label="Добавить сегодня: ${esc(x.title)}, ${esc(amt)}">${tile(t.category)}<span class="qtxt"><b>${esc(x.title)}</b><small>${esc(amt)}</small></span></button><button type="button" class="qmore" data-qm="${esc(x.id)}" aria-label="Открыть форму: ${esc(x.title)}">${ic('more')}</button></div>`;
     }).join('');
-    return `<section class="sec wquick"><div class="row whead"><b>${ic('qbolt')} Быстро добавить</b><button class="linkbtn" data-q-go>Все шаблоны ${ic('right')}</button></div><div class="qgrid">${tiles}</div><p class="qnote muted sm">Касание — добавить на сегодня. Долгое нажатие или «…» — открыть форму.</p></section>`;
+    return `<section class="sec wquick"><div class="row whead"><b>${ic('qbolt')} Быстро добавить</b><button class="linkbtn" data-q-go>Все шаблоны ${ic('right')}</button></div><div class="qgrid">${tiles}</div></section>`;
   },
   bind(root, s, a) {
     const byId = (id) => s.templates.find((x) => x.id === id);

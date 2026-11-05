@@ -8,5 +8,6 @@ import upcoming from './upcoming.js';
 import streaks from './streaks.js';
 import savingsW from './savings.js';
 import quick from './quick.js';
-// Порядок по важности: быстрое действие, деньги месяца, ближайшее, наблюдения, долгие цели, пара, игры.
-export default [savingsW, quick, budgets, upcoming, insights, goals, fairness, streaks];
+// Главная сама ставит цели, накопления, бюджеты и «ближайшие 7 дней» выше последних операций;
+// остальные идут после них в порядке массива: быстрое действие, наблюдения, пара, игры.
+export default [goals, savingsW, budgets, upcoming, quick, insights, fairness, streaks];

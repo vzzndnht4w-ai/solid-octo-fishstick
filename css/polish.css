@@ -1,31 +1,21 @@
-/* polish: дизайн-аудит. Подключается последним и выравнивает то, что разные авторы сделали по-своему:
-   контраст (WCAG AA), цели касания 44px, iOS (клавиатура, безопасные зоны, зум полей), переполнение на 375px. */
+/* Подключается последним: общая доводка поверх остальных стилей и оформление главной и меню.
+   Цвета — только токены из style.css. */
 
-/* ---- контраст: белый текст на цветных заливках только на тёмных оттенках ---- */
-.av.max,.chip.on.max,.fchip.on.max,.pc-wk.on.max{background:var(--fmax)}
-.av.dinara,.chip.on.dinara,.fchip.on.dinara,.pc-wk.on.dinara{background:var(--fdin)}
-.max .mini i,.duo i:first-child,.pc-split .max{background:linear-gradient(90deg,var(--max),var(--max2))}
-.tag.joint{--c:var(--joint-t)}
-.tag{background:color-mix(in srgb,var(--c,var(--muted)) 11%,var(--surface))}
-.lvl-warn .cap,.wb.lvl-warn .cap{color:var(--joint-t)}
-.pc-streak{color:var(--joint-t)}
-.hero .lab{opacity:.9}
-
-/* ---- глобально: iOS и доступность ---- */
+/* ===== 1. Платформа и доступность ===== */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior-y:contain}
-main{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
-nav{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
-/* поля ввода никогда не меньше 16px: иначе Safari увеличивает страницу при фокусе */
+main,nav{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+/* поля ввода не меньше 16px: иначе Safari увеличивает страницу при фокусе */
 input,textarea,select,.dout textarea,#rText{font-size:max(16px,1em)}
 .dout textarea,#rText{font-size:var(--t-md);line-height:1.35}
-.toast{bottom:calc(104px + env(safe-area-inset-bottom));width:max-content}
+input,button,.amt,.tg-p b{font-variant-numeric:tabular-nums}
 a:focus-visible,summary:focus-visible,select:focus-visible,textarea:focus-visible,[role=button]:focus-visible,.chip:focus-visible,.tx:focus-visible{outline:3px solid color-mix(in srgb,var(--max) 60%,transparent);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+.toast{bottom:calc(104px + env(safe-area-inset-bottom));width:max-content}
 
-/* ---- цели касания ≥ 44px ---- */
+/* ===== 2. Цели касания не меньше 44px ===== */
 .back{width:44px;height:44px;flex:none}
 .top>button.av{width:44px;height:44px;font-size:var(--t-lg)}
-.linkbtn,.lnk{min-height:44px;padding-top:0;padding-bottom:0}
-.whead{margin-top:-10px;margin-bottom:-6px}
+.linkbtn,.lnk{min-height:44px;padding-top:0;padding-bottom:0;color:var(--accent)}
 .fchip{min-height:44px;padding:8px 14px}
 .seg button{min-height:44px}
 .iconbtn{position:relative}
@@ -35,69 +25,36 @@ a:focus-visible,summary:focus-visible,select:focus-visible,textarea:focus-visibl
 .sm-btn,.ghost{min-height:44px}
 .flab{width:84px}
 
-/* ---- переполнение на узком экране: суммы сжимаются, а не вылезают ---- */
-.hero .sum{font-size:clamp(30px,10.5vw,44px);white-space:nowrap}
-.split b{font-size:clamp(14px,4.4vw,16px);white-space:nowrap}
-.split span{min-width:0}
-.kv b{font-size:clamp(14px,4.5vw,17px)}
-.pace b{font-size:clamp(15px,4.6vw,22px);white-space:nowrap}
+/* ===== 3. Узкий экран: суммы сжимаются, а не вылезают ===== */
 .amount input{max-width:100%;font-size:clamp(30px,10.5vw,46px)}
 .sheet .big{font-size:clamp(26px,9vw,34px);overflow-wrap:anywhere}
+.sheet .kvs .row b{text-align:right;min-width:0;overflow-wrap:anywhere}
 .tx .amt{font-size:clamp(14px,4.4vw,16px)}
+.pace b{font-size:clamp(15px,4.6vw,22px);white-space:nowrap}
 .top.sub{align-items:center}
 .top.sub h1{font-size:24px;line-height:1.15;min-width:0;text-wrap:balance}
 .hello b{overflow-wrap:anywhere}
-.settle .t b{overflow-wrap:anywhere}
 
-/* ---- главная: личные итоги сразу под балансом, виджеты ниже ---- */
-.people.first{margin-top:0}
-.wquick .qnote{display:none}
-
-/* ---- пользовательские окна ---- */
-.sheet .kvs .row b{text-align:right;min-width:0;overflow-wrap:anywhere}
-
-/* ---- движение: уважаем настройку «уменьшить движение» ---- */
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
-  .card:active,.tx:active,.chip:active,.opt:active,.catb:active,.primary:active,.ghost:active{transform:none}
-}
-
-/* аудит 2: читаемый розовый для мелкого текста, h1 для дикторов, непрозрачный док, плоские шкалы двух цветов */
-.dock button.on{color:var(--accent)}
-.linkbtn{color:var(--accent)}
-
-.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
-.dock{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}
-.dock .plus{box-shadow:0 2px 8px rgba(0,0,0,.25)}
-.duo i:first-child{background:var(--max)}.duo i:last-child{background:var(--dinara)}
-.max .mini i{background:var(--max)}.dinara .mini i{background:var(--dinara)}
+/* ===== 4. Плоские поверхности, цвет только по смыслу ===== */
 h2{text-transform:none;letter-spacing:0;font-size:var(--t-lg);font-weight:650;color:var(--ink);margin:28px 4px 10px}
-input[type=range]{height:28px;padding:10px 0;background-clip:content-box}
-
-/* ===== спокойный интерфейс: иерархия, плоские секции, токены, плоские заливки ===== */
-input,button,.amt,.sum,.kv b,.tg-p b{font-variant-numeric:tabular-nums}
-.tx .amt,.kv b,.tg-p b,.svamt,.rsum b,.wg .gpct,.gsum b,.up .upamt{font-weight:700}
-
-/* тень только у нижнего меню, шторки и тёмного баланса; у карточек — тонкая рамка */
 .card,.list,.tpl-card,.month,.back{box-shadow:none;border:1px solid var(--line)}
+.sheet{box-shadow:0 -10px 34px rgba(0,0,0,.28)}
 .seg button.on{box-shadow:0 0 0 1px var(--line)}
-.sheet{box-shadow:0 -10px 34px rgba(10,6,24,.28)}
+.av.max,.chip.on.max,.fchip.on.max,.pc-wk.on.max{background:var(--fmax);color:var(--on-accent)}
+.av.dinara,.chip.on.dinara,.fchip.on.dinara,.pc-wk.on.dinara{background:var(--fdin);color:#1a1726}
+.av.joint,.chip.on.joint,.fchip.on.joint{background:var(--joint);color:var(--on-joint)}
+.primary,.tg-act,.empty .big{background:var(--accent);color:var(--on-accent);box-shadow:none}
+.chip.on,.fchip.on{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.tag{background:color-mix(in srgb,var(--c,var(--muted)) 11%,var(--surface))}
+.tag.joint{--c:var(--joint-t)}
+.tx .sub .tag.joint{background:none;color:var(--muted);padding:0;font-weight:500}
+.lvl-warn .cap,.wb.lvl-warn .cap,.pc-streak{color:var(--joint-t)}
+.tx .amt,.kv b,.tg-p b,.svamt,.rsum b,.wg .gpct,.gsum b,.up .upamt{font-weight:700}
+.pbar i{background:var(--rc,var(--max))}
+.dt-dots li.cur{background:var(--accent)}
+input[type=range]{height:28px;padding:10px 0;border-radius:0;background-color:transparent;background-image:linear-gradient(color-mix(in srgb,var(--ink) 16%,transparent),color-mix(in srgb,var(--ink) 16%,transparent));background-size:100% 8px;background-position:center;background-repeat:no-repeat}
 
-/* главная: карточки только у баланса и долга, остальное — плоские секции */
-.sec{border-top:1px solid var(--line);padding-top:16px;margin-top:10px;display:flex;flex-direction:column;gap:12px}
-.sec.insights{gap:10px;padding-top:18px}
-.sec.insights .ins{padding-left:0;padding-right:0}
-.sec .whead{margin-top:-10px;margin-bottom:-6px}
-.whead>b{font-size:var(--t-lg);font-weight:650}
-.sec .qhint{margin:0}
-.stack>div:has(>.people){border-top:1px solid var(--line);margin-top:10px}
-.people{gap:0}
-.pcard{background:none;box-shadow:none;border:0;border-radius:0;padding:4px 14px}
-.pcard:first-child{padding-left:0}
-.pcard:last-child{padding-right:0;border-left:1px solid var(--line)}
-.wallet{display:block;font-size:var(--t-xs);color:var(--muted);line-height:1.4}
-
-/* «Справедливость»: две колонки с тонкой линией вместо карточек в карточке */
+/* «Справедливость»: две колонки с тонкой линией */
 .tg-pair{gap:0}
 .tg-p{background:none;border-radius:0;padding:0 14px}
 .tg-p:first-child{padding-left:0}
@@ -115,7 +72,7 @@ input,button,.amt,.sum,.kv b,.tg-p b{font-variant-numeric:tabular-nums}
 
 /* форма добавления */
 .amount{padding:18px 4px 6px;justify-content:center}
-.amount input{font:700 44px/1.1 var(--font);font-size:44px;font-variant-numeric:tabular-nums}
+.amount input{font:700 44px/1.1 var(--font);font-size:clamp(30px,10.5vw,44px);font-variant-numeric:tabular-nums}
 .amount input::placeholder{color:var(--muted);opacity:1}
 .amount span{font-size:var(--t-xl);font-weight:600;color:var(--muted)}
 .catb{border-color:var(--line)}
@@ -125,19 +82,116 @@ input,button,.amt,.sum,.kv b,.tg-p b{font-variant-numeric:tabular-nums}
 .savebar{position:sticky;bottom:calc(88px + env(safe-area-inset-bottom));z-index:5;background:var(--bg);padding:10px 0 8px;margin-top:14px}
 .savebar .primary{margin-top:0}
 
-/* лента: служебные пометки приглушены, цвет — для долгов, перерасхода и доходов */
-.tx .sub .tag.joint{background:none;color:var(--muted);padding:0;font-weight:500}
+/* ===== 5. Главная: общие блоки ===== */
+.home>*{min-width:0}
+main.enter>.home{animation:none}
+.sec{border-top:1px solid var(--line);padding-top:16px;margin-top:10px;display:flex;flex-direction:column;gap:12px}
+.sec.insights{gap:10px;padding-top:18px}
+.sec.insights .ins{padding-left:0;padding-right:0}
+.sec .whead{margin-top:-10px;margin-bottom:-6px}
+.sec .qhint{margin:0}
+.whead>b{font-size:var(--t-lg);font-weight:650}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px}
 
-/* градиенты только у баланса и «+» в меню; кнопки и активные чипы — плоский акцент */
-.primary,.tg-act,.empty .big{background:var(--accent);color:var(--on-accent);box-shadow:none}
-.chip.on,.fchip.on{background:var(--accent);border-color:transparent;color:var(--on-accent)}
-.chip.on.max,.fchip.on.max{background:var(--fmax);color:var(--on-accent)}
-.chip.on.dinara,.fchip.on.dinara{background:var(--fdin);color:#1a1726}
-.chip.on.joint,.fchip.on.joint{background:var(--joint);color:#3a2600}
-.av.joint{background:var(--joint)}
-.pbar i{background:var(--rc,var(--max))}
-input[type=range]{background:var(--line)}
-.dt-dots li.cur{background:var(--accent)}
+/* ===== 6. Главная: герой «Общий баланс» ===== */
+.hero{position:relative;overflow:hidden;isolation:isolate;border-radius:28px;padding:18px 20px 18px;background:var(--hero);color:var(--on-hero);box-shadow:var(--shadow)}
+.hero .bl{position:absolute;z-index:-1;border-radius:50%;filter:blur(28px);pointer-events:none;animation:drift 9s ease-in-out infinite alternate}
+.hero .b1{width:170px;height:170px;right:-40px;top:-50px;background:var(--max2);opacity:.5}
+.hero .b2{width:150px;height:150px;left:-40px;bottom:-70px;background:var(--joint2);opacity:.26;animation-duration:11s;animation-delay:-3s}
+.hero .b3{width:110px;height:110px;right:70px;bottom:-45px;background:var(--on-hero);opacity:.14;animation-delay:-6s}
+.hl{display:flex;justify-content:space-between;align-items:center;font-size:var(--t-sm);font-weight:600}
+.hl>span{opacity:.85}
+.eye{width:44px;height:44px;margin:-8px -10px -8px 0;border:0;border-radius:50%;background:none;color:inherit;display:grid;place-items:center;font-size:var(--t-xl)}
+.eye .off{display:none}
+.hero.hide .eye .on{display:none}.hero.hide .eye .off{display:block}
+.bal,.hs{transition:filter .3s}
+.hero.hide .bal,.hero.hide .hs{filter:blur(12px)}
+.bal{font-size:clamp(34px,11.5vw,46px);font-weight:800;letter-spacing:-.04em;line-height:1.05;margin:4px 0;white-space:nowrap}
+.hs{font-size:var(--t-sm);opacity:.85}
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.act{min-height:58px;border:0;border-radius:18px;padding:9px 4px;display:grid;justify-items:center;align-content:center;gap:2px;font-size:var(--t-xs);font-weight:700;color:var(--on-hero);background:color-mix(in srgb,var(--on-hero) 15%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:transform .2s,background-color .2s}
+.act:active:not(:disabled){transform:scale(.95);background:color-mix(in srgb,var(--on-hero) 28%,transparent)}
+.act:disabled{opacity:.6;cursor:default}
+.act svg{font-size:var(--t-xl)}
+.act i{font-style:normal;font-weight:600;opacity:.85}
+.debtline{margin:0 4px;font-size:var(--t-sm);color:var(--muted)}
+.debtline b{color:var(--ink);font-weight:700}
+.debtnote{margin:-6px 4px 0;padding:0;background:none;border-radius:0;font-weight:500;color:var(--muted)}
 
-/* аудит меню: дорожка ползунка читаема в обеих темах */
-input[type=range]{background-color:transparent;background-image:linear-gradient(color-mix(in srgb,var(--ink) 16%,transparent),color-mix(in srgb,var(--ink) 16%,transparent));background-size:100% 8px;background-position:center;background-repeat:no-repeat;background-clip:border-box;border-radius:0}
+/* ===== 7. Главная: «Динамика» ===== */
+.ph{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ptitle{margin:0;font-size:var(--t-lg);font-weight:650;color:var(--ink)}
+.pseg{position:relative;display:flex;background:var(--surface2);border-radius:var(--r-pill);padding:3px;box-shadow:inset 0 0 0 1px var(--line)}
+.pseg button{position:relative;z-index:1;min-height:40px;padding:0 12px;border:0;background:none;font-size:var(--t-xs);font-weight:600;color:var(--muted);transition:color .25s}
+.pseg button.on{color:var(--on-accent)}
+.pseg .pill{position:absolute;z-index:0;top:3px;bottom:3px;left:0;width:0;border-radius:var(--r-pill);background:var(--max)}
+.pseg .pill.ready{transition:transform .35s cubic-bezier(.3,1.3,.5,1),width .35s cubic-bezier(.3,1.3,.5,1)}
+.cbig{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:6px}
+.cval{font-size:clamp(24px,8vw,30px);font-weight:800;letter-spacing:-.03em}
+.delta{font-size:var(--t-xs);font-weight:700;border-radius:var(--r-pill);padding:3px 9px;color:var(--muted);background:var(--surface2)}
+.delta.up{color:var(--pos);background:color-mix(in srgb,var(--pos) 14%,transparent)}
+.delta.down{color:var(--neg);background:color-mix(in srgb,var(--neg) 14%,transparent)}
+.chart{position:relative;margin-top:8px;touch-action:pan-y;-webkit-user-select:none;user-select:none}
+.chart svg{display:block;width:100%;height:190px;overflow:visible}
+.chart-empty{height:190px;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 24px 18px;color:var(--muted);font-size:var(--t-sm);border-bottom:1.5px dashed var(--line)}
+.st-a1{stop-color:var(--max);stop-opacity:.4}.st-a0{stop-color:var(--max);stop-opacity:0}
+.st-s1{stop-color:var(--max);stop-opacity:.55}.st-s0{stop-color:var(--max);stop-opacity:0}
+.ch-line{fill:none;stroke:var(--max);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:ch-draw 1.2s cubic-bezier(.3,.7,.2,1) forwards}
+.ch-area,.ch-spike,.ch-mk{opacity:0;animation:ch-fade .5s forwards}
+.ch-area{animation-duration:.9s;animation-delay:.3s}
+.ch-mk{animation-delay:1s}
+.chart.still .ch-area,.chart.still .ch-spike,.chart.still .ch-mk{opacity:1;animation:none}
+.chart.still .ch-line{stroke-dashoffset:0;animation:none}
+.ch-glow{fill:var(--joint2);opacity:.25}
+.ch-dot{fill:var(--joint2);stroke:var(--surface);stroke-width:3}
+.ch-mkl{stroke:var(--joint2);stroke-width:1.2;stroke-dasharray:3 4;opacity:.7}
+.ctip{position:absolute;top:0;transform:translate(-50%,-4px);padding:4px 9px;border-radius:var(--r-sm);background:var(--joint2);color:var(--on-joint);font-size:var(--t-xs);font-weight:800;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s}
+.ctip small{display:block;font-size:11px;font-weight:600;opacity:.75}
+.axis{display:flex;justify-content:space-between;margin-top:4px;color:var(--muted);font-size:var(--t-xs)}
+
+/* ===== 8. Главная: Максим и Динара ===== */
+.mswitch{display:flex;align-items:center}
+.mswitch button{width:44px;height:44px;margin:-10px 0;border:0;background:none;display:flex;align-items:center;justify-content:center;font-size:var(--t-lg)}
+.ppl{display:grid;grid-template-columns:1fr 1fr}
+.pp{display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0;padding:0 8px}
+.pp+.pp{border-left:1px solid var(--line)}
+.pp .nm{display:flex;align-items:center;gap:8px;font-weight:700;font-size:var(--t-sm)}
+.prg{position:relative;width:88px;height:88px;margin:12px 0 8px}
+.prg svg{display:block;width:100%;height:100%;transform:rotate(-90deg)}
+.prg circle{fill:none;stroke-width:9;stroke-linecap:round}
+.prg .bg{stroke:var(--line)}
+.pp.max .fg{stroke:var(--max)}.pp.dinara .fg{stroke:var(--dinara)}.pp.over .fg{stroke:var(--neg)}
+.prg .tt{position:absolute;inset:0;display:grid;place-items:center;font-size:var(--t-md);font-weight:800}
+.pv{font-size:var(--t-lg);font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.pl{font-size:var(--t-xs);color:var(--muted)}
+
+/* ===== 9. Главная: последние операции ===== */
+.rlist .tx{padding:10px 0}
+.rlist .tx .amt{text-align:right}
+.rlist .tx .amt small{display:block;font-size:var(--t-xs);font-weight:500;color:var(--muted)}
+
+/* ===== 10. Нижнее меню: плавающая капсула ===== */
+.dock{position:relative;pointer-events:auto;display:flex;align-items:center;gap:2px;padding:7px;border-radius:var(--r-pill);background:color-mix(in srgb,var(--surface) 82%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 14px 34px rgba(0,0,0,.35),0 0 0 1px var(--line)}
+.dock button{position:relative;z-index:1;width:54px;height:48px;border:0;border-radius:var(--r-pill);background:none;display:grid;place-items:center;font-size:var(--t-xl);color:var(--muted);transition:color .3s,transform .25s}
+.dock button.on{color:var(--on-accent)}
+.dock .glow{position:absolute;top:7px;left:7px;width:54px;height:48px;border-radius:var(--r-pill);background:var(--max);box-shadow:0 0 22px color-mix(in srgb,var(--max) 60%,transparent);opacity:0}
+.dock .glow.shown{opacity:1}
+.dock .glow.ready{transition:transform .45s cubic-bezier(.3,1.4,.5,1),opacity .25s}
+.dock .plus,.dock .plus.on{color:var(--on-joint)}
+.dock .plus{width:58px;margin:0 2px;background:var(--joint2);color:var(--on-joint);font-size:26px;box-shadow:0 0 22px color-mix(in srgb,var(--joint2) 50%,transparent)}
+.dock .plus:active{transform:scale(.92)}
+
+/* ===== 11. Движение ===== */
+main.enter>*{animation:enter .38s cubic-bezier(.2,.8,.3,1) both}
+.rise{opacity:0;transform:translateY(14px);animation:rise-in .6s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i,0)*70ms)}
+@keyframes enter{from{opacity:0;transform:translateY(10px)}}
+@keyframes rise-in{to{opacity:1;transform:none}}
+@keyframes drift{to{transform:translate(26px,-18px) scale(1.15)}}
+@keyframes ch-draw{to{stroke-dashoffset:0}}
+@keyframes ch-fade{to{opacity:1}}
+.card,.tx,.chip,.opt,.catb,.primary,.ghost{transition:transform .12s ease,background-color .2s}
+.card:active,.tx:active,.chip:active,.opt:active,.catb:active,.primary:active,.ghost:active{transform:scale(.98)}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .card:active,.tx:active,.chip:active,.opt:active,.catb:active,.primary:active,.ghost:active{transform:none}
+}
