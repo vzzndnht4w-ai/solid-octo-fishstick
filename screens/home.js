@@ -4,7 +4,7 @@ import widgets from '../widgets/index.js';
 import { debtAgeDays, plural } from '../lib/tools.js';
 import { load as loadInbox, unreadCount } from '../lib/inbox.js';
 import { balanceSeries, rangeDelta, chartPoints, smoothPath } from '../lib/series.js';
-import { countUp, stagger, ringFill } from '../lib/motion.js';
+import { stagger } from '../lib/motion.js';
 import { startWith } from './add.js';
 import { txView } from './feed.js';
 import { txBadge } from '../lib/together-ui.js';
@@ -24,7 +24,7 @@ export function debtNote(txs, d, today) {
 const HIDE_KEY = 'we-hide-bal';
 const PERIODS = [[7, '7 дн'], [30, '30 дн'], [90, '3 мес']];
 const MON = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
-const CHART_H = 190, SPIKE_STEP = 3;
+const CHART_H = 190, SPIKE_STEP = 3, MIN_POINTS = 7;   // высота графика; шаг «шипов» на 90 днях; минимум точек
 let period = 30, resizeWatch = null;
 
 const isHidden = () => { try { return localStorage.getItem(HIDE_KEY) === '1'; } catch { return false; } };
@@ -62,13 +62,11 @@ const chartHtml = () => `<section class="panel" aria-label="Динамика о�
   <div class="chart" data-chart></div><div class="axis" data-axis></div></section>`;
 
 function personHtml(p, ms) {
-  const spent = ms[p].personal + ms[p].sharedShare, earned = ms[p].earned, left = earned - spent;
-  const pct = earned ? Math.round((spent / earned) * 100) : 0;
-  const label = earned ? `осталось из ${fm(earned)}` : 'доходов за месяц нет';
-  return `<div class="pp ${p}${pct > 100 ? ' over' : ''}" data-frac="${Math.min(1, pct / 100)}" data-left="${left}">
+  const spent = ms[p].personal + ms[p].sharedShare, earned = ms[p].earned, left = earned - spent, f = feminine(p);
+  return `<div class="pp ${p}">
     <div class="nm">${av(p, 'sm')}${esc(nameOf(p))}</div>
-    <div class="prg" role="img" aria-label="${esc(nameOf(p))} потратил${feminine(p)} ${pct}% дохода за месяц"><svg viewBox="0 0 88 88" aria-hidden="true"><circle class="bg" cx="44" cy="44" r="35"/><circle class="fg" cx="44" cy="44" r="35"/></svg><span class="tt">${earned ? `${pct}%` : '—'}</span></div>
-    <div class="pv ${left < 0 ? 'neg' : ''}">${fm(left)}</div><div class="pl">${label}</div></div>`;
+    <div class="pv ${left < 0 ? 'neg' : ''}">${fm(left)}</div><div class="pl">осталось за месяц</div>
+    <dl class="pm"><div><dt>заработал${f}</dt><dd class="pos">${fm(earned)}</dd></div><div><dt>потратил${f}</dt><dd>${fm(spent)}</dd></div></dl></div>`;
 }
 
 function peopleHtml(s, a) {
@@ -97,9 +95,8 @@ const draw = (list, s, a) => list.map((w) => w.render(s, a)).join('');
 function drawChart(root, s, a, st, animate) {
   const box = $('[data-chart]', root), val = $('[data-cval]', root), dl = $('[data-cdelta]', root), axis = $('[data-axis]', root);
   const full = balanceSeries(s.txs, { days: period, end: a.today() }), last = full[full.length - 1];
-  const from = val._v ?? 0;
   val._v = last.value;
-  countUp(val, last.value, { format: fm, from, ms: animate ? 900 : 0 });
+  val.textContent = fm(last.value);
   box.classList.toggle('still', !animate);
   if (full.every((p) => p.value === 0)) {
     st.pts = [];
@@ -109,12 +106,14 @@ function drawChart(root, s, a, st, animate) {
     dl.hidden = true; axis.innerHTML = '';
     return;
   }
-  const { pct, amount } = rangeDelta(full);
+  // график начинается за день до первой операции (но не короче недели), чтобы ширина не уходила на пустые дни
+  const first0 = full.findIndex((p) => p.value !== 0), view = full.slice(Math.max(0, Math.min(first0 - 1, full.length - MIN_POINTS)));
+  const { pct, amount } = rangeDelta(view);
   dl.hidden = false;
   dl.className = `delta ${amount > 0 ? 'up' : amount < 0 ? 'down' : ''}`;
   dl.textContent = !amount ? '0 %' : `${amount > 0 ? '▲' : '▼'} ${pct == null ? fm(Math.abs(amount)) : `${Math.abs(pct).toFixed(1).replace('.', ',')} %`}`;
   const W = Math.round(box.clientWidth) || 320;
-  const plot = period === 90 ? full.filter((_, i) => (full.length - 1 - i) % SPIKE_STEP === 0) : full;
+  const plot = period === 90 ? view.filter((_, i) => (view.length - 1 - i) % SPIKE_STEP === 0) : view;
   const pts = st.pts = chartPoints(plot, { w: W, h: CHART_H, top: 44 });
   const line = smoothPath(pts), end = pts[pts.length - 1], first = pts[0];
   const sw = pts.length > 40 ? 1.5 : 2.4;
@@ -124,7 +123,7 @@ function drawChart(root, s, a, st, animate) {
   box.setAttribute('aria-valuemin', 0);
   box.setAttribute('aria-valuemax', plot.length - 1);
   box.setAttribute('aria-valuenow', plot.length - 1);
-  box.setAttribute('aria-label', `График общего баланса за ${period} дн.: с ${fm(full[0].value)} до ${fm(last.value)}. Стрелки влево и вправо двигают маркер`);
+  box.setAttribute('aria-label', `График общего баланса за ${period} дн.: с ${fm(view[0].value)} до ${fm(last.value)}. Стрелки влево и вправо двигают маркер`);
   const g1 = Math.round(CHART_H * 0.45), g2 = Math.round(CHART_H * 0.72);   // две линии сетки для масштаба
   box.innerHTML = `<svg viewBox="0 0 ${W} ${CHART_H}" aria-hidden="true">
     <defs><linearGradient id="chA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="st-a1"/><stop offset="1" class="st-a0"/></linearGradient>
@@ -146,7 +145,6 @@ function bindScrub(root, st) {
   const box = $('[data-chart]', root), val = $('[data-cval]', root);
   let down = false, idx = -1;   // -1: маркер ещё не двигали, стрелки стартуют с последней точки
   const showAt = (p) => {
-    cancelAnimationFrame(val._raf);   // чтобы идущий счётчик не перезаписал значение под пальцем
     place(box, p);
     val.textContent = fm(p.value);
     const tip = $('.ctip', box), half = tip.offsetWidth / 2;
@@ -223,8 +221,7 @@ function bindChart(root, s, a, fresh) {
 
 // ---------- Герой, люди ----------
 function bindHero(root, s, a) {
-  const hero = $('[data-hero]', root), bal = $('[data-bal]', root);
-  const total = balancesByMethod(s.txs).joint;
+  const hero = $('[data-hero]', root);
   $('[data-eye]', root).onclick = (e) => {
     const hide = hero.classList.toggle('hide');
     setHidden(hide);
@@ -240,7 +237,6 @@ function bindHero(root, s, a) {
     a.store.add({ type: 'transfer', amount: Math.abs(d), from, to, fromMethod: 'card', toMethod: 'card', date: a.today(), note: 'Взаиморасчёт', hidden: false });
     a.toast('Долг погашен');
   };
-  return { bal, total: total.card + total.cash };
 }
 
 export default {
@@ -253,13 +249,8 @@ export default {
   bind(root, s, a) {
     const fresh = root.dataset.fresh === '1';   // анимации — только при первом показе экрана, не при перерисовках
     delete root.dataset.fresh;
-    const { bal, total } = bindHero(root, s, a);
-    countUp(bal, total, { format: fm, ms: fresh ? 1100 : 0 });
+    bindHero(root, s, a);
     bindChart(root, s, a, fresh);
-    $$('.pp', root).forEach((el) => {
-      ringFill($('.fg', el), +el.dataset.frac, { ms: fresh ? 1100 : 0 });
-      countUp($('.pv', el), +el.dataset.left, { format: fm, ms: fresh ? 1200 : 0 });
-    });
     $('[data-inbox]', root).onclick = () => a.go('inbox');
     $$('[data-tx]', root).forEach((b) => (b.onclick = () => a.openTx(b.dataset.tx)));
     const all = $('[data-feed]', root);

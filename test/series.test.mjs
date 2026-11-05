@@ -70,3 +70,10 @@ test('smoothPath: начинается с M, по сегменту на кажд
   assert.equal((d.match(/C/g) || []).length, 2);
   assert.equal(smoothPath([]), '');
 });
+
+test('smoothPath: кривая не выходит за вертикальные границы соседних точек (нет провала перед скачком)', () => {
+  const pts = [{ x: 0, y: 100 }, { x: 10, y: 100 }, { x: 20, y: 100 }, { x: 30, y: 10 }, { x: 40, y: 10 }];
+  const nums = smoothPath(pts).match(/-?\d+(\.\d+)?/g).map(Number);
+  const ys = nums.filter((_, i) => i % 2 === 1);   // пары x y
+  assert.ok(Math.min(...ys) >= 10 && Math.max(...ys) <= 100);
+});
