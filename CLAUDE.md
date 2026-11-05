@@ -12,7 +12,8 @@
   `a` — api: `a.go(route)`, `a.back()`, `a.render()`, `a.month`, `a.store`, `a.toast(msg, {label, fn})`, `a.openTx(id)`, `a.editTx(tx)`.
 - Виджеты главной: `widgets/*.js` → `{ id, render(s, a), bind?(root, s, a) }`, список в `widgets/index.js`.
 - `lib/` — чистые модули логики для новых функций (с тестами в `test/`).
-- Стили — `style.css` (токены в `:root`, тёмная тема через `prefers-color-scheme`). Новые стили добавлять в конец своим блоком с комментарием.
+- Стили — `style.css`: ЕДИНСТВЕННОЕ место значений цвета (токены в `:root`; тёмная тема через `prefers-color-scheme` и `data-theme`). Остальные `css/*.css` берут только `var(--…)`, hex-цвета и свои `:root` (кроме локальных `--vz-*`) не заводить. Палитра: тёмный графит, один фирменный цвет — изумруд (`--max`/`--accent`), у Динары нейтральный лавандовый (`--dinara`), «общее» — приглушённое золото (`--joint`). Градиент допустим только у героя (`--hero`). Глубина — цвет поверхности и тонкая линия, тени только у меню, шторок, тоста.
+- Анимации: `lib/motion.js` (countUp, stagger, ringFill; уважает prefers-reduced-motion). Ряд для графика главной: `lib/series.js` (balanceSeries, rangeDelta, geometry), тесты в `test/series.test.mjs`.
 - Иконки — `icons.js` (`ic('имя')`). Новую иконку добавлять в объект `P`.
 
 ## Синхронизация

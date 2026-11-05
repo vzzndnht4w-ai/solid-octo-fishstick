@@ -12,7 +12,7 @@
 .tg-track{position:relative;height:14px;border-radius:7px;background:linear-gradient(90deg,color-mix(in srgb,var(--max) 20%,var(--surface2)),var(--surface2) 50%,color-mix(in srgb,var(--dinara) 20%,var(--surface2)))}
 .tg-mid{position:absolute;left:50%;top:-5px;bottom:-5px;width:2px;margin-left:-1px;background:var(--ink);opacity:.55;border-radius:1px}
 .tg-fill{position:absolute;top:0;bottom:0;border-radius:7px;background:var(--pos);transition:left .5s cubic-bezier(.2,.8,.3,1),width .5s cubic-bezier(.2,.8,.3,1)}
-.tg-fill.max{background:linear-gradient(270deg,var(--max),var(--max2))}.tg-fill.dinara{background:linear-gradient(90deg,var(--dinara),var(--dinara2))}
+.tg-fill.max{background:var(--max)}.tg-fill.dinara{background:var(--dinara)}
 .tg-dot{position:absolute;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:var(--surface);border:4px solid var(--pos);box-shadow:0 2px 8px rgba(0,0,0,.28);transition:left .5s cubic-bezier(.2,.8,.3,1)}
 .tg-dot.max{border-color:var(--max)}.tg-dot.dinara{border-color:var(--dinara)}
 .tg-ends{display:flex;justify-content:space-between;gap:8px;margin-top:10px;font-size:var(--t-xs);font-weight:600}

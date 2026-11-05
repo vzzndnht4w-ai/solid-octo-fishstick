@@ -15,7 +15,6 @@ const setInert = (on) => ['view', 'tabs', 'sheet', 'toast'].forEach((id) => { co
 
 /** Закрыть открытый экран ввода (как «отмена»). */
 export const closePad = () => { if (current) current.close(null); };
-export const isPadOpen = () => !!current;
 
 /**
  * Показать экран ввода PIN. Возвращает Promise: { pin } | { extra: id } | null (отмена).

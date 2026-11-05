@@ -173,6 +173,3 @@ export const reservedInGoals = (txs) => txs.reduce((s, t) => s + (t.type === 'tr
 
 /** Свободно в общем балансе: общий баланс минус отложенное в цели. */
 export const freeJoint = (txs) => balances(txs).joint - reservedInGoals(txs);
-
-/** Сколько денег кошельков перетекло на счёт накоплений (отложено минус возвращено). */
-export const savingFlow = (txs, savingId) => txs.reduce((s, t) => s + (t.type === 'saving' && t.savingId === savingId ? t.amount : 0), 0);

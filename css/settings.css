@@ -47,7 +47,7 @@ input[aria-invalid="true"]{border-color:var(--neg)}
 .pf-hero span:not(.av){color:var(--muted);font-size:var(--t-sm)}
 .av.xl{width:68px;height:68px;font-size:30px}
 .pf-hero.dinara .av.xl{--c:var(--dinara)}
-.av.max{color:var(--on-max)}.av.dinara{color:var(--on-dinara)}
+
 .av.lg{width:52px;height:52px;font-size:var(--t-xl)}
 .swatches{display:flex;flex-wrap:wrap;gap:14px}
 .swatch{--k1:var(--c1);--kt:var(--t1);width:46px;height:46px;border-radius:50%;border:0;padding:0;background:var(--k1);color:var(--kt);display:flex;align-items:center;justify-content:center;font-size:var(--t-xl);transition:transform .15s,box-shadow .2s}

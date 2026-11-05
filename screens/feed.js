@@ -45,7 +45,6 @@ export function txView(t, viewer) {
 const blank = () => ({ q: '', type: 'all', who: 'all', scope: 'all', method: 'all', cat: null, allTime: false });
 let filter = blank();
 let fopen = false; // раскрыта ли панель фильтров
-export const getFilter = () => ({ ...filter });
 /** Частично обновить фильтр: setFilter({ cat: 'Продукты', type: 'expense' }). Применяется при следующем показе ленты. */
 export const setFilter = (obj = {}) => { filter = { ...filter, ...obj }; };
 export const resetFilter = () => { filter = blank(); };

@@ -139,7 +139,6 @@ test('цель: вернуть резерв — отрицательная су�
   assert.ok(validate(tr({ amount: -5, from: 'max', to: 'joint', goalId: 'g1' })).length > 0);
 });
 
-import { savingFlow } from '../ledger.js';
 test('накопления: откладывание с кошелька уменьшает кошелёк, возврат увеличивает', () => {
   const sv = (o) => ({ type: 'saving', date: d, person: 'max', savingId: 's1', method: 'card', ...o });
   const txs = [
@@ -151,7 +150,6 @@ test('накопления: откладывание с кошелька уме�
   ];
   assert.equal(balances(txs).max, 60_00);
   assert.equal(balances(txs).joint, 15_00);
-  assert.equal(savingFlow(txs, 's1'), 25_00);
   assert.equal(debt(txs), 0);
   assert.equal(validate(txs[1]).length, 0);
   assert.ok(validate(sv({ amount: 0, wallet: 'max' })).length > 0);

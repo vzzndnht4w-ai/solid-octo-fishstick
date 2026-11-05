@@ -72,6 +72,3 @@
 
 /* резерв под цели: сводка и строка на карточке общего баланса */
 .goal-sum .row{padding:4px 0}
-.hero-res{display:flex;gap:8px;margin-top:8px;font-size:var(--t-sm)}
-.hero-res span{flex:1;background:rgba(255,255,255,.1);border-radius:var(--r-sm);padding:6px 10px;display:flex;justify-content:space-between;gap:8px}
-.hero-res b{font-weight:700}
