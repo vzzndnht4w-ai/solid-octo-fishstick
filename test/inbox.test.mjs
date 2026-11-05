@@ -29,7 +29,7 @@ test('собственные действия и удаления не созд�
   assert.equal(rem([rec('tx:t1', null, 1, true)]).length, 0);
   assert.equal(rem([rec('col:comments:a', { id: 'a', txId: 't1', person: 'max', emoji: '❤️', at: 1 })]).length, 0);
 });
-test('общая трата, оплаченная партнёром, пополнение котла, цель, взаиморасчёт', () => {
+test('общая трата, оплаченная партнёром, пополнение баланса, цель, взаиморасчёт', () => {
   const s = state(); s.goals = [{ id: 'g1', name: 'Отпуск', target: 100000 }];
   const ev = rem([
     rec('tx:a', tx({ id: 'a', scope: 'shared', paidFrom: 'dinara', shareMax: 50 })),

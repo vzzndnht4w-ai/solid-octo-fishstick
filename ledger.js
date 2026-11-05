@@ -2,7 +2,7 @@
 // Деньги хранятся в копейках (целые числа).
 
 export const PEOPLE = { max: 'Максим', dinara: 'Динара' };
-export const WALLETS = { max: 'Кошелёк · Максим', dinara: 'Кошелёк · Динара', joint: 'Общий котёл' };
+export const WALLETS = { max: 'Кошелёк · Максим', dinara: 'Кошелёк · Динара', joint: 'Общий баланс' };
 
 /** Подставляет имена из профилей в PEOPLE и WALLETS (объекты мутируются на месте, ссылки остаются прежними). */
 export function applyProfiles(profiles) {
@@ -36,7 +36,10 @@ export function splitAmount(amount, shareMax) {
  */
 export function validate(tx) {
   const errors = [];
-  if (!Number.isInteger(tx.amount) || tx.amount <= 0) errors.push('Сумма должна быть больше нуля');
+  // Резерв под цель: перевод «общий баланс → общий баланс» с goalId. Деньги не двигаются, часть баланса помечается как отложенная
+  // (отрицательная сумма возвращает резерв в свободный остаток).
+  const isReserve = tx.type === 'transfer' && !!tx.goalId && tx.from === 'joint' && tx.to === 'joint';
+  if (isReserve ? !Number.isInteger(tx.amount) || tx.amount === 0 : !Number.isInteger(tx.amount) || tx.amount <= 0) errors.push('Сумма должна быть больше нуля');
   const isW = (w) => w in WALLETS;
   const isP = (p) => p in PEOPLE;
   const isM = (m) => m === 'card' || m === 'cash';
@@ -56,7 +59,7 @@ export function validate(tx) {
   } else if (tx.type === 'transfer') {
     if (!isW(tx.from) || !isW(tx.to)) errors.push('Не указаны кошельки');
     else if (!isM(method(tx, 'from')) || !isM(method(tx, 'to'))) errors.push('Не указан способ: карта или наличные');
-    else if (tx.from === tx.to && method(tx, 'from') === method(tx, 'to')) errors.push('Выберите разные кошельки или способы');
+    else if (tx.from === tx.to && method(tx, 'from') === method(tx, 'to') && !isReserve) errors.push('Выберите разные кошельки или способы');
   } else errors.push('Неизвестный тип операции');
   return errors;
 }
@@ -76,7 +79,7 @@ export function balancesByMethod(txs) {
   return b;
 }
 
-/** Остатки по кошелькам. Общий котёл меняется ТОЛЬКО если деньги реально через него прошли. */
+/** Остатки по кошелькам. Общий баланс меняется ТОЛЬКО если деньги реально через него прошли. */
 export function balances(txs) {
   const m = balancesByMethod(txs);
   return { max: m.max.card + m.max.cash, dinara: m.dinara.card + m.dinara.cash, joint: m.joint.card + m.joint.cash };
@@ -91,7 +94,7 @@ export function spendByMethod(txs) {
 
 /**
  * Долг между вами. Положительное число — Динара должна Максиму, отрицательное — Максим Динаре.
- * Общая трата с кошелька Максима: Динара должна ему свою долю. Из общего котла — долга нет.
+ * Общая трата с кошелька Максима: Динара должна ему свою долю. Из общего баланса — долга нет.
  */
 export function debt(txs) {
   let d = 0;
@@ -150,3 +153,9 @@ export function parseMoney(str) {
   if (!isFinite(n) || n <= 0) return null;
   return Math.round(n * 100);
 }
+
+/** Сколько общего баланса отложено в цели (резервы и взносы с goalId). */
+export const reservedInGoals = (txs) => txs.reduce((s, t) => s + (t.type === 'transfer' && t.goalId ? t.amount : 0), 0);
+
+/** Свободно в общем балансе: общий баланс минус отложенное в цели. */
+export const freeJoint = (txs) => balances(txs).joint - reservedInGoals(txs);

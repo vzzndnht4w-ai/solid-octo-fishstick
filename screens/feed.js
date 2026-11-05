@@ -1,6 +1,7 @@
 import { WALLETS, other, inMonth, method as methodOf } from '../ledger.js';
 import { ic, esc, nameOf, feminine, tile, methodTag, money as fm, monthSwitch, dayLabel, $, $$ } from '../core.js';
 import { registerIcons } from '../icons.js';
+import { store } from '../store.js';
 import { txBadge } from '../lib/together-ui.js';
 import { isSecret, isPendingSurprise, shortDate } from '../lib/tools.js';
 
@@ -13,8 +14,13 @@ export function txView(t, viewer) {
   if (t.type === 'transfer') {
     const same = t.from === t.to, mf = methodOf(t, 'from'), mt = methodOf(t, 'to');
     const settle = !same && t.from !== 'joint' && t.to !== 'joint';
-    const title = same ? (mt === 'cash' ? 'Снятие наличных' : 'Внесение на карту') : settle ? 'Взаиморасчёт' : t.to === 'joint' ? 'В общий котёл' : t.from === 'joint' ? 'Из общего котла' : 'Перевод';
-    const short = (w) => (w === 'joint' ? 'котёл' : nameOf(w));
+    const goal = t.goalId ? (store.get().goals || []).find((g) => g.id === t.goalId) : null;
+    if (t.goalId) {
+      const gn = goal ? goal.name : 'цель';
+      return { icon: `<span class="tile" style="--h:#e59a2c">${ic('bank')}</span>`, title: t.amount < 0 ? `Из цели «${esc(gn)}»` : `В цель «${esc(gn)}»`, sub: t.from === t.to ? (t.amount < 0 ? 'вернули в свободный баланс' : 'из общего баланса') : `с кошелька: ${esc(nameOf(t.from))}`, amt: fm(Math.abs(t.amount)), cls: '' };
+    }
+    const title = same ? (mt === 'cash' ? 'Снятие наличных' : 'Внесение на карту') : settle ? 'Взаиморасчёт' : t.to === 'joint' ? 'В общий баланс' : t.from === 'joint' ? 'Из общего баланса' : 'Перевод';
+    const short = (w) => (w === 'joint' ? 'баланс' : nameOf(w));
     const route = same ? short(t.from) : `${short(t.from)} → ${short(t.to)}`;
     return { icon: `<span class="tile" style="--h:#7b6cf0">${ic('swap')}</span>`, title, sub: `${esc(route)} · ${mf === mt ? mname(mf) : mname(mf) + ' → ' + mname(mt)}`, amt: fm(t.amount), cls: '' };
   }
@@ -26,7 +32,7 @@ export function txView(t, viewer) {
   if (t.type === 'income') return { icon, title, sub: `<span class="tag ${t.person}">${esc(nameOf(t.person))}</span>${m}${sur}${note}`, amt: '+' + fm(t.amount), cls: 'pos' };
   const who = t.scope === 'personal'
     ? `<span class="tag ${t.person}">${esc(nameOf(t.person))} · лично</span>`
-    : `<span class="tag joint">Общее ${t.shareMax}/${100 - t.shareMax}</span><span class="tag ${t.paidFrom}">${t.paidFrom === 'joint' ? 'из котла' : 'платил' + feminine(t.paidFrom) + ' ' + esc(nameOf(t.paidFrom))}</span>`;
+    : `<span class="tag joint">Общее ${t.shareMax}/${100 - t.shareMax}</span><span class="tag ${t.paidFrom}">${t.paidFrom === 'joint' ? 'из баланса' : 'платил' + feminine(t.paidFrom) + ' ' + esc(nameOf(t.paidFrom))}</span>`;
   return { icon, title, sub: `${who}${m}${sur}${note}`, amt: '−' + fm(t.amount), cls: '' };
 }
 

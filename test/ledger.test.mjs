@@ -7,7 +7,7 @@ const exp = (o) => ({ type: 'expense', date: d, ...o });
 const inc = (o) => ({ type: 'income', date: d, ...o });
 const tr = (o) => ({ type: 'transfer', date: d, ...o });
 
-test('личная трата (машина) не трогает общий котёл и долги', () => {
+test('личная трата (машина) не трогает общий баланс и долги', () => {
   const txs = [
     inc({ amount: 100000_00, person: 'max', wallet: 'max' }),
     tr({ amount: 20000_00, from: 'max', to: 'joint' }),
@@ -17,7 +17,7 @@ test('личная трата (машина) не трогает общий ко
   assert.equal(debt(txs), 0);
 });
 
-test('продукты 50/50 с карты Максима: котёл цел, Динара должна половину', () => {
+test('продукты 50/50 с карты Максима: баланс цел, Динара должна половину', () => {
   const txs = [
     tr({ amount: 10000_00, from: 'max', to: 'joint' }),
     exp({ amount: 3000_00, scope: 'shared', person: 'max', paidFrom: 'max', shareMax: 50 }),
@@ -31,7 +31,7 @@ test('общая трата с карты Динары в пропорции 60/
   assert.equal(debt(txs), -600_00);
 });
 
-test('аренда из общего котла: уменьшает котёл, долгов нет', () => {
+test('аренда из общего баланса: уменьшает баланс, долгов нет', () => {
   const txs = [
     tr({ amount: 50000_00, from: 'dinara', to: 'joint' }),
     exp({ amount: 40000_00, scope: 'shared', person: 'max', paidFrom: 'joint', shareMax: 50 }),
@@ -112,4 +112,29 @@ test('валидация: перевод между своей картой и �
   assert.equal(validate(tr({ amount: 1, from: 'max', to: 'max', fromMethod: 'card', toMethod: 'cash' })).length, 0);
   assert.ok(validate(tr({ amount: 1, from: 'max', to: 'max', fromMethod: 'card', toMethod: 'card' })).length > 0);
   assert.ok(validate(inc({ amount: 1, person: 'max', wallet: 'max', method: 'x' })).length > 0);
+});
+
+import { reservedInGoals, freeJoint } from '../ledger.js';
+test('цель: резерв из общего баланса не меняет баланс, а уменьшает свободное', () => {
+  const txs = [
+    tr({ amount: 50000_00, from: 'max', to: 'joint' }),
+    tr({ amount: 10000_00, from: 'joint', to: 'joint', fromMethod: 'card', toMethod: 'card', goalId: 'g1' }),
+  ];
+  assert.equal(balances(txs).joint, 50000_00);
+  assert.equal(reservedInGoals(txs), 10000_00);
+  assert.equal(freeJoint(txs), 40000_00);
+  assert.equal(validate(txs[1]).length, 0);
+});
+test('цель: вернуть резерв — отрицательная сумма; взнос с кошелька добавляет деньги и резерв поровну', () => {
+  const txs = [
+    tr({ amount: 10000_00, from: 'joint', to: 'joint', fromMethod: 'card', toMethod: 'card', goalId: 'g1' }),
+    tr({ amount: -4000_00, from: 'joint', to: 'joint', fromMethod: 'card', toMethod: 'card', goalId: 'g1' }),
+    tr({ amount: 5000_00, from: 'max', to: 'joint', goalId: 'g1' }),
+  ];
+  assert.equal(reservedInGoals(txs), 11000_00);
+  assert.equal(balances(txs).joint, 5000_00);
+  assert.equal(freeJoint(txs), 5000_00 - 11000_00);
+  assert.equal(validate(txs[1]).length, 0);
+  assert.ok(validate(tr({ amount: 0, from: 'joint', to: 'joint', goalId: 'g1' })).length > 0);
+  assert.ok(validate(tr({ amount: -5, from: 'max', to: 'joint', goalId: 'g1' })).length > 0);
 });

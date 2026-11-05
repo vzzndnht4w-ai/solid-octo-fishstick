@@ -49,7 +49,7 @@ a:focus-visible,summary:focus-visible,select:focus-visible,textarea:focus-visibl
 .hello b{overflow-wrap:anywhere}
 .settle .t b{overflow-wrap:anywhere}
 
-/* ---- главная: личные итоги сразу под котлом, виджеты ниже ---- */
+/* ---- главная: личные итоги сразу под балансом, виджеты ниже ---- */
 .people.first{margin-top:0}
 .wquick .qnote{display:none}
 

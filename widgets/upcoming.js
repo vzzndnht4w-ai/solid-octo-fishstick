@@ -1,4 +1,4 @@
-// Виджет «В ближайшие 7 дней»: списания регулярных платежей и запас котла. Нечего показать — ''.
+// Виджет «В ближайшие 7 дней»: списания регулярных платежей и запас баланса. Нечего показать — ''.
 import { ic, esc, money as fm } from '../core.js';
 import { upcomingCharges, chargesTotals, plural, runway } from '../lib/tools.js';
 import { runwayText, chargeTitle } from '../screens/calendar.js';

@@ -12,7 +12,7 @@ test('fairShare: доли по доходам', () => {
   assert.deepEqual(fairShare({ max: 0, dinara: 5 }), { max: 0, dinara: 1 });
 });
 
-test('contributions: общие траты из своего кошелька и переводы в котёл', () => {
+test('contributions: общие траты из своего кошелька и переводы в баланс', () => {
   const txs = [sh('max', 1000), sh('dinara', 500), sh('joint', 9999), tr('dinara', 'joint', 300), tr('max', 'dinara', 700), tr('joint', 'max', 50),
     { ...sh('max', 100, '2026-10-11'), scope: 'personal' }, sh('max', 800, '2026-09-30')];
   assert.deepEqual(contributions(txs, '2026-10'), { max: 1000, dinara: 800 });

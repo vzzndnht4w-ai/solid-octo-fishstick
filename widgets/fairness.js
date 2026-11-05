@@ -35,9 +35,9 @@ export default {
     const per = (p) => `<div class="tg-p ${p}"><small>${esc(nameOf(p))}</small><b>${fm(f.put[p])}</b><span>доля ${fm(f.fair[p])} · ${Math.round(f.share[p] * 100)}%</span></div>`;
     const me = s.viewer, under = f.under;
     const action = f.level === 'even' || !me ? '' : me === under
-      ? `<button class="tg-act" data-tg-fix="${under}">${ic('plus')} Пополнить котёл на ${fm(whole(f.amount))}</button>`
+      ? `<button class="tg-act" data-tg-fix="${under}">${ic('plus')} Пополнить баланс на ${fm(whole(f.amount))}</button>`
       : `<button class="tg-act" data-tg-fix="${under}">${ic('swap')} Записать пополнение · ${esc(nameOf(under))}</button>`;
-    const hint = f.level === 'even' ? '' : `<p class="tg-hint">Чтобы выровнять, ${esc(nameOf(under))} может пополнить общий котёл на ${fm(whole(f.amount))}. Это не долг, а способ вложить поровну по доходам.</p>`;
+    const hint = f.level === 'even' ? '' : `<p class="tg-hint">Чтобы выровнять, ${esc(nameOf(under))} может пополнить общий баланс на ${fm(whole(f.amount))}. Это не долг, а способ вложить поровну по доходам.</p>`;
     return `<section class="card tg-fair" aria-label="Шкала справедливости"><div class="tg-head"><b>${ic('scale')} Справедливость</b><span class="muted sm">за месяц</span></div>
       <p class="tg-lead">${head}</p>${scale(f)}<div class="tg-pair">${per('max')}${per('dinara')}</div>${hint}${action}${react}</section>`;
   },

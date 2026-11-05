@@ -108,7 +108,7 @@ test('challenge piggy52: сумма, неделя, прогресс', () => {
   assert.equal(challengeProgress(ch, [], '2026-11-16').streak, 2); // неделя 3 ещё не отмечена — серия жива
 });
 
-test('achievements: котёл, серия, цель, бюджет, вдвоём, челленджи', () => {
+test('achievements: баланс, серия, цель, бюджет, вдвоём, челленджи', () => {
   const base = { viewer: 'max', txs: [], goals: [], budgets: {}, challenges: [] };
   const ids = (s, today = '2026-11-20') => achievements(s, today).filter((a) => a.earned).map((a) => a.id);
   assert.deepEqual(ids(base), []);

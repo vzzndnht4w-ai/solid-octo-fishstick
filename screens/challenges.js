@@ -15,7 +15,7 @@ const TEMPLATES = [
   { k: 'cafe', type: 'avoid', icon: 'food', title: 'Неделя без кафе', sub: 'Ни одной траты на «Еда вне дома»' },
   { k: 'impulse', type: 'avoid', icon: 'cart', title: 'Без импульсивных покупок', sub: 'Выберите категорию, где чаще срываетесь' },
   { k: 'piggy52', type: 'piggy52', icon: 'bank', title: 'Копилка 52 недели', sub: 'В неделю N откладываем N × шаг' },
-  { k: 'daily', type: 'daily', icon: 'coins', title: 'Откладывать каждый день', sub: 'Небольшая сумма в котёл — и стрик' },
+  { k: 'daily', type: 'daily', icon: 'coins', title: 'Откладывать каждый день', sub: 'Небольшая сумма в баланс — и стрик' },
   { k: 'nocash', type: 'nocash', icon: 'cash', title: 'Не тратим наличные', sub: 'Дни подряд без трат наличными' },
   { k: 'weekend', type: 'weekend', icon: 'calendar', title: 'Выходные без трат', sub: 'Суббота и воскресенье без расходов' },
 ];
@@ -105,7 +105,7 @@ function newSheet(s, a) {
     else if (t.k === 'impulse') f.title = `Без импульсивных: ${f.category}`;
     else f.title = t.title;
   };
-  const goalChips = () => s.goals.length ? `<label class="l">Куда откладываем</label>${chips('goal', [['', 'Просто в котёл'], ...s.goals.map((g) => [g.id, `${esc(g.emoji || '🎯')} ${esc(g.name)}`])], f.goalId)}` : '';
+  const goalChips = () => s.goals.length ? `<label class="l">Куда откладываем</label>${chips('goal', [['', 'Просто в общий баланс'], ...s.goals.map((g) => [g.id, `${esc(g.emoji || '🎯')} ${esc(g.name)}`])], f.goalId)}` : '';
   const draw = () => {
     if (!f.tpl) {
       sh.el.innerHTML = `<div class="grab"></div><h1 style="font-size:22px">Новый челлендж</h1><div class="pc-tpls">${TEMPLATES.map((t) => `<button type="button" class="pc-tpl" data-tpl="${t.k}"><span class="tile" style="--h:#7b6cf0">${ic(t.icon)}</span><span><b>${esc(t.title)}</b><small>${esc(t.sub)}</small></span>${ic('right')}</button>`).join('')}</div>`;

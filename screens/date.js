@@ -48,7 +48,7 @@ function stepSummary(s, week) {
   };
   const empty = !cur.count ? '<p class="muted dt-note">На этой неделе операций пока нет. Можно поговорить о том, что вы хотели записать.</p>' : '';
   return `<h2 class="dt-h" tabindex="-1" data-dt-title>Как прошла неделя</h2><p class="muted dt-sub">${esc(rangeLabel(week))}</p>${line('max')}${line('dinara')}${empty}
-    <div class="dt-pot"><span>${ic('bank')} В общем котле</span><b>${fm(b.joint)}</b></div>`;
+    <div class="dt-pot"><span>${ic('bank')} В общем балансе</span><b>${fm(b.joint)}</b></div>`;
 }
 
 function stepSurprise(s, week) {

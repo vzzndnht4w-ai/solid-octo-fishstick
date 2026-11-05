@@ -69,3 +69,9 @@
 .daypick input{text-align:center;font-size:20px;font-weight:800;width:90px}
 .daypick .back{box-shadow:none;border:1px solid var(--line)}
 @media (max-width:360px){.emojis{grid-template-columns:repeat(6,1fr)}}
+
+/* резерв под цели: сводка и строка на карточке общего баланса */
+.goal-sum .row{padding:4px 0}
+.hero-res{display:flex;gap:8px;margin-top:8px;font-size:13px}
+.hero-res span{flex:1;background:rgba(255,255,255,.1);border-radius:12px;padding:6px 10px;display:flex;justify-content:space-between;gap:8px}
+.hero-res b{font-weight:700}

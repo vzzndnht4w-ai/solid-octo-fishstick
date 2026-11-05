@@ -63,7 +63,7 @@ test('applyProfiles обновляет имена людей и кошелько
   assert.equal(PEOPLE.max, 'Артём');
   assert.equal(WALLETS.max, 'Кошелёк · Артём');
   assert.equal(WALLETS.dinara, 'Кошелёк · Лена');
-  assert.equal(WALLETS.joint, 'Общий котёл');
+  assert.equal(WALLETS.joint, 'Общий баланс');
   applyProfiles({ max: { name: '' }, dinara: {} });
   assert.equal(PEOPLE.max, 'Артём');
   applyProfiles({ max: { name: before.max }, dinara: { name: before.dinara } });

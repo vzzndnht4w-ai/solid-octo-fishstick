@@ -1,4 +1,4 @@
-/* «Мы» — тёплая вечерняя палитра: сине-розовый градиент двоих, янтарный общий котёл. */
+/* «Мы» — тёплая вечерняя палитра: сине-розовый градиент двоих, янтарный общий баланс. */
 :root{
   --bg:#f4f1f8;--surface:#ffffff;--surface2:#faf8fd;--ink:#1c1830;--muted:#645f7a;--line:#e9e4f1;
   --max:#2f5ce0;--max2:#7aa9ff;--dinara:#c72a5c;--dinara2:#ff98b0;--joint:#e59a2c;--joint2:#ffd27a;--joint-t:#8f5500;
@@ -40,7 +40,7 @@ svg.i{width:1em;height:1em;flex:none;fill:none;stroke:currentColor;stroke-width:
 .month button{background:none;border:0;width:44px;height:44px;border-radius:50%;font-size:18px;display:flex;align-items:center;justify-content:center}
 .month b{min-width:130px;text-align:center;font-weight:600;font-size:15px}
 
-/* котёл */
+/* баланс */
 .hero{background:var(--hero);color:#fff;border-radius:28px;padding:22px 20px 18px;position:relative;overflow:hidden;box-shadow:0 14px 34px rgba(67,40,111,.35)}
 .hero::before,.hero::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
 .hero::before{width:220px;height:220px;right:-70px;top:-90px;background:radial-gradient(circle,rgba(255,152,176,.45),transparent 70%)}

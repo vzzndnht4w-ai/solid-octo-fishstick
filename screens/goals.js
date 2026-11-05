@@ -1,5 +1,5 @@
-import { parseMoney, validate } from '../ledger.js';
-import { ic, esc, money as fm, subHeader, MONTHS_GEN, $, $$ } from '../core.js';
+import { parseMoney, validate, freeJoint, reservedInGoals } from '../ledger.js';
+import { ic, esc, money as fm, subHeader, MONTHS_GEN, nameOf, $, $$ } from '../core.js';
 import { goalSaved, goalState } from '../lib/plan.js';
 import { celebrate } from '../lib/confetti.js';
 import { openSheet, ring, pbar, personChips, bindChips, amountField, kopToInput, dateRu } from '../planui.js';
@@ -8,30 +8,47 @@ const EMOJI = ['🎯', '✈️', '🏖️', '🏠', '🚗', '💍', '🎓', '�
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
 
 function fund(g, s, a) {
-  const st = goalState(g, goalSaved(s.txs, g.id), a.today());
-  let who = s.viewer, err = '';
+  const saved = goalSaved(s.txs, g.id), st = goalState(g, saved, a.today());
+  const free = freeJoint(s.txs);
+  // src: 'joint' — резерв из общего баланса (баланс не растёт); 'max' | 'dinara' — взнос с чьей-то карты (деньги приходят в баланс)
+  let src = 'joint', mode = 'add', err = '';
   const quick = [];
   if (st.need) quick.push(st.need);
   for (const v of [100000, 500000, 1000000]) if (quick.length < 4 && !quick.includes(v)) quick.push(v);
   const sh = openSheet('');
   const draw = (amount = '') => {
+    const modeChips = `<div class="seg" data-chips="mode" style="margin:12px 0 0">${[['add', 'Отложить'], ['back', 'Вернуть в баланс']].map(([v, l]) => `<button type="button" data-v="${v}" class="${mode === v ? 'on' : ''}" aria-pressed="${mode === v}">${l}</button>`).join('')}</div>`;
+    const srcChips = mode === 'add' ? `<label class="l">Откуда деньги</label><div class="chips" data-chips="src">${[['joint', `Из общего баланса · свободно ${fm(Math.max(free, 0))}`], ['max', `Со своей карты · ${esc(nameOf('max'))}`], ['dinara', `Со своей карты · ${esc(nameOf('dinara'))}`]].map(([v, l]) => `<button type="button" data-v="${v}" class="chip ${v === 'max' || v === 'dinara' ? v : ''} ${src === v ? 'on' : ''}" aria-pressed="${src === v}">${l}</button>`).join('')}</div>` : '';
+    const hint = mode === 'back' ? `Резерв вернётся в свободный остаток общего баланса. В цели сейчас ${fm(saved)}.`
+      : src === 'joint' ? 'Деньги остаются в общем балансе, но помечаются как отложенные в этой цели. Общий баланс не растёт.'
+      : 'Деньги уходят с карты в общий баланс и сразу откладываются в цель. Остаток карты уменьшается, свободный остаток общего баланса не меняется.';
     sh.el.innerHTML = `<div class="grab"></div><div class="row" style="justify-content:flex-start;gap:12px"><span class="gemo-tile">${esc(g.emoji || '🎯')}</span><div><b style="font-size:18px">${esc(g.name)}</b><div class="muted sm">Осталось накопить ${fm(st.left)}</div></div></div>
-      <div style="height:12px"></div>${amountField('g-amount', amount, s.settings.currency)}
-      <div class="chips" style="margin-top:12px">${quick.map((v) => `<button type="button" class="chip" data-set="${v}">${fm(v)}</button>`).join('')}</div>
-      <label class="l">Кто откладывает</label>${personChips('who', who)}
-      <div class="preview">Деньги переходят с карты в общий котёл и учитываются в этой цели.</div>
-      ${err ? `<div class="error">${esc(err)}</div>` : ''}<button class="primary" id="g-save">Пополнить</button>`;
+      ${modeChips}<div style="height:12px"></div>${amountField('g-amount', amount, s.settings.currency)}
+      <div class="chips" style="margin-top:12px">${mode === 'add' ? quick.map((v) => `<button type="button" class="chip" data-set="${v}">${fm(v)}</button>`).join('') : (saved > 0 ? `<button type="button" class="chip" data-set="${saved}">Всё · ${fm(saved)}</button>` : '')}</div>
+      ${srcChips}
+      <div class="preview">${hint}</div>
+      ${err ? `<div class="error" role="alert">${esc(err)}</div>` : ''}<button class="primary" id="g-save">${mode === 'back' ? 'Вернуть в баланс' : 'Отложить'}</button>`;
     const inp = $('#g-amount', sh.el);
     $$('[data-set]', sh.el).forEach((b) => (b.onclick = () => { inp.value = kopToInput(+b.dataset.set); }));
-    bindChips(sh.el, (n, v) => { amount = inp.value; who = v; err = ''; draw(amount); });
+    bindChips(sh.el, (n, v) => { amount = inp.value; if (n === 'mode') mode = v; else src = v; err = ''; draw(amount); });
     $('#g-save', sh.el).onclick = () => {
-      const tx = { type: 'transfer', from: who, to: 'joint', fromMethod: 'card', toMethod: 'card', goalId: g.id, amount: parseMoney(inp.value), date: a.today(), note: `Цель: ${g.name}`, hidden: false };
+      const amt = parseMoney(inp.value);
+      let tx;
+      if (mode === 'back') {
+        if (amt && amt > saved) { err = `В цели только ${fm(saved)}`; draw(inp.value); return; }
+        tx = { type: 'transfer', from: 'joint', to: 'joint', fromMethod: 'card', toMethod: 'card', goalId: g.id, amount: amt ? -amt : amt, date: a.today(), note: `Из цели: ${g.name}`, hidden: false };
+      } else if (src === 'joint') {
+        if (amt && amt > Math.max(free, 0)) { err = `Свободно в общем балансе только ${fm(Math.max(free, 0))}. Отложите меньше или выберите карту`; draw(inp.value); return; }
+        tx = { type: 'transfer', from: 'joint', to: 'joint', fromMethod: 'card', toMethod: 'card', goalId: g.id, amount: amt, date: a.today(), note: `Цель: ${g.name}`, hidden: false };
+      } else {
+        tx = { type: 'transfer', from: src, to: 'joint', fromMethod: 'card', toMethod: 'card', goalId: g.id, amount: amt, date: a.today(), note: `Цель: ${g.name}`, hidden: false };
+      }
       const errs = validate(tx);
       if (errs.length) { err = errs[0]; draw(inp.value); return; }
       sh.close(); a.store.add(tx);
       const after = goalSaved(a.store.get().txs, g.id);
-      a.toast(after >= g.target ? `Цель «${g.name}» достигнута!` : `Отложено ${fm(tx.amount)}`);
-      if (after >= g.target && !st.done) celebrate();
+      a.toast(mode === 'back' ? `Возвращено ${fm(amt)}` : after >= g.target ? `Цель «${g.name}» достигнута!` : `Отложено ${fm(tx.amount)}`);
+      if (mode === 'add' && after >= g.target && !st.done) celebrate();
     };
     if (!amount) setTimeout(() => inp.focus(), 60);
   };
@@ -51,7 +68,7 @@ function edit(g0, s, a) {
       <label class="l">К какому сроку (необязательно)</label><input type="date" id="g-deadline" value="${esc(f.deadline)}">
       ${err ? `<div class="error">${esc(err)}</div>` : ''}<button class="primary" id="g-save">${isNew ? 'Создать цель' : 'Сохранить'}</button>
       ${!isNew ? (confirm
-        ? `<div class="preview">Цель исчезнет. Уже отложенные деньги останутся в общем котле.</div><div class="btns2"><button class="ghost" id="g-keep" style="text-align:center">Не удалять</button><button class="ghost danger" id="g-del2" style="text-align:center">Да, удалить</button></div>`
+        ? `<div class="preview">Цель исчезнет. Отложенная сумма вернётся в свободный остаток общего баланса.</div><div class="btns2"><button class="ghost" id="g-keep" style="text-align:center">Не удалять</button><button class="ghost danger" id="g-del2" style="text-align:center">Да, удалить</button></div>`
         : '<button class="ghost danger" id="g-del" style="margin-top:10px;text-align:center">Удалить цель</button>') : ''}`;
     const read = () => { f.name = $('#g-name', sh.el).value; f.target = $('#g-target', sh.el).value; f.deadline = $('#g-deadline', sh.el).value; };
     bindChips(sh.el, (n, v) => { read(); f.emoji = v; draw(); });
@@ -76,8 +93,10 @@ export default {
   render(s, a) {
     const today = a.today();
     let h = subHeader('Цели') + `<button class="primary addbtn" data-new>${ic('plus')} Новая цель</button>`;
-    if (!s.goals.length) return h + `<div class="empty card" style="margin-top:16px"><div class="big">${ic('target')}</div><b>Копите вместе</b><span class="muted">Отпуск, ремонт, подушка безопасности — создайте цель и откладывайте в общий котёл</span></div>`;
-    h += '<div class="stack" style="margin-top:16px">';
+    if (!s.goals.length) return h + `<div class="empty card" style="margin-top:16px"><div class="big">${ic('target')}</div><b>Копите вместе</b><span class="muted">Отпуск, ремонт, подушка безопасности — создайте цель и откладывайте в общий баланс</span></div>`;
+    const reserved = reservedInGoals(s.txs), free = freeJoint(s.txs);
+    h += `<div class="card goal-sum" style="margin-top:16px"><div class="row"><span class="muted">Отложено в целях</span><b>${fm(reserved)}</b></div><div class="row"><span class="muted">Свободно в общем балансе</span><b class="${free < 0 ? 'neg' : ''}">${fm(free)}</b></div><div class="muted sm" style="margin-top:6px">Цели не добавляют денег: они резервируют часть общего баланса.</div></div>`;
+    h += '<div class="stack" style="margin-top:12px">';
     for (const g of s.goals) {
       const st = goalState(g, goalSaved(s.txs, g.id), today);
       const plan = st.done ? '' : st.overdue ? `<div class="gplan warn">${ic('calendar')}<span>Срок вышел ${dateRu(g.deadline, MONTHS_GEN)}</span></div>`

@@ -17,7 +17,7 @@ test('monthlySeries: n месяцев по возрастанию, пустые 
   assert.deepEqual(s.map((m) => [m.income, m.expense, m.net]), [[0, 50, -50], [0, 0, 0], [1000, 300, 700]]);
 });
 
-test('potSeries: котёл накопительно; без котла — суммарный баланс', () => {
+test('potSeries: баланс накопительно; без баланса — суммарный баланс', () => {
   const tr = { type: 'transfer', date: '2026-10-05', amount: 400, from: 'max', to: 'joint', fromMethod: 'card', toMethod: 'card' };
   const p = potSeries([inc('2026-09-01', 1000), tr, exp('2026-11-03', 100, 'Продукты', { scope: 'shared', paidFrom: 'joint', shareMax: 50 })], '2026-11', 3);
   assert.equal(p.kind, 'joint');
@@ -52,7 +52,7 @@ test('dailyAverage и forecast', () => {
   assert.equal(dailyAverage(txs, '2026-12', '2026-11-04'), null);
 });
 
-test('insights: мало данных — пусто; рост категории, котёл, крупнейшая трата', () => {
+test('insights: мало данных — пусто; рост категории, баланс, крупнейшая трата', () => {
   assert.deepEqual(insights([exp('2026-11-01', 1000, 'a')], '2026-11', 'max'), []);
   const txs = [
     exp('2026-10-05', 100_00, 'Продукты'), exp('2026-11-05', 118_00, 'Продукты'),
@@ -62,7 +62,7 @@ test('insights: мало данных — пусто; рост категори�
   const r = insights(txs, '2026-11', 'max');
   assert.equal(r.length, 2);
   assert.match(r[0].text, /Продукты: на 18% больше/);
-  assert.match(r[1].text, /Общий котёл пополнен/);
+  assert.match(r[1].text, /Общий баланс пополнен/);
   const hiddenBig = [...txs, exp('2026-11-07', 9000_00, 'Подарки', { person: 'dinara', hidden: true })];
   assert.ok(!insights(hiddenBig, '2026-11', 'max').some((i) => /Подарки/.test(i.text)));
 });

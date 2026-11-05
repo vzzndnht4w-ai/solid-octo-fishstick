@@ -55,9 +55,9 @@ function editorHtml(s) {
     <div class="card amount" style="margin-top:12px"><input id="t-amount" inputmode="decimal" placeholder="0" value="${esc(ed.amount)}" aria-label="Сумма"><span>${esc(s.settings.currency)}</span></div>
     <label class="l" for="t-cat">Категория</label><select id="t-cat">${cats.map((c) => `<option ${c === ed.category ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
     ${ed.type === 'expense' ? `<label class="l">Чья это трата</label>${seg('scope', [['personal', 'Личная'], ['shared', 'Общая']], ed.scope, 'Чья это трата')}` : ''}
-    ${shared ? `<label class="l">Откуда деньги</label>${seg('paid', [['me', 'Мой кошелёк'], ['joint', 'Общий котёл']], ed.paid, 'Откуда деньги')}
+    ${shared ? `<label class="l">Откуда деньги</label>${seg('paid', [['me', 'Мой кошелёк'], ['joint', 'Общий баланс']], ed.paid, 'Откуда деньги')}
       <label class="l" for="t-share" id="t-sharelab">Доля: ${esc(nameOf('max'))} ${ed.shareMax}% · ${esc(nameOf('dinara'))} ${100 - ed.shareMax}%</label><input type="range" id="t-share" min="0" max="100" step="5" value="${ed.shareMax}">` : ''}
-    ${ed.type === 'income' ? `<label class="l">Куда придут деньги</label>${seg('wallet', [['me', 'Мой кошелёк'], ['joint', 'Общий котёл']], ed.wallet, 'Куда придут деньги')}` : ''}
+    ${ed.type === 'income' ? `<label class="l">Куда придут деньги</label>${seg('wallet', [['me', 'Мой кошелёк'], ['joint', 'Общий баланс']], ed.wallet, 'Куда придут деньги')}` : ''}
     <label class="l">Способ</label>${seg('method', [['card', 'Карта'], ['cash', 'Наличные']], ed.method, 'Способ')}
     <label class="l" for="t-note">Заметка</label><input id="t-note" placeholder="Необязательно" value="${esc(ed.note)}">
     <label class="switch"><span>Скрыть детали от партнёра<br><span class="muted sm">Будет видна только сумма</span></span><input type="checkbox" id="t-hidden" ${ed.hidden ? 'checked' : ''}></label>

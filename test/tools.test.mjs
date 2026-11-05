@@ -132,7 +132,7 @@ test('chargesTotals считает расходы и доходы отдельн
   assert.deepEqual(chargesTotals([{ tpl: { type: 'expense', amount: 5 } }, { tpl: { type: 'income', amount: 9 } }, { tpl: { type: 'transfer', amount: 100 } }]), { out: 5, inc: 9 });
 });
 
-test('runway: котёл / средние общие траты', () => {
+test('runway: баланс / средние общие траты', () => {
   const txs = [inc('2026-07-01', 1000000, 'max', { wallet: 'joint' }),
     exp('2026-08-10', 100000, 'Продукты', { paidFrom: 'joint' }), exp('2026-09-10', 100000, 'Продукты', { paidFrom: 'joint' }), exp('2026-10-10', 100000, 'Продукты', { paidFrom: 'joint' })];
   const r = runway(txs, '2026-11');
@@ -140,7 +140,7 @@ test('runway: котёл / средние общие траты', () => {
   assert.equal(r.joint, 700000);
   assert.equal(r.months, 7);
 });
-test('runway: мало данных или пустой котёл → null', () => {
+test('runway: мало данных или пустой баланс → null', () => {
   assert.equal(runway([], '2026-11'), null);
   assert.equal(runway([exp('2026-10-10', 100, 'x', { paidFrom: 'joint' })], '2026-11'), null);
   assert.equal(runway([exp('2026-10-01', 100, 'x'), exp('2026-10-02', 100, 'x'), exp('2026-10-03', 100, 'x')], '2026-11'), null);

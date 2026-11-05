@@ -43,7 +43,7 @@ function updatePreview() {
   const sp = splitAmount(parseMoney(draft.amount) || 0, draft.shareMax), pf = draft.paidFrom;
   lab.textContent = `Как делим: ${nameOf('max')} ${draft.shareMax}% · ${nameOf('dinara')} ${100 - draft.shareMax}%${draft.shareAuto ? ' · по доходам за 3 месяца' : ''}`;
   const debtor = other(pf);
-  pv.innerHTML = `${esc(nameOf('max'))}: <b>${fm(sp.max)}</b> · ${esc(nameOf('dinara'))}: <b>${fm(sp.dinara)}</b><br>` + (pf === 'joint' ? 'Платим из котла — долгов не возникает.' : `Платил${feminine(pf)} ${esc(nameOf(pf))}: ${esc(nameOf(debtor))} ${feminine(debtor) ? 'будет должна' : 'будет должен'} свою долю. Котёл не меняется.`);
+  pv.innerHTML = `${esc(nameOf('max'))}: <b>${fm(sp.max)}</b> · ${esc(nameOf('dinara'))}: <b>${fm(sp.dinara)}</b><br>` + (pf === 'joint' ? 'Платим из баланса — долгов не возникает.' : `Платил${feminine(pf)} ${esc(nameOf(pf))}: ${esc(nameOf(debtor))} ${feminine(debtor) ? 'будет должна' : 'будет должен'} свою долю. Баланс не меняется.`);
 }
 
 export default {
@@ -61,7 +61,7 @@ export default {
         <button type="button" data-v="personal" class="opt ${dr.scope === 'personal' ? 'on' : ''}" aria-pressed="${dr.scope === 'personal'}"><b>${ic('user')} Личная</b><small>Только ${esc(nameOf(dr.person))}. Общий баланс и долги не меняются.</small></button>
         <button type="button" data-v="shared" class="opt ${dr.scope === 'shared' ? 'on' : ''}" aria-pressed="${dr.scope === 'shared'}"><b>${ic('users')} Общая</b><small>Делим на двоих в нужной пропорции.</small></button></div>
       <label class="l">Чем заплатили</label>${methodChips('method', dr.method)}`;
-      if (dr.scope === 'personal') h += `<div class="preview">Спишется из «${esc(WALLETS[dr.person])}». Общий котёл не затрагивается.</div>`;
+      if (dr.scope === 'personal') h += `<div class="preview">Спишется из «${esc(WALLETS[dr.person])}». Общий баланс не затрагивается.</div>`;
       else h += `<label class="l">Откуда деньги</label>${walletChips('paidFrom', dr.paidFrom)}
         <label class="l" id="f-sharelabel" for="f-share"></label><input type="range" id="f-share" min="0" max="100" step="5" value="${dr.shareMax}" aria-label="Доля первого человека">
         <div class="chips" style="margin-top:10px"><button type="button" class="chip" data-share="50">50/50</button><button type="button" class="chip" data-share="60">60/40</button><button type="button" class="chip" data-share="70">70/30</button><button type="button" class="chip" data-share="income">По доходам</button></div>
@@ -70,10 +70,10 @@ export default {
       h += `<label class="l">Категория</label>${catGrid(cats('income', INCOME_CATEGORIES), dr.category)}
       <label class="l">Куда пришли деньги</label>${walletChips('wallet', dr.wallet)}<label class="l">Способ</label>${methodChips('method', dr.method)}`;
     } else {
-      h += `<label class="l">Быстро</label><div class="chips"><button type="button" class="chip" data-preset="cash">${ic('cash')} Снял(а) наличные</button><button type="button" class="chip" data-preset="joint">${ic('bank')} В общий котёл</button><button type="button" class="chip" data-preset="settle">${ic('swap')} Вернул(а) долг</button></div>
+      h += `<label class="l">Быстро</label><div class="chips"><button type="button" class="chip" data-preset="cash">${ic('cash')} Снял(а) наличные</button><button type="button" class="chip" data-preset="joint">${ic('bank')} В общий баланс</button><button type="button" class="chip" data-preset="settle">${ic('swap')} Вернул(а) долг</button></div>
       <label class="l">Откуда</label>${walletChips('from', dr.from)}<div style="height:8px"></div>${methodChips('fromMethod', dr.fromMethod)}
       <label class="l">Куда</label>${walletChips('to', dr.to)}<div style="height:8px"></div>${methodChips('toMethod', dr.toMethod)}
-      <div class="preview">Перевод в «Общий котёл» — пополнение, а не расход. Между вашими кошельками — взаиморасчёт, он гасит долг.</div>`;
+      <div class="preview">Перевод в «Общий баланс» — пополнение, а не расход. Между вашими кошельками — взаиморасчёт, он гасит долг.</div>`;
     }
     h += `<label class="l" for="f-date">Дата</label><input type="date" id="f-date" value="${dr.date}"><label class="l" for="f-note">Заметка</label><input id="f-note" placeholder="Необязательно" value="${esc(dr.note)}">`;
     if (dr.type !== 'transfer') h += `<label class="switch"><span>Скрыть детали от партнёра<br><span class="muted sm">Будет видна только сумма</span></span><input type="checkbox" id="f-hidden" ${dr.hidden ? 'checked' : ''}></label>`;

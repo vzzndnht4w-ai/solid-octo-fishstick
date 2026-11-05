@@ -1,4 +1,4 @@
-// Календарь платежей: ближайшие 30 дней регулярных платежей, итог, «пропустить в этом месяце», запас котла.
+// Календарь платежей: ближайшие 30 дней регулярных платежей, итог, «пропустить в этом месяце», запас баланса.
 import { subHeader, ic, esc, tile, money as fm, dayLabel, MONTHS_GEN, $$ } from '../core.js';
 import { upcomingCharges, chargesTotals, skipLastRun, runway, isSecret, plural } from '../lib/tools.js';
 import '../lib/tools-ui.js';
@@ -9,7 +9,7 @@ const DAYS = 30;
 export const inText = (n) => (n <= 0 ? 'сегодня' : n === 1 ? 'завтра' : `через ${n} ${plural(n, 'день', 'дня', 'дней')}`);
 /** Название платежа с учётом сюрприза. */
 export const chargeTitle = (tpl, viewer, today) => (isSecret(tpl, viewer, today) ? 'Скрыто' : tpl.note || (tpl.type === 'transfer' ? 'Перевод' : tpl.category) || 'Платёж');
-/** Фраза про запас котла. */
+/** Фраза про запас баланса. */
 export const runwayText = (rw) => {
   const m = rw.months;
   const w = Number.isInteger(m) ? plural(m, 'месяц', 'месяца', 'месяцев') : 'месяца';
@@ -34,7 +34,7 @@ export default {
     }
     const { out, inc } = chargesTotals(list);
     const hero = `<section class="cal-hero"><div class="lab">${ic('qcal')} Ближайшие ${DAYS} дней</div><div class="sum">${fm(out)}</div><div class="ccap">на ближайшие ${DAYS} дней уйдёт ${fm(out)}${inc ? ` · придёт ${fm(inc)}` : ''}</div></section>`;
-    const run = rw ? `<div class="card cal-run" role="note">${ic('qrun')}<span><b>Хватит ли котла.</b> ${esc(runwayText(rw))}</span></div>` : '';
+    const run = rw ? `<div class="card cal-run" role="note">${ic('qrun')}<span><b>Хватит ли баланса.</b> ${esc(runwayText(rw))}</span></div>` : '';
     const groups = [];
     for (const c of list) { const g = groups[groups.length - 1]; if (g && g.date === c.date) g.items.push(c); else groups.push({ date: c.date, in: c.in, items: [c] }); }
     const body = groups.length ? groups.map((g) => `<div class="day"><span>${esc(dayLabel(g.date))}, ${esc(weekday(g.date))}</span><span>${esc(inText(g.in))}</span></div><div class="list">${g.items.map((c) => item(c, s, today)).join('')}</div>`).join('')

@@ -51,7 +51,7 @@ function lineChart(pot, cur) {
   const [lx, ly] = xy[xy.length - 1];
   const hits = pts.map((p, i) => `<rect class="vz-hit" data-i="${i}" x="${L + f.slot * i}" y="${T}" width="${f.slot}" height="${H - T}" fill="transparent"/>`).join('');
   const lab = `<text class="vz-end" x="${lx}" y="${ly - 11}" text-anchor="end">${compactMoney(pts[pts.length - 1].value)} ${esc(cur)}</text>`;
-  return `<svg class="vz" viewBox="0 0 ${W} ${H}" role="img" aria-label="${pot.kind === 'joint' ? 'Общий котёл' : 'Общий баланс'} по месяцам">${f.g}<path class="vz-area" d="${area}"/><path class="vz-line" d="${line}"/>${dots}${lab}${f.labels}${hits}</svg>`;
+  return `<svg class="vz" viewBox="0 0 ${W} ${H}" role="img" aria-label="${pot.kind === 'joint' ? 'Общий баланс' : 'Общий баланс'} по месяцам">${f.g}<path class="vz-area" d="${area}"/><path class="vz-line" d="${line}"/>${dots}${lab}${f.labels}${hits}</svg>`;
 }
 
 const sgn = (v) => (v > 0 ? '+' : v < 0 ? '' : '') + fm(v);
@@ -74,9 +74,9 @@ export default {
       <h2>Доходы и расходы</h2>
       <div class="card vzc" data-chart="bars"><div class="vz-legend"><span><i class="inc"></i>Доходы</span><span><i class="exp"></i>Расходы</span></div>${barChart(series)}<div class="vz-detail" aria-live="polite"></div>
         <details class="vz-table"><summary>Таблица</summary><table><thead><tr><th>Месяц</th><th>Доходы</th><th>Расходы</th><th>Итог</th></tr></thead><tbody>${series.map((m) => `<tr><td>${short(m.ym)} ${m.ym.slice(2, 4)}</td><td>${fm(m.income)}</td><td>${fm(m.expense)}</td><td>${sgn(m.net)}</td></tr>`).join('')}</tbody></table></details></div>
-      <h2>${pot.kind === 'joint' ? 'Общий котёл' : 'Баланс'} по месяцам</h2>
+      <h2>${pot.kind === 'joint' ? 'Общий баланс' : 'Баланс'} по месяцам</h2>
       <div class="card vzc" data-chart="line">${lineChart(pot, s.settings.currency || "₽")}<div class="vz-detail" aria-live="polite"></div>
-        <details class="vz-table"><summary>Таблица</summary><table><thead><tr><th>На конец</th><th>${pot.kind === 'joint' ? 'Котёл' : 'Баланс'}</th></tr></thead><tbody>${pot.points.map((p) => `<tr><td>${short(p.ym)} ${p.ym.slice(2, 4)}</td><td>${fm(p.value)}</td></tr>`).join('')}</tbody></table></details></div>` : '';
+        <details class="vz-table"><summary>Таблица</summary><table><thead><tr><th>На конец</th><th>${pot.kind === 'joint' ? 'Баланс' : 'Баланс'}</th></tr></thead><tbody>${pot.points.map((p) => `<tr><td>${short(p.ym)} ${p.ym.slice(2, 4)}</td><td>${fm(p.value)}</td></tr>`).join('')}</tbody></table></details></div>` : '';
 
     // категории
     const you = s.viewer, her = other(you);
@@ -106,7 +106,7 @@ export default {
     const series = monthlySeries(s.txs, a.month, 6), pot = potSeries(s.txs, a.month, 6);
     const info = {
       bars: (i) => { const m = series[i]; return `<b>${esc(monthLabel(m.ym))}</b><span><i class="dot inc"></i>Доходы ${fm(m.income)}</span><span><i class="dot exp"></i>Расходы ${fm(m.expense)}</span><span class="${m.net < 0 ? 'neg' : 'pos'}">Итог ${sgn(m.net)}</span>`; },
-      line: (i) => { const p = pot.points[i]; return `<b>${esc(monthLabel(p.ym))}</b><span>${pot.kind === 'joint' ? 'Котёл' : 'Баланс'} на конец месяца ${fm(p.value)}</span>`; },
+      line: (i) => { const p = pot.points[i]; return `<b>${esc(monthLabel(p.ym))}</b><span>${pot.kind === 'joint' ? 'Баланс' : 'Баланс'} на конец месяца ${fm(p.value)}</span>`; },
     };
     $$('[data-chart]', root).forEach((box) => {
       const kind = box.dataset.chart, detail = $('.vz-detail', box);
