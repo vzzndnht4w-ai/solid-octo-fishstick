@@ -56,7 +56,7 @@
 @keyframes dt-fwd{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
 @keyframes dt-back{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
 .dt-card h2.dt-h{font-size:var(--t-xl);line-height:1.2;font-weight:800;letter-spacing:-.02em;text-transform:none;color:var(--ink);margin:0;text-wrap:balance}
-.dt-card h3.dt-h3{font-size:var(--t-xs);font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:6px 0 0}
+.dt-card h3.dt-h3{font-size:var(--t-xs);font-weight:600;color:var(--muted);letter-spacing:0;text-transform:none;margin:6px 0 0}
 .dt-sub{margin:-6px 0 0;font-size:var(--t-sm)}
 .dt-note{margin:0;font-size:var(--t-sm);line-height:1.45}
 .dt-big{font-size:19px;font-weight:700;margin:0}

@@ -57,7 +57,7 @@ function renderSetup(s) {
     ${ui.err ? `<div class="error" role="alert">${esc(ui.err)}</div>` : ''}
     ${joinBlock}
     <h2>Первый телефон: создать пару</h2>
-    <div class="card"><p class="muted sm" style="margin:0 0 10px">Нужен бесплатный проект на supabase.com. Подробная инструкция с картинками есть у вашего помощника. Таблицу создаёт этот SQL:</p>
+    <div class="card"><p class="muted sm" style="margin:0 0 10px">Нужен бесплатный проект на supabase.com. Пошаговая инструкция с картинками есть в вашем чате с Claude. Таблицу создаёт этот SQL:</p>
       <button class="ghost" id="sy-sql">${ic('copy')} Скопировать SQL</button>
       <label class="l" for="sy-url">Адрес проекта (Project URL)</label><input id="sy-url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://abcd.supabase.co" value="${esc(ui.url)}">
       <label class="l" for="sy-key">Ключ anon public</label><input id="sy-key" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="eyJhbGciOi…" value="${esc(ui.key)}">

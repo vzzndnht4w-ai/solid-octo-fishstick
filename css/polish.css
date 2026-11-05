@@ -144,3 +144,6 @@ input,button,.amt,.sum,.kv b,.tg-p b{font-variant-numeric:tabular-nums}
 .pbar i{background:var(--rc,var(--max))}
 input[type=range]{background:var(--line)}
 .dt-dots li.cur{background:var(--accent)}
+
+/* аудит меню: дорожка ползунка читаема в обеих темах */
+input[type=range]{background-color:transparent;background-image:linear-gradient(color-mix(in srgb,var(--ink) 16%,transparent),color-mix(in srgb,var(--ink) 16%,transparent));background-size:100% 8px;background-position:center;background-repeat:no-repeat;background-clip:border-box;border-radius:0}
