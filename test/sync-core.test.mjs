@@ -110,3 +110,12 @@ test('чужие записи: белые списки (профиль, наст
   assert.equal(parseInvite(makeInvite('https://x.io/', { url: 'http://evil.example', key: 'k', code: 'c' })), null);
   assert.ok(parseInvite(makeInvite('https://x.io/', { url: 'https://p.supabase.co', key: 'k', code: 'c' })));
 });
+
+test('профиль со старыми цветами с другого телефона приводится к новому набору', () => {
+  const st = mkState(), known = {};
+  st.profiles.max.color = 'emerald'; st.profiles.dinara.color = 'mist';
+  applyRemote(st, known, { id: 'prof:dinara', data: { name: 'Динара', female: true, color: 'rose' }, deleted: false, u: 5 });
+  assert.equal(st.profiles.dinara.color, 'mist');
+  applyRemote(st, known, { id: 'prof:max', data: { name: 'Максим', female: false, color: 'blue' }, deleted: false, u: 6 });
+  assert.equal(st.profiles.max.color, 'emerald');
+});

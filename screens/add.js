@@ -155,7 +155,7 @@ export default {
       const edited = !!draft.editId;
       draft = null; error = ''; tplOpen = false;
       a.go('feed');
-      a.toast(`✓ ${edited ? 'Сохранено' : 'Добавлено'}`);
+      a.toast(edited ? 'Сохранено' : 'Добавлено');
     };
   },
 };

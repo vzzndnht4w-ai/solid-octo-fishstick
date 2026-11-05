@@ -103,6 +103,8 @@ function drawChart(root, s, a, st, animate) {
   box.classList.toggle('still', !animate);
   if (full.every((p) => p.value === 0)) {
     st.pts = [];
+    box.tabIndex = -1;
+    ['role', 'aria-label', 'aria-valuemin', 'aria-valuemax', 'aria-valuenow', 'aria-valuetext'].forEach((n) => box.removeAttribute(n));
     box.innerHTML = '<div class="chart-empty">График появится, когда в общем балансе будут операции</div>';
     dl.hidden = true; axis.innerHTML = '';
     return;
@@ -117,13 +119,20 @@ function drawChart(root, s, a, st, animate) {
   const line = smoothPath(pts), end = pts[pts.length - 1], first = pts[0];
   const sw = pts.length > 40 ? 1.5 : 2.4;
   const spikes = pts.map((p, i) => `<line class="ch-spike" x1="${p.x}" y1="${p.y}" x2="${p.x}" y2="${CHART_H}" stroke="url(#chS)" stroke-width="${sw}" stroke-linecap="round" style="animation-delay:${i * 14}ms"/>`).join('');
-  box.innerHTML = `<svg viewBox="0 0 ${W} ${CHART_H}" role="img" aria-label="График общего баланса за ${period} дн.: с ${esc(fm(full[0].value))} до ${esc(fm(last.value))}">
+  box.tabIndex = 0;
+  box.setAttribute('role', 'slider');
+  box.setAttribute('aria-valuemin', 0);
+  box.setAttribute('aria-valuemax', plot.length - 1);
+  box.setAttribute('aria-valuenow', plot.length - 1);
+  box.setAttribute('aria-label', `График общего баланса за ${period} дн.: с ${fm(full[0].value)} до ${fm(last.value)}. Стрелки влево и вправо двигают маркер`);
+  const g1 = Math.round(CHART_H * 0.45), g2 = Math.round(CHART_H * 0.72);   // две линии сетки для масштаба
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${CHART_H}" aria-hidden="true">
     <defs><linearGradient id="chA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="st-a1"/><stop offset="1" class="st-a0"/></linearGradient>
     <linearGradient id="chS" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="${CHART_H}"><stop offset="0" class="st-s1"/><stop offset="1" class="st-s0"/></linearGradient></defs>
-    ${spikes}<path class="ch-area" fill="url(#chA)" d="${line} L${end.x} ${CHART_H} L${first.x} ${CHART_H}Z"/><path class="ch-line" d="${line}" pathLength="1"/>
+    <g class="ch-grid"><line x1="0" x2="${W}" y1="${g1}" y2="${g1}"/><line x1="0" x2="${W}" y1="${g2}" y2="${g2}"/></g>${spikes}<path class="ch-area" fill="url(#chA)" d="${line} L${end.x} ${CHART_H} L${first.x} ${CHART_H}Z"/><path class="ch-line" d="${line}" pathLength="1"/>
     <g class="ch-mk"><line class="ch-mkl" y2="${CHART_H}"/><circle class="ch-glow" r="13"/><circle class="ch-dot" r="6"/></g></svg><div class="ctip"></div>`;
   place(box, pts[pts.length - 1]);
-  axis.innerHTML = [0, 1, 2, 3].map((k) => `<span>${shortDate(full[Math.round((k * (full.length - 1)) / 3)].date)}</span>`).join('');
+  axis.innerHTML = [0, 1, 2, 3].map((k) => `<span>${shortDate(plot[Math.round((k * (plot.length - 1)) / 3)].date)}</span>`).join('');
 }
 
 function place(box, p) {
@@ -132,32 +141,54 @@ function place(box, p) {
   l.setAttribute('x1', p.x); l.setAttribute('x2', p.x); l.setAttribute('y1', p.y);
 }
 
-/** Движение пальцем/мышью по графику: маркер, сумма и дата. */
+/** Движение пальцем, мышью или стрелками по графику: маркер, сумма и дата. */
 function bindScrub(root, st) {
   const box = $('[data-chart]', root), val = $('[data-cval]', root);
-  let down = false;
-  const reset = () => {
-    const tip = $('.ctip', box);
-    if (!tip) return;
-    tip.style.opacity = 0;
-    place(box, st.pts[st.pts.length - 1]);
-    val.textContent = fm(val._v);
-  };
-  const scrub = (e) => {
-    if (!st.pts.length) return;
-    const x = e.clientX - box.getBoundingClientRect().left;
-    const p = st.pts.reduce((b, c) => (Math.abs(c.x - x) < Math.abs(b.x - x) ? c : b));
+  let down = false, idx = -1;   // -1: маркер ещё не двигали, стрелки стартуют с последней точки
+  const showAt = (p) => {
+    cancelAnimationFrame(val._raf);   // чтобы идущий счётчик не перезаписал значение под пальцем
     place(box, p);
     val.textContent = fm(p.value);
     const tip = $('.ctip', box), half = tip.offsetWidth / 2;
     tip.innerHTML = `${esc(fm(p.value))}<small>${esc(shortDate(p.date))}</small>`;
     tip.style.left = `${Math.max(half, Math.min(box.clientWidth - half, p.x))}px`;
     tip.style.opacity = 1;
+    box.setAttribute('aria-valuenow', st.pts.indexOf(p));
+    box.setAttribute('aria-valuetext', `${shortDate(p.date)}: ${fm(p.value)}`);
+  };
+  const reset = () => {
+    const tip = $('.ctip', box);
+    if (!tip || !st.pts.length) return;
+    tip.style.opacity = 0;
+    idx = -1;
+    place(box, st.pts[st.pts.length - 1]);
+    box.setAttribute('aria-valuenow', st.pts.length - 1);
+    box.removeAttribute('aria-valuetext');
+    val.textContent = fm(val._v);
+  };
+  const scrub = (e) => {
+    if (!st.pts.length) return;
+    const x = e.clientX - box.getBoundingClientRect().left;
+    const p = st.pts.reduce((b, c) => (Math.abs(c.x - x) < Math.abs(b.x - x) ? c : b));
+    idx = st.pts.indexOf(p);
+    showAt(p);
   };
   box.onpointerdown = (e) => { down = true; box.setPointerCapture?.(e.pointerId); scrub(e); };
   box.onpointermove = (e) => { if (down || e.pointerType === 'mouse') scrub(e); };
   box.onpointerup = box.onpointercancel = () => { down = false; reset(); };
   box.onpointerleave = () => { if (!down) reset(); };
+  box.onkeydown = (e) => {   // стрелки двигают маркер, Home/End — к краям
+    if (!st.pts.length) return;
+    if (idx < 0) idx = st.pts.length - 1;
+    const step = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
+    if (e.key === 'Home') idx = 0;
+    else if (e.key === 'End') idx = st.pts.length - 1;
+    else if (step) idx = Math.max(0, Math.min(st.pts.length - 1, idx + step));
+    else return;
+    e.preventDefault();
+    showAt(st.pts[idx]);
+  };
+  box.onblur = reset;
 }
 
 function bindChart(root, s, a, fresh) {
@@ -220,7 +251,8 @@ export default {
     ${first}${heroHtml(all, d)}${debtHtml(all, d, a.today())}${chartHtml()}${peopleHtml(s, a)}${draw(PLAN, s, a)}${draw(SOON, s, a)}${recentHtml(s)}${draw(REST, s, a)}</div>`;
   },
   bind(root, s, a) {
-    const fresh = root.classList.contains('enter');   // анимации — только при переходе на экран, не при каждой перерисовке
+    const fresh = root.dataset.fresh === '1';   // анимации — только при первом показе экрана, не при перерисовках
+    delete root.dataset.fresh;
     const { bal, total } = bindHero(root, s, a);
     countUp(bal, total, { format: fm, ms: fresh ? 1100 : 0 });
     bindChart(root, s, a, fresh);

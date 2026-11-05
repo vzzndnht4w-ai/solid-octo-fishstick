@@ -171,10 +171,10 @@ main.enter>.home{animation:none}
 .rlist .tx .amt small{display:block;font-size:var(--t-xs);font-weight:500;color:var(--muted)}
 
 /* ===== 10. Нижнее меню: плавающая капсула ===== */
-.dock{position:relative;pointer-events:auto;display:flex;align-items:center;gap:2px;padding:7px;border-radius:var(--r-pill);background:color-mix(in srgb,var(--surface) 82%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 14px 34px rgba(0,0,0,.35),0 0 0 1px var(--line)}
+.dock{position:relative;pointer-events:auto;display:flex;align-items:center;gap:2px;padding:7px;border-radius:var(--r-pill);background:color-mix(in srgb,var(--surface) 94%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 14px 34px rgba(0,0,0,.35),0 0 0 1px var(--line)}
 .dock button{position:relative;z-index:1;width:54px;height:48px;border:0;border-radius:var(--r-pill);background:none;display:grid;place-items:center;font-size:var(--t-xl);color:var(--muted);transition:color .3s,transform .25s}
 .dock button.on{color:var(--on-accent)}
-.dock .glow{position:absolute;top:7px;left:7px;width:54px;height:48px;border-radius:var(--r-pill);background:var(--max);box-shadow:0 0 22px color-mix(in srgb,var(--max) 60%,transparent);opacity:0}
+.dock .glow{position:absolute;top:7px;left:7px;width:54px;height:48px;border-radius:var(--r-pill);background:var(--max);opacity:0}
 .dock .glow.shown{opacity:1}
 .dock .glow.ready{transition:transform .45s cubic-bezier(.3,1.4,.5,1),opacity .25s}
 .dock .plus,.dock .plus.on{color:var(--on-joint)}
@@ -195,3 +195,6 @@ main.enter>*{animation:enter .38s cubic-bezier(.2,.8,.3,1) both}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
   .card:active,.tx:active,.chip:active,.opt:active,.catb:active,.primary:active,.ghost:active{transform:none}
 }
+
+/* график: линии сетки */
+.ch-grid line{stroke:var(--line);stroke-width:1}

@@ -47,7 +47,7 @@ try {
   const go = new URLSearchParams(location.search).get('go');
   if (go && SCREENS[go]) { route = go; window.history.replaceState(null, '', location.pathname + location.hash); }
 } catch {}
-let shownRoute = null;
+let shownRoute = null, enterTimer = null;
 let month = todayStr().slice(0, 7);
 let history = [];
 
@@ -160,8 +160,8 @@ function renderWho() {
   const s = store.get();
   view.innerHTML = `<div class="stack" style="padding-top:12vh;text-align:center">
     <div class="empty" style="padding-bottom:0"><div class="big">${ic('users')}</div><h1>Мы</h1><p class="muted">Деньги вдвоём: у каждого своё, и общее тоже.<br>Кто сейчас с телефоном?</p></div>
-    <button class="primary" data-who="max" style="background:linear-gradient(135deg,var(--max),var(--max2))">Я — ${esc(s.profiles.max.name)}</button>
-    <button class="primary" data-who="dinara" style="margin-top:0;background:linear-gradient(135deg,var(--dinara),var(--dinara2))">Я — ${esc(s.profiles.dinara.name)}</button></div>`;
+    <button class="primary" data-who="max">Я — ${esc(s.profiles.max.name)}</button>
+    <button class="ghost" data-who="dinara" style="text-align:center;font-weight:700">Я — ${esc(s.profiles.dinara.name)}</button></div>`;
   $$('[data-who]', view).forEach((b) => (b.onclick = () => chooseUser(b.dataset.who)));
 }
 
@@ -178,11 +178,17 @@ function renderNav() {
     const on = el.dataset.tab === tab;
     el.classList.toggle('on', on);
     if (on) el.setAttribute('aria-current', 'page'); else el.removeAttribute('aria-current');
-    if (on && tab !== 'add') glow.style.transform = `translate(${el.offsetLeft - 7}px,0)`;
   });
+  placeGlow();
   glow.classList.toggle('shown', tab !== 'add');
   requestAnimationFrame(() => glow.classList.add('ready'));   // первый показ — без анимации
 }
+/** Ставит светящийся индикатор под активную кнопку; вызывается при смене раздела и изменении размера окна. */
+function placeGlow() {
+  const on = $('.dock button.on', nav), glow = $('.glow', nav);
+  if (on && glow && on.dataset.tab !== 'add') glow.style.transform = `translate(${on.offsetLeft - 7}px,0)`;
+}
+window.addEventListener('resize', placeGlow);
 
 function render() {
   const s = store.get();
@@ -198,7 +204,11 @@ function render() {
   renderNav();
   view.innerHTML = screen.render(s, api);
   if (!view.querySelector('h1')) view.insertAdjacentHTML('afterbegin', `<h1 class="sr-only">${({ home: 'Главная', feed: 'Лента операций', stats: 'Итоги' })[route] || 'Мы'}</h1>`);
-  view.classList.toggle('enter', shownRoute !== route);   // анимация появления — только при переходе, не при перерисовке
+  if (shownRoute !== route) {   // анимация появления — только при переходе на другой экран, не при перерисовке
+    view.classList.remove('enter'); void view.offsetWidth; view.classList.add('enter');
+    view.dataset.fresh = '1';   // экран однократно читает этот флаг, чтобы запустить счётчики и график
+    clearTimeout(enterTimer); enterTimer = setTimeout(() => view.classList.remove('enter'), 900);
+  }
   shownRoute = route;
   $$('[data-m]', view).forEach((b) => (b.onclick = () => { month = shiftMonth(month, +b.dataset.m); render(); }));
   $$('[data-back]', view).forEach((b) => (b.onclick = () => api.back()));
