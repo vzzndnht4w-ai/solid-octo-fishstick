@@ -1,25 +1,34 @@
-/* «Мы» — тёплая вечерняя палитра: сине-розовый градиент двоих, янтарный общий баланс. */
+/* «Мы» — тёмный графит с глубоким изумрудом. Один фирменный цвет (изумруд), у людей сдержанные оттенки, у «общего» приглушённое золото.
+   Значения токенов задаются ТОЛЬКО здесь; в других файлах цвета не дублируются. */
 :root{
-  --bg:#f4f1f8;--surface:#ffffff;--surface2:#faf8fd;--ink:#1c1830;--muted:#645f7a;--line:#e9e4f1;
-  --max:#2f5ce0;--max2:#7aa9ff;--dinara:#c72a5c;--dinara2:#ff98b0;--joint:#e59a2c;--joint2:#ffd27a;--joint-t:#8f5500;
-  --fmax:linear-gradient(135deg,#2f5ce0,#4a78ee);--fdin:linear-gradient(135deg,#c72a5c,#dc4a78);
-  --pos:#0d7a55;--neg:#c9283f;--brand:linear-gradient(135deg,#2f5ce0,#c72a5c);
-  --hero:linear-gradient(145deg,#241c46 0%,#43286f 60%,#7d3a84 100%);
-  --shadow:0 1px 2px rgba(40,24,80,.05),0 8px 24px rgba(40,24,80,.07);
+  /* поверхности и текст (светлая тема) */
+  --bg:#f2f5f4;--surface:#ffffff;--surface2:#f6f8f7;--ink:#13181a;--muted:#5a6762;--line:#dde4e1;
+  /* люди и общее */
+  --max:#168a58;--max2:#3dbd7d;--dinara:#675c8a;--dinara2:#9a8fc0;--joint:#a8780f;--joint2:#d4a93f;--joint-t:#7a5508;
+  /* смысловые */
+  --pos:#12794f;--neg:#c93a3a;
+  /* акцент (кнопки, активные элементы) и герой-блок: плоский цвет и один градиент */
+  --accent:#168a58;--on-accent:#ffffff;--brand:#168a58;
+  --fmax:#168a58;--fdin:#675c8a;
+  --hero:linear-gradient(150deg,#1f8a5b 0%,#17734c 55%,#0f5c3d 100%);--on-hero:#eafff3;
+  --shadow:0 1px 2px rgba(10,30,22,.06),0 10px 28px rgba(10,30,22,.08);
   --font:'Onest',-apple-system,system-ui,'SF Pro Text',sans-serif;
-  /* шкала шрифтов, радиусы, акцент */
+  /* шкала шрифтов, радиусы */
   --t-xs:12px;--t-sm:14px;--t-md:16px;--t-lg:18px;--t-xl:22px;--t-hero:34px;
   --r-sm:10px;--r-md:16px;--r-lg:24px;--r-pill:99px;
-  --accent:#4f46e5;--on-accent:#fff;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0e0c16;--surface:#191625;--surface2:#211d30;--ink:#f3f0fa;--muted:#9a94b0;--line:#2b2639;
-  --max:#6f98ff;--dinara:#ff6f98;--joint:#f2b04a;--joint-t:#f2b04a;--pos:#37c791;--neg:#ff6b7f;
-  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);color-scheme:dark}}
+  --bg:#0c0b10;--surface:#15141b;--surface2:#1d1b25;--ink:#f2f0f6;--muted:#9692a3;--line:#292731;
+  --max:#3dbd7d;--max2:#6fd9a0;--dinara:#d8d3e6;--dinara2:#b9b2d0;--joint:#d4a93f;--joint2:#e6c453;--joint-t:#d4a93f;
+  --pos:#4cc98a;--neg:#ef6a6a;
+  --accent:#3dbd7d;--on-accent:#06210f;--brand:#3dbd7d;--fmax:#3dbd7d;--fdin:#d8d3e6;
+  --shadow:0 1px 2px rgba(0,0,0,.45),0 10px 28px rgba(0,0,0,.4);color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0e0c16;--surface:#191625;--surface2:#211d30;--ink:#f3f0fa;--muted:#9a94b0;--line:#2b2639;
-  --max:#6f98ff;--dinara:#ff6f98;--joint:#f2b04a;--joint-t:#f2b04a;--pos:#37c791;--neg:#ff6b7f;
-  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);color-scheme:dark}
+  --bg:#0c0b10;--surface:#15141b;--surface2:#1d1b25;--ink:#f2f0f6;--muted:#9692a3;--line:#292731;
+  --max:#3dbd7d;--max2:#6fd9a0;--dinara:#d8d3e6;--dinara2:#b9b2d0;--joint:#d4a93f;--joint2:#e6c453;--joint-t:#d4a93f;
+  --pos:#4cc98a;--neg:#ef6a6a;
+  --accent:#3dbd7d;--on-accent:#06210f;--brand:#3dbd7d;--fmax:#3dbd7d;--fdin:#d8d3e6;
+  --shadow:0 1px 2px rgba(0,0,0,.45),0 10px 28px rgba(0,0,0,.4);color-scheme:dark}
 :root[data-theme="light"]{color-scheme:light}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{background:var(--bg)}

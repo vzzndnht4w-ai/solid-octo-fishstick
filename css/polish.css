@@ -63,12 +63,9 @@ a:focus-visible,summary:focus-visible,select:focus-visible,textarea:focus-visibl
 }
 
 /* аудит 2: читаемый розовый для мелкого текста, h1 для дикторов, непрозрачный док, плоские шкалы двух цветов */
-:root{--dinara-text:#be2f5d}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--dinara-text:#ff8fb0}}
-:root[data-theme="dark"]{--dinara-text:#ff8fb0}
-.dock button.on{color:var(--dinara-text)}
-.linkbtn,.cmp .nums span:last-child{color:var(--dinara-text)}
-.tag.dinara{--c:var(--dinara-text)}
+.dock button.on{color:var(--accent)}
+.linkbtn{color:var(--accent)}
+
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
 .dock{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}
 .dock .plus{box-shadow:0 2px 8px rgba(0,0,0,.25)}
@@ -78,9 +75,6 @@ h2{text-transform:none;letter-spacing:0;font-size:var(--t-lg);font-weight:650;co
 input[type=range]{height:28px;padding:10px 0;background-clip:content-box}
 
 /* ===== спокойный интерфейс: иерархия, плоские секции, токены, плоские заливки ===== */
-:root{--fmax:#2f5ce0;--fdin:#c72a5c}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#8b8cf8;--on-accent:#0e0c16}}
-:root[data-theme="dark"]{--accent:#8b8cf8;--on-accent:#0e0c16}
 input,button,.amt,.sum,.kv b,.tg-p b{font-variant-numeric:tabular-nums}
 .tx .amt,.kv b,.tg-p b,.svamt,.rsum b,.wg .gpct,.gsum b,.up .upamt{font-weight:700}
 
@@ -137,8 +131,8 @@ input,button,.amt,.sum,.kv b,.tg-p b{font-variant-numeric:tabular-nums}
 /* градиенты только у баланса и «+» в меню; кнопки и активные чипы — плоский акцент */
 .primary,.tg-act,.empty .big{background:var(--accent);color:var(--on-accent);box-shadow:none}
 .chip.on,.fchip.on{background:var(--accent);border-color:transparent;color:var(--on-accent)}
-.chip.on.max,.fchip.on.max{background:var(--fmax);color:#fff}
-.chip.on.dinara,.fchip.on.dinara{background:var(--fdin);color:#fff}
+.chip.on.max,.fchip.on.max{background:var(--fmax);color:var(--on-accent)}
+.chip.on.dinara,.fchip.on.dinara{background:var(--fdin);color:#1a1726}
 .chip.on.joint,.fchip.on.joint{background:var(--joint);color:#3a2600}
 .av.joint{background:var(--joint)}
 .pbar i{background:var(--rc,var(--max))}
