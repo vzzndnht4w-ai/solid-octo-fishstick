@@ -1,4 +1,4 @@
-const CACHE = 'we-money-v4';
+const CACHE = 'we-money-v5';
 const ASSETS = ['./', 'index.html'];  // остальное кэшируется при первом запросе
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS))); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {
@@ -8,6 +8,7 @@ self.addEventListener('activate', (e) => {
 // Сначала сеть (чтобы обновления приходили сразу), при отсутствии сети — кэш.
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  if (new URL(e.request.url).origin !== self.location.origin) return;   // чужие запросы (Supabase, шрифты) не кэшируем
   e.respondWith(fetch(e.request).then((r) => {
     const copy = r.clone();
     caches.open(CACHE).then((c) => c.put(e.request, copy));

@@ -37,8 +37,12 @@ $$;
 create or replace function public.sync_push(p_rows jsonb) returns void
 language plpgsql security definer set search_path = public as $$
 begin
+  if jsonb_typeof(p_rows) <> 'array' or jsonb_array_length(p_rows) > 500 then raise exception 'bad rows'; end if;
   insert into public.records (room, id, payload, u)
-  select x->>'room', x->>'id', x->>'payload', (x->>'u')::bigint from jsonb_array_elements(p_rows) x
+  select x->>'room', x->>'id', x->>'payload',
+         least((x->>'u')::bigint, (extract(epoch from now()) * 1000)::bigint + 300000)   -- время правки не дальше +5 минут
+  from jsonb_array_elements(p_rows) x
+  where (x->>'room') ~ '^[0-9a-f]{32}$' and (x->>'id') ~ '^[0-9a-f]{32}$' and length(x->>'payload') <= 65536
   on conflict (room, id) do update set payload = excluded.payload, u = excluded.u
   where public.records.u <= excluded.u;   -- побеждает более поздняя правка
 end $$;

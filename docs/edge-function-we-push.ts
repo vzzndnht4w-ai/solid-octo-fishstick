@@ -28,8 +28,10 @@ const safeUrl = (u: unknown) => { const s = clip(u, 200); return /^\.\/[\w?=&%.\
 
 /** Отправляет одно уведомление; при 404/410 удаляет подписку. Возвращает true, если доставлено. */
 const lastErrors: { status?: number; msg: string }[] = [];
+const PUSH_HOST = /^https:\/\/([a-z0-9-]+\.)*(push\.apple\.com|fcm\.googleapis\.com|push\.services\.mozilla\.com|notify\.windows\.com)\//;
 async function sendOne(sub: any, payload: unknown): Promise<boolean> {
   try {
+    if (!PUSH_HOST.test(String(sub?.sub?.endpoint || ''))) throw Object.assign(new Error('bad endpoint'), { statusCode: 400 });
     await webpush.sendNotification(sub.sub, JSON.stringify(payload), { TTL: 3600 });
     return true;
   } catch (e: any) {

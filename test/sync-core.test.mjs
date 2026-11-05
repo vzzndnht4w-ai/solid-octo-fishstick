@@ -96,3 +96,17 @@ test('коллекции (комментарии, шаблоны…) синхр�
   b.s.comments = []; await b.sync(2000); await a.sync(2001);
   assert.deepEqual(a.s.comments, []);
 });
+
+test('чужие записи: белые списки (профиль, настройки, прототип)', async () => {
+  const st = mkState(), known = {};
+  applyRemote(st, known, { id: 'prof:__proto__', data: { name: 'x' }, deleted: false, u: 1 });
+  applyRemote(st, known, { id: 'bud:__proto__', data: { c: '__proto__', v: 5 }, deleted: false, u: 1 });
+  applyRemote(st, known, { id: 'set:shared', data: { currency: '$', theme: 'hack', pins: { max: 'x' } }, deleted: false, u: 1 });
+  assert.equal(Object.keys(st.profiles).join(), 'max,dinara');
+  assert.equal({}.v, undefined);
+  assert.equal(st.settings.currency, '$');
+  assert.equal(st.settings.theme, undefined);
+  assert.equal(st.settings.pins, undefined);
+  assert.equal(parseInvite(makeInvite('https://x.io/', { url: 'http://evil.example', key: 'k', code: 'c' })), null);
+  assert.ok(parseInvite(makeInvite('https://x.io/', { url: 'https://p.supabase.co', key: 'k', code: 'c' })));
+});

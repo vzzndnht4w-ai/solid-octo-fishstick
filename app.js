@@ -125,6 +125,7 @@ let confirmDel = false;
 function openSheet(id) {
   const s = store.get(), t = s.txs.find((x) => x.id === id); if (!t) return;
   const v = txView(t, s.viewer), mine = !isSecret(t, s.viewer, todayStr());
+  const own = t.goalId ? 'Цели' : t.type === 'saving' ? 'Накопления' : '';   // правятся в своём разделе
   const kv = (k, val) => `<div class="row"><span class="muted">${k}</span><b>${val}</b></div>`;
   const mname = (m) => (m === 'cash' ? 'Наличные' : 'Карта');
   let rows = kv('Дата', `${dayLabel(t.date)}, ${t.date.slice(8)}.${t.date.slice(5, 7)}.${t.date.slice(0, 4)}`);
@@ -136,7 +137,7 @@ function openSheet(id) {
   sheet.hidden = false;
   sheet.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-label="Операция"><div class="grab"></div><div class="row" style="justify-content:flex-start;gap:12px">${v.icon}<div><b style="font-size:18px">${esc(v.title)}</b></div></div>
     <div class="big ${v.cls}" style="margin-top:12px">${v.amt}</div><div class="kvs">${rows}</div>
-    <div class="btns">${confirmDel ? `<button data-sheet="cancel">Не удалять</button><button class="del" data-sheet="del2">Да, удалить</button>` : `<button data-sheet="edit" ${mine ? '' : 'disabled style="opacity:.4"'}>Изменить</button><button class="del" data-sheet="del">Удалить</button>`}</div>${sheetBlock(s, t)}</div>`;
+    ${own ? `<p class="muted sm" style="margin:-4px 0 10px">Эта операция меняется в разделе «${own}». Здесь её можно только удалить.</p>` : ''}<div class="btns">${confirmDel ? `<button data-sheet="cancel">Не удалять</button><button class="del" data-sheet="del2">Да, удалить</button>` : `<button data-sheet="edit" ${mine && !own ? '' : 'disabled style="opacity:.4"'} ${own ? `title="Меняется в разделе «${own}»"` : ''}>Изменить</button><button class="del" data-sheet="del">Удалить</button>`}</div>${sheetBlock(s, t)}</div>`;
   const opener = document.activeElement;
   const close = () => { sheet.hidden = true; sheet.innerHTML = ''; confirmDel = false; document.removeEventListener('keydown', onKey); if (opener && opener.isConnected) opener.focus(); };
   const onKey = (e) => { if (e.key === 'Escape') close(); };
@@ -185,6 +186,7 @@ function render() {
   const screen = SCREENS[route] || SCREENS.home;
   renderNav();
   view.innerHTML = screen.render(s, api);
+  if (!view.querySelector('h1')) view.insertAdjacentHTML('afterbegin', `<h1 class="sr-only">${({ home: 'Главная', feed: 'Лента операций', stats: 'Итоги' })[route] || 'Мы'}</h1>`);
   if (shownRoute !== route) { shownRoute = route; view.classList.remove('enter'); void view.offsetWidth; view.classList.add('enter'); }
   $$('[data-m]', view).forEach((b) => (b.onclick = () => { month = shiftMonth(month, +b.dataset.m); render(); }));
   $$('[data-back]', view).forEach((b) => (b.onclick = () => api.back()));

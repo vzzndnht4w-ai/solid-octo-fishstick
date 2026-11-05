@@ -158,3 +158,14 @@ test('накопления: откладывание с кошелька уме�
   assert.ok(validate(sv({ amount: 5, wallet: 'nobody' })).length > 0);
   assert.ok(validate({ type: 'saving', amount: 5, wallet: 'max', method: 'card', person: 'max' }).length > 0);
 });
+
+test('parseMoney: точное округление и защита от мусора', () => {
+  assert.equal(parseMoney('1,005'), 101);
+  assert.equal(parseMoney('19,99'), 1999);
+  assert.equal(parseMoney('0,1'), 10);
+  assert.equal(parseMoney('1 234,5'), 123450);
+  assert.equal(parseMoney('1e3'), null);
+  assert.equal(parseMoney('-5'), null);
+  assert.equal(parseMoney('0'), null);
+  assert.equal(parseMoney('9999999999999'), null);
+});

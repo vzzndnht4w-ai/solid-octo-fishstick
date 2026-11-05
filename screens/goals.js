@@ -84,7 +84,12 @@ function edit(g0, s, a) {
     };
     const d = $('#g-del', sh.el); if (d) d.onclick = () => { read(); confirm = true; draw(); };
     const k = $('#g-keep', sh.el); if (k) k.onclick = () => { read(); confirm = false; draw(); };
-    const d2 = $('#g-del2', sh.el); if (d2) d2.onclick = () => { sh.close(); a.store.mutate((st) => { st.goals = st.goals.filter((x) => x.id !== g0.id); }); };
+    const d2 = $('#g-del2', sh.el); if (d2) d2.onclick = () => { sh.close(); a.store.mutate((st) => {
+      st.goals = st.goals.filter((x) => x.id !== g0.id);
+      // резервы под цель исчезают (деньги снова свободны), а взносы с карт остаются обычными переводами в баланс
+      st.txs = st.txs.filter((t) => !(t.goalId === g0.id && t.from === 'joint' && t.to === 'joint'))
+        .map((t) => { if (t.goalId !== g0.id) return t; const { goalId, ...rest } = t; return rest; });
+    }); };
   };
   draw();
 }

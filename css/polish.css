@@ -61,3 +61,18 @@ a:focus-visible,summary:focus-visible,select:focus-visible,textarea:focus-visibl
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
   .card:active,.tx:active,.chip:active,.opt:active,.catb:active,.primary:active,.ghost:active{transform:none}
 }
+
+/* аудит 2: читаемый розовый для мелкого текста, h1 для дикторов, непрозрачный док, плоские шкалы двух цветов */
+:root{--dinara-text:#be2f5d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--dinara-text:#ff8fb0}}
+:root[data-theme="dark"]{--dinara-text:#ff8fb0}
+.dock button.on{color:var(--dinara-text)}
+.linkbtn,.cmp .nums span:last-child{color:var(--dinara-text)}
+.tag.dinara{--c:var(--dinara-text)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+.dock{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}
+.dock .plus{box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.duo i:first-child{background:var(--max)}.duo i:last-child{background:var(--dinara)}
+.max .mini i{background:var(--max)}.dinara .mini i{background:var(--dinara)}
+h2{text-transform:none;letter-spacing:0;font-size:17px;font-weight:650;color:var(--ink);margin:28px 4px 10px}
+input[type=range]{height:28px;padding:10px 0;background-clip:content-box}

@@ -159,9 +159,13 @@ export const formatMoney = (kop) => {
 
 /** '1 234,5' → 123450 копеек; null если не число. */
 export function parseMoney(str) {
-  const n = Number(String(str).replace(/\s| /g, '').replace(',', '.'));
-  if (!isFinite(n) || n <= 0) return null;
-  return Math.round(n * 100);
+  const t = String(str).replace(/\s| /g, '').replace(',', '.');
+  const m = /^(\d{1,12})(?:\.(\d*))?$/.exec(t);   // без «1e3», минусов и чисел больше триллиона
+  if (!m) return null;
+  const frac = (m[2] || '').padEnd(3, '0');
+  let kop = Number(m[1]) * 100 + Number(frac.slice(0, 2));
+  if (Number(frac[2]) >= 5) kop += 1;               // третья цифра решает округление: 1,005 → 1,01
+  return kop > 0 ? kop : null;
 }
 
 /** Сколько общего баланса отложено в цели (резервы и взносы с goalId). */
