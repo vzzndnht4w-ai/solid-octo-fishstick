@@ -1,0 +1,289 @@
+<title>Мы Живой</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap">
+<style>
+/* Идея: тёмный графит с фиолетовым оттенком (база Ofspace/Orizon), три цвета людей: зелёный Максим, коралл Динара, жёлтый общий.
+   Герой-карточка коралловая с «живым» светом, большой график с шипами и жёлтым маркером, плавающее меню с круглой активной кнопкой.
+   Намеренно одна тёмная тема: это макет направления. */
+:root{--bg:#0e0d12;--s1:#17151d;--s2:#201d29;--ln:rgba(255,255,255,.08);--tx:#f4f2f7;--mu:#9a95a8;
+ --g:#5be38b;--g2:#2fbf6b;--c:#e4dff2;--c2:#cfc8e6;--y:#ffd84d;--r:22px;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Onest,system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.app{max-width:430px;margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 16px 120px;position:relative;overflow-x:clip}
+.note{font-size:13px;color:var(--mu);padding:6px 4px 14px;line-height:1.4}
+.note b{color:var(--tx)}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.rise{opacity:0;transform:translateY(14px);animation:rise .6s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i,0)*70ms)}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* шапка */
+.top{display:flex;align-items:center;justify-content:space-between;margin:6px 0 14px}
+.hi small{display:block;color:var(--mu);font-size:13px}.hi b{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.tr{display:flex;gap:10px}
+.ib{width:42px;height:42px;border-radius:50%;background:var(--s1);border:1px solid var(--ln);display:grid;place-items:center;position:relative;transition:transform .2s}
+.ib:active{transform:scale(.92)}
+.ib svg{width:20px;height:20px}
+.dot{position:absolute;top:9px;right:10px;width:9px;height:9px;border-radius:50%;background:var(--y);box-shadow:0 0 0 2px var(--s1)}
+.av{background:linear-gradient(140deg,var(--g),var(--g2));color:#06240f;font-weight:800;border:0}
+
+/* герой */
+.hero{position:relative;border-radius:30px;padding:20px 20px 18px;color:#052412;overflow:hidden;background:linear-gradient(150deg,#8dffb0 0%,#5be38b 52%,#34c76e 100%);box-shadow:0 20px 50px -18px rgba(91,227,139,.5)}
+.hero .bl{position:absolute;border-radius:50%;filter:blur(26px);opacity:.75;mix-blend-mode:soft-light;animation:drift 9s ease-in-out infinite alternate}
+.hero .b1{width:170px;height:170px;background:#fff;right:-40px;top:-50px}
+.hero .b2{width:150px;height:150px;background:#e6ff9a;left:-30px;bottom:-60px;animation-delay:-3s;animation-duration:11s}
+.hero .b3{width:110px;height:110px;background:#fff;right:60px;bottom:-40px;animation-delay:-6s}
+@keyframes drift{to{transform:translate(26px,-18px) scale(1.15)}}
+.hero>*{position:relative}
+.hl{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;opacity:.8}
+.eye{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.35);display:grid;place-items:center}
+.eye svg{width:18px;height:18px}
+.bal{font-size:46px;font-weight:800;letter-spacing:-.04em;line-height:1.05;margin:6px 0 4px;transition:filter .3s}
+.bal.hide{filter:blur(12px)}
+.hs{font-size:13px;font-weight:500;opacity:.78}
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.act{background:rgba(255,255,255,.34);border-radius:18px;padding:10px 4px 8px;display:grid;justify-items:center;gap:3px;font-size:12px;font-weight:700;transition:transform .2s,background .2s;backdrop-filter:blur(8px)}
+.act:active{transform:scale(.94);background:rgba(255,255,255,.5)}
+.act svg{width:20px;height:20px}
+.act i{font-style:normal;font-size:11px;font-weight:600;opacity:.75}
+
+/* график */
+.pn{background:var(--s1);border:1px solid var(--ln);border-radius:var(--r);padding:16px;margin-top:14px}
+.ph2{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.ph2 h3{margin:0;font-size:17px;font-weight:700}
+.seg{position:relative;display:flex;background:var(--s2);border-radius:99px;padding:3px}
+.seg button{position:relative;z-index:1;padding:6px 11px;font-size:12.5px;font-weight:600;color:var(--mu);transition:color .25s}
+.seg button.on{color:#0b1f12}
+.seg .pill{position:absolute;top:3px;bottom:3px;border-radius:99px;background:var(--g);transition:left .35s cubic-bezier(.3,1.3,.5,1),width .35s cubic-bezier(.3,1.3,.5,1)}
+.big{font-size:30px;font-weight:800;letter-spacing:-.03em;margin:4px 0 0}
+.delta{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:700;color:var(--g);background:rgba(91,227,139,.12);border-radius:99px;padding:3px 9px;margin-left:8px;vertical-align:middle}
+.chart{position:relative;margin-top:8px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.chart svg{display:block;width:100%;height:190px;overflow:visible}
+.tip{position:absolute;top:0;transform:translate(-50%,-4px);background:var(--y);color:#2b2300;font-size:12px;font-weight:800;padding:4px 9px;border-radius:10px;pointer-events:none;opacity:0;transition:opacity .2s;white-space:nowrap}
+.tip small{display:block;font-weight:600;opacity:.7;font-size:10.5px}
+.axis{display:flex;justify-content:space-between;color:var(--mu);font-size:11px;margin-top:2px}
+
+/* люди */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.pc{background:var(--s1);border:1px solid var(--ln);border-radius:var(--r);padding:14px;position:relative;overflow:hidden}
+.pc .nm{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+.pc .a{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;color:#0e0d12}
+.m .a{background:var(--g)}.d .a{background:var(--c)}
+.ring{width:84px;height:84px;margin:10px 0 6px;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .tt{position:absolute;inset:0;display:grid;place-items:center;font-size:16px;font-weight:800}
+.ring circle{fill:none;stroke-width:9;stroke-linecap:round}
+.ring .bg{stroke:var(--s2)}
+.m .fg{stroke:var(--g)}.d .fg{stroke:var(--c)}
+.ring .fg{stroke-dasharray:var(--len) 999;stroke-dashoffset:var(--len);animation:ringin 1.2s .4s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes ringin{to{stroke-dashoffset:0;stroke-dasharray:var(--val) 999}}
+.pc .v{font-size:18px;font-weight:800;letter-spacing:-.02em}
+.pc .l{font-size:12px;color:var(--mu)}
+
+/* цель */
+.goal{display:flex;gap:14px;align-items:center}
+.gi{width:54px;height:54px;border-radius:16px;background:rgba(255,216,77,.14);display:grid;place-items:center;font-size:26px;flex:none}
+.gb{flex:1;min-width:0}
+.gb b{font-size:15px}.gb .s{font-size:12.5px;color:var(--mu);margin:2px 0 8px}
+.bar{height:10px;border-radius:99px;background:var(--s2);overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:99px;background:var(--y);animation:grow 1.4s .5s cubic-bezier(.2,.8,.2,1) forwards;box-shadow:0 0 14px rgba(255,216,77,.5)}
+@keyframes grow{to{width:var(--w)}}
+
+/* операции */
+.sec{display:flex;justify-content:space-between;align-items:center;margin:22px 2px 8px}
+.sec h3{margin:0;font-size:17px;font-weight:700}.sec button{color:var(--g);font-size:13px;font-weight:700}
+.tx{background:var(--s1);border:1px solid var(--ln);border-radius:20px;margin-bottom:8px;overflow:hidden;transition:background .25s}
+.tx .rw{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;text-align:left}
+.tx .ic{width:42px;height:42px;border-radius:14px;border:1.5px solid var(--ln);display:grid;place-items:center;flex:none}
+.tx .ic svg{width:20px;height:20px}
+.tx .mid{flex:1;min-width:0}.tx .mid b{display:block;font-size:15px;font-weight:600}.tx .mid small{color:var(--mu);font-size:12.5px}
+.tx .am{font-weight:800;font-size:15px}.pos{color:var(--g)}
+.tx .dt{max-height:0;opacity:0;padding:0 14px;transition:max-height .35s,opacity .3s,padding .3s;font-size:13px;color:var(--mu);display:flex;gap:6px;flex-wrap:wrap}
+.tx.open .dt{max-height:80px;opacity:1;padding:0 14px 14px}
+.chip{font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--s2);color:var(--tx)}
+.chip.m{background:rgba(91,227,139,.15);color:var(--g)}.chip.d{background:rgba(228,223,242,.14);color:var(--c)}.chip.j{background:rgba(255,216,77,.14);color:var(--y)}
+.tx.new{animation:pop .7s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.9) translateY(-10px);opacity:0}}
+
+/* меню */
+.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:max(14px,env(safe-area-inset-bottom));display:flex;gap:2px;padding:7px;border-radius:99px;background:rgba(32,29,41,.86);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);border:1px solid var(--ln);box-shadow:0 14px 34px rgba(0,0,0,.5);z-index:20}
+.dock button{width:54px;height:48px;border-radius:99px;display:grid;place-items:center;color:var(--mu);position:relative;z-index:1;transition:color .3s}
+.dock button svg{width:22px;height:22px}
+.dock button.on{color:#06240f}
+.dock .glow{position:absolute;top:7px;left:7px;width:54px;height:48px;border-radius:99px;background:var(--g);box-shadow:0 0 22px rgba(91,227,139,.65);transition:transform .45s cubic-bezier(.3,1.4,.5,1)}
+.dock .plus{width:58px;background:var(--y);color:#2b2300;box-shadow:0 0 22px rgba(255,216,77,.45);transition:transform .25s}
+.dock .plus:active{transform:scale(.9)}
+
+/* шторка */
+.back{position:fixed;inset:0;background:rgba(5,4,8,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .3s;z-index:40}
+.back.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:50%;bottom:0;width:min(100%,430px);transform:translate(-50%,105%);background:var(--s1);border-radius:30px 30px 0 0;border:1px solid var(--ln);padding:12px 18px max(18px,env(safe-area-inset-bottom));transition:transform .5s cubic-bezier(.2,.9,.2,1);z-index:50}
+.sheet.on{transform:translate(-50%,0)}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--ln);margin:0 auto 12px}
+.amt{text-align:center;font-size:46px;font-weight:800;letter-spacing:-.04em;margin:10px 0 4px;min-height:54px}
+.amt i{font-style:normal;color:var(--mu);font-size:28px}
+.cats{display:flex;gap:8px;overflow-x:auto;padding:6px 0 12px;scrollbar-width:none}.cats::-webkit-scrollbar{display:none}
+.cats button{flex:none;padding:8px 14px;border-radius:99px;background:var(--s2);font-size:14px;font-weight:600;transition:all .25s}
+.cats button.on{background:var(--g);color:#06240f;transform:scale(1.06)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pad button{height:52px;border-radius:16px;background:var(--s2);font-size:22px;font-weight:600;transition:transform .12s,background .2s}
+.pad button:active{transform:scale(.92);background:#2b2736}
+.go{width:100%;height:56px;border-radius:18px;background:var(--g);color:#06240f;font-size:17px;font-weight:800;margin-top:12px;box-shadow:0 10px 26px -8px rgba(91,227,139,.6);transition:transform .15s}
+.go:active{transform:scale(.97)}
+.toast{position:fixed;left:50%;top:max(14px,env(safe-area-inset-top));transform:translate(-50%,-150%);background:var(--y);color:#2b2300;font-weight:800;font-size:14px;padding:10px 16px;border-radius:99px;transition:transform .5s cubic-bezier(.2,1.3,.4,1);z-index:60;box-shadow:0 10px 26px rgba(0,0,0,.4)}
+.toast.on{transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}.rise{opacity:1;transform:none}}
+</style>
+
+<div class="app" id="app">
+  <p class="note rise"><b>Живой макет направления.</b> Потрогайте: сверните баланс глазом, водите пальцем по графику, переключайте 7 дн / 30 дн / 3 мес, раскройте операцию, нажмите жёлтый «+» и добавьте трату: баланс и список обновятся.</p>
+
+  <div class="top rise" style="--i:1">
+    <div class="hi"><small>Ноябрь 2026</small><b>Привет, Максим</b></div>
+    <div class="tr"><button class="ib" aria-label="Что нового"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17h12l-1.5-2V11a4.5 4.5 0 0 0-9 0v4zM10 20h4"/></svg><i class="dot"></i></button><button class="ib av" aria-label="Профиль">М</button></div>
+  </div>
+
+  <section class="hero rise" style="--i:2" id="hero">
+    <i class="bl b1"></i><i class="bl b2"></i><i class="bl b3"></i>
+    <div class="hl"><span>Общий баланс</span><button class="eye" id="eye" aria-label="Скрыть сумму"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+    <div class="bal" id="bal">0 ₽</div>
+    <div class="hs" id="hs">свободно 140 000 · в целях 10 000</div>
+    <div class="acts">
+      <button class="act" id="addBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Операция</button>
+      <button class="act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg>Перевод</button>
+      <button class="act" id="settle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>Рассчитаться<i>7 500 ₽</i></button>
+    </div>
+  </section>
+
+  <section class="pn rise" style="--i:3">
+    <div class="ph2"><h3>Динамика</h3>
+      <div class="seg" id="seg"><i class="pill"></i><button data-r="7">7 дн</button><button data-r="30" class="on">30 дн</button><button data-r="90">3 мес</button></div></div>
+    <div class="big"><span id="cv">150 000 ₽</span><span class="delta" id="cd">▲ 12,4 %</span></div>
+    <div class="chart" id="chart"><svg id="svg" viewBox="0 0 360 190" preserveAspectRatio="none" role="img" aria-label="График общего баланса"></svg><div class="tip" id="tip"></div></div>
+    <div class="axis" id="axis"></div>
+  </section>
+
+  <div class="two">
+    <div class="pc m rise" style="--i:4"><div class="nm"><span class="a">М</span>Максим</div>
+      <div class="ring" style="--len:0;--val:206"><svg viewBox="0 0 84 84"><circle class="bg" cx="42" cy="42" r="33"/><circle class="fg" cx="42" cy="42" r="33" style="--val:36px"/></svg><div class="tt">17%</div></div>
+      <div class="v" data-n="99050">0</div><div class="l">осталось из 120 000</div></div>
+    <div class="pc d rise" style="--i:5"><div class="nm"><span class="a">Д</span>Динара</div>
+      <div class="ring"><svg viewBox="0 0 84 84"><circle class="bg" cx="42" cy="42" r="33"/><circle class="fg" cx="42" cy="42" r="33" style="--val:42px"/></svg><div class="tt">20%</div></div>
+      <div class="v" data-n="71750">0</div><div class="l">осталось из 90 000</div></div>
+  </div>
+
+  <section class="pn rise" style="--i:6">
+    <div class="goal"><div class="gi">✈️</div><div class="gb"><b>Отпуск в Грузии</b><div class="s">5 000 из 300 000 ₽ · ещё 295 000</div><div class="bar"><i style="--w:7%"></i></div></div></div>
+  </section>
+
+  <div class="sec rise" style="--i:7"><h3>Последнее</h3><button>Все</button></div>
+  <div id="list"></div>
+</div>
+
+<nav class="dock" aria-label="Разделы"><i class="glow" id="glow"></i>
+  <button class="on" data-t="0" aria-label="Главная"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></button>
+  <button data-t="1" aria-label="Лента"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></button>
+  <button class="plus" id="plus" aria-label="Добавить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button data-t="3" aria-label="Итоги"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20v-7M12 20V5M19 20v-10"/></svg></button>
+  <button data-t="4" aria-label="Ещё"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg></button>
+</nav>
+
+<div class="back" id="back"></div>
+<div class="sheet" id="sheet" role="dialog" aria-label="Новая операция"><div class="grab"></div>
+  <div class="seg" id="tseg" style="width:fit-content;margin:0 auto"><i class="pill"></i><button class="on" data-k="exp">Расход</button><button data-k="inc">Доход</button><button data-k="tr">Перевод</button></div>
+  <div class="amt" id="amt"><i>₽</i></div>
+  <div class="cats" id="cats"></div>
+  <div class="pad" id="pad"></div>
+  <button class="go" id="go">Добавить</button>
+</div>
+<div class="toast" id="toast">Добавлено</div>
+
+<script>
+(function(){
+  var fmt=function(n){return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ')};
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+  var balance=150000, hidden=false;
+
+  /* счётчик чисел */
+  function count(el,to,suffix,ms){
+    var from=el._v||0; el._v=to; if(reduce){el.textContent=fmt(to)+(suffix||'');return}
+    var t0=performance.now(); ms=ms||1100;
+    (function f(t){var k=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-k,4);el.textContent=fmt(from+(to-from)*e)+(suffix||'');if(k<1)requestAnimationFrame(f)})(t0);
+  }
+  var bal=$('#bal');
+  function setBal(v,instant){balance=v;count(bal,v,' ₽',instant?1:1100);$('#hs').textContent='свободно '+fmt(v-10000)+' · в целях 10 000'}
+  setTimeout(function(){setBal(150000)},350);
+  $$('.pc .v').forEach(function(e,i){setTimeout(function(){count(e,+e.dataset.n,' ₽',1300)},500+i*120)});
+  $('#eye').onclick=function(){hidden=!hidden;bal.classList.toggle('hide',hidden)};
+
+  /* график */
+  var W=360,H=190,P=14;
+  function series(n){var tr=({7:1.03,30:1.124,90:1.31})[n]||1.1,end=150000,start=end/tr,s=7+n,a=[];function rnd(){s=(s*9301+49297)%233280;return s/233280}
+    for(var i=0;i<n;i++){var t=i/(n-1);a.push(start+(end-start)*t+(rnd()-.5)*0.07*end*(1-t*.7))}a[n-1]=end;return a}
+  function path(pts){var d='M'+pts[0][0]+' '+pts[0][1];for(var i=0;i<pts.length-1;i++){var p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+      var c1x=p1[0]+(p2[0]-p0[0])/6,c1y=p1[1]+(p2[1]-p0[1])/6,c2x=p2[0]-(p3[0]-p1[0])/6,c2y=p2[1]-(p3[1]-p1[1])/6;d+=' C'+c1x+' '+c1y+','+c2x+' '+c2y+','+p2[0]+' '+p2[1]}return d}
+  var cur=[], pts=[], range=30, svg=$('#svg'), tip=$('#tip');
+  function draw(n){
+    range=n;var raw=n===90?series(90).filter(function(_,i){return i%3===0}):series(n);raw[raw.length-1]=balance;cur=raw;
+    var mn=Math.min.apply(0,raw)*.96,mx=Math.max.apply(0,raw)*1.02;
+    pts=raw.map(function(v,i){return [P+i*(W-2*P)/(raw.length-1),H-18-(v-mn)/(mx-mn)*(H-46)]});
+    var line=path(pts),area=line+' L'+pts[pts.length-1][0]+' '+H+' L'+pts[0][0]+' '+H+'Z';
+    var spikes=pts.map(function(p,i){return '<line x1="'+p[0]+'" y1="'+p[1]+'" x2="'+p[0]+'" y2="'+H+'" stroke="url(#sp)" stroke-width="'+(raw.length>40?1.5:2.4)+'" stroke-linecap="round" style="opacity:0;animation:fadein .5s '+(i*14)+'ms forwards"/>'}).join('');
+    svg.innerHTML='<defs><linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5be38b" stop-opacity=".42"/><stop offset="1" stop-color="#5be38b" stop-opacity="0"/></linearGradient><linearGradient id="sp" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="190"><stop offset="0" stop-color="#5be38b" stop-opacity=".55"/><stop offset="1" stop-color="#5be38b" stop-opacity="0"/></linearGradient></defs>'+
+      spikes+'<path d="'+area+'" fill="url(#ar)" style="opacity:0;animation:fadein .9s .3s forwards"/><path id="ln" d="'+line+'" fill="none" stroke="#5be38b" stroke-width="2.6" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" style="animation:drawl 1.3s cubic-bezier(.3,.7,.2,1) forwards"/>'+
+      '<g id="mk" style="opacity:0;animation:fadein .4s 1.1s forwards"><circle id="mkg" r="13" fill="#ffd84d" opacity=".22"/><circle id="mkc" r="6" fill="#ffd84d" stroke="#0e0d12" stroke-width="3"/><line id="mkl" y2="'+H+'" stroke="#ffd84d" stroke-width="1.2" stroke-dasharray="3 4" opacity=".7"/></g>';
+    place(pts.length-1);
+    var lbl=n===7?['пн','вт','ср','чт','пт','сб','вс']:n===30?['5 окт','12 окт','19 окт','26 окт','2 ноя']:['авг','сен','окт','ноя'];
+    $('#axis').innerHTML=lbl.map(function(l){return '<span>'+l+'</span>'}).join('');
+    var d=(raw[raw.length-1]-raw[0])/raw[0]*100;$('#cd').textContent=(d>=0?'▲ ':'▼ ')+Math.abs(d).toFixed(1).replace('.',',')+' %';
+  }
+  function place(i){i=Math.max(0,Math.min(pts.length-1,i));var p=pts[i];['mkc','mkg'].forEach(function(id){var e=$('#'+id);if(e){e.setAttribute('cx',p[0]);e.setAttribute('cy',p[1])}});
+    var l=$('#mkl');if(l){l.setAttribute('x1',p[0]);l.setAttribute('x2',p[0]);l.setAttribute('y1',p[1])}
+    count($('#cv'),cur[i],' ₽',200);return p}
+  var st=document.createElement('style');st.textContent='@keyframes fadein{to{opacity:1}}@keyframes drawl{to{stroke-dashoffset:0}}';document.head.appendChild(st);
+  var ch=$('#chart');function scrub(e){var r=ch.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W;var i=0,b=1e9;pts.forEach(function(p,k){var d=Math.abs(p[0]-x);if(d<b){b=d;i=k}});
+    var p=place(i);tip.style.left=(p[0]/W*100)+'%';tip.innerHTML=fmt(cur[i])+' ₽<small>'+(range===7?'день '+(i+1):range===30?(i+1)+'-й день':'нед. '+(i+1))+'</small>';tip.style.opacity=1}
+  ch.addEventListener('pointerdown',function(e){ch.setPointerCapture(e.pointerId);scrub(e)});ch.addEventListener('pointermove',function(e){if(e.buttons||e.pointerType==='touch')scrub(e)});
+  ch.addEventListener('pointerup',function(){tip.style.opacity=0;place(pts.length-1)});ch.addEventListener('pointerleave',function(){tip.style.opacity=0});
+
+  /* сегмент со скользящей пилюлей */
+  function segInit(box,onpick){var pill=$('.pill',box),btns=$$('button',box);function mv(b){pill.style.left=b.offsetLeft+'px';pill.style.width=b.offsetWidth+'px'}
+    btns.forEach(function(b){b.onclick=function(){btns.forEach(function(x){x.classList.remove('on')});b.classList.add('on');mv(b);onpick&&onpick(b)}});
+    var on=$('button.on',box);requestAnimationFrame(function(){mv(on)});window.addEventListener('resize',function(){mv($('button.on',box))});setTimeout(function(){mv($('button.on',box))},300)}
+  segInit($('#seg'),function(b){draw(+b.dataset.r)});draw(30);
+
+  /* операции */
+  var ICON={food:'<path d="M7 3v8M4 3v5a3 3 0 0 0 6 0V3M7 11v10M17 21V3c-2.2 1-3.5 4-3.5 8H17"/>',home:'<path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',cart:'<path d="M3 4h2l2.4 10.2a1 1 0 0 0 1 .8h8.2a1 1 0 0 0 1-.8L19 8H6M9 20h.01M17 20h.01"/>',in:'<path d="M12 4v13M6 11l6 6 6-6M5 21h14"/>',gift:'<path d="M4 11h16v9H4zM3 8h18v3H3zM12 8v12"/>'};
+  var txs=[{t:'Аренда',s:'4 ноя · Динара',a:-25000,ic:'home',w:'j',w2:'из общего баланса'},{t:'Продукты',s:'3 ноя · Максим',a:-4500,ic:'cart',w:'m',w2:'доли 60/40, Динара должна 1 800'},{t:'Зарплата',s:'1 ноя · Максим',a:120000,ic:'in',w:'m',w2:'на карту'},{t:'Кофе',s:'3 ноя · Динара',a:-250,ic:'food',w:'d',w2:'личное'}];
+  var list=$('#list');
+  function row(x,isNew){var d=document.createElement('div');d.className='tx'+(isNew?' new':'');
+    d.innerHTML='<button class="rw"><span class="ic" style="color:'+(x.a>0?'var(--g)':'var(--tx)')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICON[x.ic]+'</svg></span><span class="mid"><b>'+x.t+'</b><small>'+x.s+'</small></span><span class="am '+(x.a>0?'pos':'')+'">'+(x.a>0?'+':'−')+fmt(Math.abs(x.a))+' ₽</span></button><div class="dt"><span class="chip '+x.w+'">'+(x.w==='m'?'Максим':x.w==='d'?'Динара':'Общее')+'</span><span class="chip">'+x.w2+'</span></div>';
+    d.querySelector('.rw').onclick=function(){d.classList.toggle('open')};return d}
+  txs.forEach(function(x,i){var r=row(x);r.classList.add('rise');r.style.setProperty('--i',8+i);list.appendChild(r)});
+
+  /* меню */
+  var glow=$('#glow'),tabs=$$('.dock button[data-t]');
+  function glowTo(b){glow.style.transform='translateX('+(b.offsetLeft-7)+'px)'}
+  tabs.forEach(function(b){b.onclick=function(){tabs.forEach(function(x){x.classList.remove('on')});b.classList.add('on');glowTo(b)}});
+  requestAnimationFrame(function(){glowTo(tabs[0])});
+
+  /* шторка добавления */
+  var sheet=$('#sheet'),back=$('#back'),val='',catSel='Продукты';
+  var CATS=['Продукты','Еда вне дома','Транспорт','Жильё','Здоровье','Подарки'];
+  var cats=$('#cats');CATS.forEach(function(c){var b=document.createElement('button');b.textContent=c;if(c===catSel)b.className='on';b.onclick=function(){catSel=c;$$('button',cats).forEach(function(x){x.classList.remove('on')});b.classList.add('on')};cats.appendChild(b)});
+  var pad=$('#pad');'123456789 0⌫'.split('').forEach(function(k){var b=document.createElement('button');b.textContent=k===' '?'':k;if(k===' ')b.style.visibility='hidden';b.onclick=function(){if(k==='⌫')val=val.slice(0,-1);else if(val.length<7)val+=k;render()};pad.appendChild(b)});
+  function render(){$('#amt').innerHTML=(val?fmt(+val):'0')+' <i>₽</i>'}
+  function open(on){sheet.classList.toggle('on',on);back.classList.toggle('on',on);if(on){val='';render();var s=$('#tseg');setTimeout(function(){var b=$('button.on',s);$('.pill',s).style.left=b.offsetLeft+'px';$('.pill',s).style.width=b.offsetWidth+'px'},60)}}
+  segInit($('#tseg'));
+  $('#plus').onclick=$('#addBtn').onclick=function(){open(true)};back.onclick=function(){open(false)};
+  var toast=$('#toast');
+  $('#go').onclick=function(){var n=+val;if(!n)return;open(false);var kind=$('#tseg button.on').dataset.k;var x={t:kind==='inc'?'Доход':catSel,s:'сегодня · Максим',a:kind==='inc'?n:-n,ic:kind==='inc'?'in':catSel==='Продукты'?'cart':catSel==='Подарки'?'gift':catSel==='Жильё'?'home':'food',w:kind==='inc'?'m':'j',w2:kind==='inc'?'на карту':'из общего баланса'};
+    txs.unshift(x);list.insertBefore(row(x,true),list.firstChild);setBal(balance+x.a);balance=balance;draw(range);
+    toast.textContent=(x.a>0?'Доход ':'Расход ')+fmt(n)+' ₽ добавлен';toast.classList.add('on');setTimeout(function(){toast.classList.remove('on')},2200)};
+  $('#settle').onclick=function(){toast.textContent='Долг 7 500 ₽ погашен. Вы квиты';toast.classList.add('on');this.querySelector('i').textContent='квиты';setTimeout(function(){toast.classList.remove('on')},2200)};
+
+  /* лёгкий 3D-наклон героя */
+  var hero=$('#hero');hero.addEventListener('pointermove',function(e){if(reduce)return;var r=hero.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;hero.style.transform='perspective(700px) rotateY('+x*7+'deg) rotateX('+(-y*7)+'deg)'});
+  hero.addEventListener('pointerleave',function(){hero.style.transform='';hero.style.transition='transform .5s'});hero.addEventListener('pointerenter',function(){hero.style.transition='transform .08s'});
+})();
+</script>
