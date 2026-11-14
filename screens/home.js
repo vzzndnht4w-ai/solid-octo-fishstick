@@ -10,6 +10,8 @@ import { txView } from './feed.js';
 import { txBadge } from '../lib/together-ui.js';
 import { backupDue, backupMarks, snoozeBackup, daysSince } from '../lib/backup.js';
 import { isConnected as syncOn } from '../lib/sync.js';
+import { hiddenBlocks } from '../lib/home-blocks.js';
+import { openSettingsTab } from './settings.js';
 
 const OLD_DEBT_DAYS = 14, OLD_DEBT_MIN = 100000;
 /** Мягкое напоминание, если долг висит дольше 14 дней и больше 1 000 ₽. */
@@ -91,7 +93,7 @@ function recentHtml(s) {
 const pick = (...ids) => ids.map((id) => widgets.find((w) => w.id === id)).filter(Boolean);
 const PLAN = pick('goals', 'savings', 'budgets'), SOON = pick('upcoming');
 const REST = widgets.filter((w) => !PLAN.includes(w) && !SOON.includes(w));
-const draw = (list, s, a) => list.map((w) => w.render(s, a)).join('');
+const draw = (list, s, a, off = []) => list.filter((w) => !off.includes(w.id)).map((w) => w.render(s, a)).join('');
 
 // ---------- График «Динамика» ----------
 function drawChart(root, s, a, st, animate) {
@@ -245,23 +247,27 @@ export default {
   render(s, a) {
     const all = s.txs, d = debt(all);
     const bm = backupMarks(), ago = daysSince(bm.last);
+    const off = hiddenBlocks(s.settings, s.viewer);   // блоки, которые человек скрыл в настройках
     const backup = backupDue({ txCount: all.length, ...bm, synced: syncOn() }) ? `<div class="tip btip"><span class="tile">${ic('download')}</span><div><b>Сохраните резервную копию</b><br><span class="muted">Все данные лежат только на этом телефоне. ${ago == null ? 'Копий ещё не было.' : `Последняя копия: ${ago} ${plural(ago, 'день', 'дня', 'дней')} назад.`}</span><div class="btip-act"><button class="linkbtn" data-backup>Сохранить копию</button><button class="linkbtn later" data-backup-later>Позже</button></div></div></div>` : '';
     const first = !all.length ? `<div class="tip"><span class="tile">${ic('bulb')}</span><div><b>Начните с дохода</b><br><span class="muted">Нажмите «+», выберите «Доход» и запишите зарплату. Потом пополните общий баланс переводом.</span></div></div>` : '';
     return `<div class="home stack"><div class="top"><div class="hello"><div class="muted">Привет,</div><b>${esc(nameOf(s.viewer))}</b></div><div class="topr">${bell(s.viewer)}<button class="av ${s.viewer}" data-switch aria-label="Сменить пользователя">${esc(init(s.viewer))}</button></div></div>
-    ${first}${backup}${heroHtml(all, d)}${debtHtml(all, d, a.today())}${chartHtml()}${peopleHtml(s, a)}${draw(PLAN, s, a)}${draw(SOON, s, a)}${recentHtml(s)}${draw(REST, s, a)}</div>`;
+    ${first}${backup}${heroHtml(all, d)}${debtHtml(all, d, a.today())}${off.includes('chart') ? '' : chartHtml()}${off.includes('people') ? '' : peopleHtml(s, a)}${draw(PLAN, s, a, off)}${draw(SOON, s, a, off)}${off.includes('recent') ? '' : recentHtml(s)}${draw(REST, s, a, off)}
+    <button type="button" class="homecfg" data-homecfg>Настроить главную${off.length ? ` · скрыто: ${off.length}` : ''}</button></div>`;
   },
   bind(root, s, a) {
     const fresh = root.dataset.fresh === '1';   // анимации — только при первом показе экрана, не при перерисовках
     delete root.dataset.fresh;
     bindHero(root, s, a);
-    bindChart(root, s, a, fresh);
+    if ($('[data-chart]', root)) bindChart(root, s, a, fresh);
+    $('[data-homecfg]', root).onclick = () => { openSettingsTab('view'); a.go('settings'); };
     $('[data-inbox]', root).onclick = () => a.go('inbox');
     const bk = $('[data-backup]', root);
     if (bk) { bk.onclick = () => a.go('data'); $('[data-backup-later]', root).onclick = () => { snoozeBackup(); a.render(); }; }
     $$('[data-tx]', root).forEach((b) => (b.onclick = () => a.openTx(b.dataset.tx)));
     const all = $('[data-feed]', root);
     if (all) all.onclick = () => a.go('feed');
-    widgets.forEach((w) => w.bind && w.bind(root, s, a));
+    const off = hiddenBlocks(s.settings, s.viewer);
+    widgets.forEach((w) => !off.includes(w.id) && w.bind && w.bind(root, s, a));
     if (fresh) stagger(root, '.home>*');
   },
 };

@@ -3,12 +3,24 @@ import { subHeader, esc, ic, $, $$ } from '../core.js';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, PEOPLE } from '../ledger.js';
 import { applyTheme } from '../lib/appearance.js';
 import { seg, group, row, ctl } from '../lib/ui.js';
+import { HOME_BLOCKS, hiddenBlocks, setBlock } from '../lib/home-blocks.js';
 
 const CURRENCIES = ['₽', '$', '€', '£', '₸', '₴'];
 const LOCKS = [[0, 'Выкл.'], [1, '1 мин'], [5, '5 мин'], [15, '15 мин']];
 const KINDS = [['expense', 'Категории расходов', 'tag', EXPENSE_CATEGORIES], ['income', 'Категории доходов', 'coins', INCOME_CATEGORIES]];
 const CAT_MAX = 24;
 let confirmReset = false;
+// Настройки разбиты на вкладки, чтобы экран не был длиной в пять прокруток.
+const TABS = [['view', 'Вид'], ['spend', 'Траты'], ['cats', 'Категории'], ['other', 'Прочее']];
+let tab = 'view';
+/** Открыть настройки сразу на нужной вкладке (например, «Настроить главную»). */
+export const openSettingsTab = (t) => { if (TABS.some((x) => x[0] === t)) tab = t; };
+
+const homeBlock = (s) => {
+  const off = hiddenBlocks(s.settings, s.viewer);
+  const rows = HOME_BLOCKS.map(([id, label, sub]) => `<label class="switch"><span>${esc(label)}${sub ? `<br><span class="muted sm">${esc(sub)}</span>` : ''}</span><input type="checkbox" data-hb="${id}" data-fk="hb-${id}" ${off.includes(id) ? '' : 'checked'}></label>`).join('');
+  return `<section class="grp"><h2>Главная</h2><div class="hbl">${rows}</div><p class="gnote">Что показывать на главной. Баланс и долг видны всегда. У каждого из вас свой набор.</p></section>`;
+};
 
 const shareText = (v) => `Как делим: ${PEOPLE.max} ${v}% · ${PEOPLE.dinara} ${100 - v}%`;
 
@@ -23,21 +35,24 @@ const catBlock = ([kind, label, icon, base], s) => {
 export default {
   render(s) {
     const st = s.settings, share = st.defaultShare ?? 50;
-    return `${subHeader('Настройки')}<div class="stack">
-    ${group('Внешний вид',
+    const part = (t, html) => (tab === t ? html : '');
+    return `${subHeader('Настройки')}<div class="stack">${seg('stab', TABS, tab, 'Раздел настроек')}
+    ${part('view', group('Внешний вид',
       ctl({ icon: 'sun', hue: 'var(--joint)', label: 'Тема', control: seg('theme', [['auto', 'Авто'], ['light', 'Светлая'], ['dark', 'Тёмная']], st.theme || 'auto', 'Тема оформления') })
-      + ctl({ icon: 'globe', hue: 'var(--accent)', label: 'Валюта', sub: 'Символ в суммах по всему приложению', control: `<div class="chips s-cur" role="group" aria-label="Валюта">${CURRENCIES.map((c) => `<button type="button" class="chip${st.currency === c ? ' on' : ''}" data-cur="${c}" data-fk="cur-${c}" aria-pressed="${st.currency === c}" aria-label="${c}">${c}</button>`).join('')}</div>` }))}
-    ${group('Общие траты',
+      + ctl({ icon: 'globe', hue: 'var(--accent)', label: 'Валюта', sub: 'Символ в суммах по всему приложению', control: `<div class="chips s-cur" role="group" aria-label="Валюта">${CURRENCIES.map((c) => `<button type="button" class="chip${st.currency === c ? ' on' : ''}" data-cur="${c}" data-fk="cur-${c}" aria-pressed="${st.currency === c}" aria-label="${c}">${c}</button>`).join('')}</div>` }))
+    + homeBlock(s))}
+    ${part('spend', group('Общие траты',
       ctl({ icon: 'pie', hue: 'var(--accent)', label: 'Доля по умолчанию', sub: 'Подставляется в новую общую трату', control: `<p class="sharelab" id="s-sharelab" aria-live="polite">${esc(shareText(share))}</p><input type="range" id="s-share" min="0" max="100" step="5" value="${share}" aria-label="Доля ${esc(PEOPLE.max)} в процентах" aria-valuetext="${share}%"><div class="chips mt"><button type="button" class="chip" data-share="50">50/50</button><button type="button" class="chip" data-share="60">60/40</button><button type="button" class="chip" data-share="70">70/30</button></div>` })
       + ctl({ icon: 'users', hue: 'var(--max)', label: 'Делить общее по доходам', sub: 'Доля в новой общей трате — по доходам за последние 3 месяца', control: seg('splitInc', [['0', 'Выкл.'], ['1', 'Вкл.']], st.splitByIncome ? '1' : '0', 'Делить общее по доходам') })
-      + ctl({ icon: 'card', hue: 'var(--accent)', label: 'Способ оплаты по умолчанию', control: seg('method', [['card', `${ic('card')} Карта`], ['cash', `${ic('cash')} Наличные`]], st.defaultMethod || 'card', 'Способ оплаты по умолчанию') }))}
-    ${group('Безопасность',
+      + ctl({ icon: 'card', hue: 'var(--accent)', label: 'Способ оплаты по умолчанию', control: seg('method', [['card', `${ic('card')} Карта`], ['cash', `${ic('cash')} Наличные`]], st.defaultMethod || 'card', 'Способ оплаты по умолчанию') }))
+    )}
+    ${part('other', group('Безопасность',
       ctl({ icon: 'timer', hue: 'var(--joint)', label: 'Автоблокировка', sub: 'Через сколько после ухода в фон спрашивать PIN-код', control: seg('lock', LOCKS, st.autoLockMin ?? 1, 'Автоблокировка') })
       + row({ icon: 'shield', hue: 'var(--max)', label: 'PIN-код', sub: 'Установить, сменить или отключить', value: st.pins?.[s.viewer] ? 'Включён' : 'Не задан', go: 'profile', fk: 'go-pin' }),
-      'Приложение всегда просит PIN при запуске, если он задан. «Выкл.» — не блокировать при возврате из фона.')}
-    ${group('Свои категории', KINDS.map((k) => catBlock(k, s)).join(''))}
-    ${group('Профиль', row({ icon: 'users', hue: 'var(--dinara)', label: 'Имена, цвета, обращение', go: 'profile', fk: 'go-profile' }))}
-    ${group('Знакомство', row({ icon: 'refresh', hue: 'var(--muted)', label: confirmReset ? 'Точно пройти заново? Нажмите ещё раз' : 'Пройти знакомство заново', sub: 'Операции и цели не удаляются', go: 'reset-onb', fk: 'reset-onb', danger: confirmReset }))}
+      'Приложение всегда просит PIN при запуске, если он задан. «Выкл.» — не блокировать при возврате из фона.')
+    + group('Профиль', row({ icon: 'users', hue: 'var(--dinara)', label: 'Имена, цвета, обращение', go: 'profile', fk: 'go-profile' }))
+    + group('Знакомство', row({ icon: 'refresh', hue: 'var(--muted)', label: confirmReset ? 'Точно пройти заново? Нажмите ещё раз' : 'Пройти знакомство заново', sub: 'Операции и цели не удаляются', go: 'reset-onb', fk: 'reset-onb', danger: confirmReset })))}
+    ${part('cats', group('Свои категории', KINDS.map((k) => catBlock(k, s)).join('')))}
     </div>`;
   },
   bind(root, s, a) {
@@ -45,6 +60,7 @@ export default {
     const set = (fn) => st.mutate((x) => fn(x.settings));
     $$('[data-seg]', root).forEach((b) => (b.onclick = () => {
       const v = b.dataset.v, k = b.dataset.seg;
+      if (k === 'stab') { tab = v; a.render(); window.scrollTo(0, 0); return; }
       if (k === 'theme') { applyTheme(v); set((z) => { z.theme = v; }); }
       if (k === 'method') set((z) => { z.defaultMethod = v; });
       if (k === 'lock') set((z) => { z.autoLockMin = +v; });
@@ -54,8 +70,8 @@ export default {
 
     const range = $('#s-share', root), lab = $('#s-sharelab', root);
     const preview = () => { lab.textContent = shareText(+range.value); range.setAttribute('aria-valuetext', `${range.value}%`); };
-    range.oninput = preview;
-    range.onchange = () => set((z) => { z.defaultShare = +range.value; });
+    if (range) { range.oninput = preview; range.onchange = () => set((z) => { z.defaultShare = +range.value; }); }
+    $$('[data-hb]', root).forEach((c) => (c.onchange = () => set((z) => setBlock(z, s.viewer, c.dataset.hb, c.checked))));
     $$('[data-share]', root).forEach((b) => (b.onclick = () => set((z) => { z.defaultShare = +b.dataset.share; })));
 
     $$('[data-addcat]', root).forEach((f) => (f.onsubmit = (e) => {

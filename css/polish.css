@@ -207,3 +207,10 @@ button.av{width:44px;height:44px}
 /* запись на телефон не удалась */
 #savewarn{position:fixed;z-index:60;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 8px);max-width:496px;margin:0 auto;display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:var(--r-md);background:var(--neg);color:var(--on-accent);font-size:var(--t-sm);box-shadow:var(--shadow)}
 #savewarn button{flex:none;min-height:44px;padding:0 14px;border-radius:var(--r-pill);border:1px solid currentColor;background:none;color:inherit;font-weight:700}
+
+/* настройка блоков главной */
+.hbl{display:grid;gap:8px}
+.homecfg{align-self:center;min-height:44px;margin-top:6px;padding:0 18px;border:1px solid var(--line);border-radius:var(--r-pill);background:none;color:var(--muted);font-size:var(--t-sm);font-weight:600}
+/* «Новая цель / платёж / счёт» вверху списка — вторичное действие: заливка остаётся за главной кнопкой экрана */
+.primary.addbtn{background:var(--surface);color:var(--accent);border:1px solid var(--line);font-size:var(--t-md);padding:13px}
+.hbl .switch{margin:0}
