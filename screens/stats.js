@@ -1,5 +1,5 @@
 import { stats, spendByMethod, inMonth, other } from '../ledger.js';
-import { ic, esc, av, tile, catOf, money as fm, monthSwitch, MONTHS, monthLabel, $, $$ } from '../core.js';
+import { ic, esc, av, tile, catOf, money as fm, moneyR as fmR, monthSwitch, MONTHS, monthLabel, $, $$ } from '../core.js';
 import { monthlySeries, potSeries, categoryTotals, dailyAverage, forecast, elapsedDays, compactMoney, niceScale } from '../lib/analytics.js';
 import { setFilter, resetFilter } from './feed.js';
 
@@ -65,7 +65,7 @@ export default {
 
     // средний расход и прогноз
     const avg = dailyAverage(s.txs, a.month, today), fc = forecast(s.txs, a.month, today), days = elapsedDays(a.month, today);
-    const pace = avg === null || !(sp.card + sp.cash) ? '' : `<div class="card pace"><div><div class="muted sm">В среднем в день</div><b>${fm(avg)}</b><span class="muted sm">за ${days} ${(days % 10 === 1 && days % 100 !== 11) ? 'день' : (days % 10 >= 2 && days % 10 <= 4 && (days % 100 < 12 || days % 100 > 14)) ? 'дня' : 'дней'}</span></div>${fc !== null ? `<div><div class="muted sm">К концу месяца, прогноз</div><b>${fm(fc)}</b><span class="muted sm">если тратить в том же темпе</span></div>` : ''}</div>`;
+    const pace = avg === null || !(sp.card + sp.cash) ? '' : `<div class="card pace"><div><div class="muted sm">В среднем в день</div><b>${fmR(avg)}</b><span class="muted sm">за ${days} ${(days % 10 === 1 && days % 100 !== 11) ? 'день' : (days % 10 >= 2 && days % 10 <= 4 && (days % 100 < 12 || days % 100 > 14)) ? 'дня' : 'дней'}</span></div>${fc !== null ? `<div><div class="muted sm">К концу месяца, прогноз</div><b>${fmR(fc)}</b><span class="muted sm">если тратить в том же темпе</span></div>` : ''}</div>`;
 
     // графики
     const series = monthlySeries(s.txs, a.month, 6), pot = potSeries(s.txs, a.month, 6);

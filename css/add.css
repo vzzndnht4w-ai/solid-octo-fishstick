@@ -25,3 +25,15 @@
 @media (prefers-reduced-motion:reduce){
   .addv .seg.slide .pill,.addv .seg.slide button,.addv .catb,.addv .catb .tile{transition:none}
 }
+
+/* «Детали»: редко меняемые поля свёрнуты, в шапке сводка текущих значений */
+.addv .fmore{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md)}
+.addv .fmore summary{list-style:none;display:grid;grid-template-columns:1fr auto;grid-template-areas:"t i" "s i";align-items:center;gap:2px 12px;min-height:56px;padding:10px 14px;cursor:pointer;border-radius:var(--r-md)}
+.addv .fmore summary::-webkit-details-marker{display:none}
+.addv .fmore .fm-t{grid-area:t;font-weight:600}
+.addv .fmore .fm-s{grid-area:s;font-size:var(--t-sm);color:var(--muted);overflow-wrap:anywhere}
+.addv .fmore summary svg{grid-area:i;width:20px;height:20px;color:var(--muted);transition:transform .25s cubic-bezier(.16,1,.3,1)}
+.addv .fmore[open] summary svg{transform:rotate(90deg)}
+.addv .fmore .fm-b{padding:0 14px 14px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:reduce){.addv .fmore summary svg{transition:none}}
+.addv .amount input:focus-visible{outline:none}   /* курсор в поле уже показывает фокус; рамка вокруг узкого поля суммы выглядела как ошибка */

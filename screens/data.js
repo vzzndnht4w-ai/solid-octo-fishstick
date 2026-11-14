@@ -1,4 +1,5 @@
 import { subHeader, ic, esc, nameOf, monthLabel, MONTHS_GEN, $, $$ } from '../core.js';
+import { markBackup } from '../lib/backup.js';
 import { registerIcons } from '../icons.js';
 import { toCsv, parseBackup, dataSummary, backupFilename, csvFilename } from '../lib/exporter.js';
 
@@ -94,10 +95,11 @@ export default {
       },
       async backup() {
         const text = JSON.stringify(a.store.get(), null, 1);
+        markBackup();
         if (await shareFile(backupFilename(a.today()), 'application/json', text, 'Резервная копия — «Мы»')) return;
         showText('Резервная копия', text, 'Сохраните этот текст в надёжном месте');
       },
-      backupText() { showText('Резервная копия', JSON.stringify(a.store.get(), null, 1), 'Сохраните этот текст в надёжном месте'); },
+      backupText() { markBackup(); showText('Резервная копия', JSON.stringify(a.store.get(), null, 1), 'Сохраните этот текст в надёжном месте'); },
       async copy() { a.toast((await copyText(ui.out.text)) ? 'Скопировано' : 'Не удалось скопировать — выделите текст вручную'); },
       closeOut() { ui.out = null; redo(); },
       restoreText() {

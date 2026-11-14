@@ -1,5 +1,5 @@
 // Виджет «Шкала справедливости»: кто сколько вложил в общее за месяц относительно своей доли по доходам.
-import { ic, esc, nameOf, feminine, money as fm, $ } from '../core.js';
+import { ic, esc, nameOf, feminine, money as fm, moneyR as fmR, $ } from '../core.js';
 import { fairnessDelta, reactedCount } from '../lib/together.js';
 import { plural } from '../lib/together-ui.js';
 import { other, inMonth } from '../ledger.js';
@@ -32,7 +32,7 @@ export default {
     const head = f.level === 'even'
       ? 'В этом месяце вклады ровно по доходам. Так держать.'
       : `В этом месяце ${esc(nameOf(lead))} вложил${feminine(lead)} ${big ? 'заметно' : 'чуть'} больше своей доли: ${fm(whole(f.amount))}`;
-    const per = (p) => `<div class="tg-p ${p}"><small>${esc(nameOf(p))}</small><b>${fm(f.put[p])}</b><span>доля ${fm(f.fair[p])} · ${Math.round(f.share[p] * 100)}%</span></div>`;
+    const per = (p) => `<div class="tg-p ${p}"><small>${esc(nameOf(p))}</small><b>${fm(f.put[p])}</b><span>доля ${fmR(f.fair[p])} · ${Math.round(f.share[p] * 100)}%</span></div>`;
     const me = s.viewer, under = f.under;
     const action = f.level === 'even' || !me ? '' : me === under
       ? `<button class="tg-act" data-tg-fix="${under}">${ic('plus')} Пополнить баланс на ${fm(whole(f.amount))}</button>`

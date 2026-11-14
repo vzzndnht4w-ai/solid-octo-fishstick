@@ -238,7 +238,19 @@ function openQuickLink(s) {
   }, 0);
 }
 
-store.subscribe(() => { applyAll(store.get()); render(); });
+// Запись на телефон не удалась: постоянная плашка сверху, пока запись снова не пройдёт.
+function saveWarn() {
+  let el = $('#savewarn');
+  if (!store.saveFailed()) { if (el) el.remove(); return; }
+  if (el) return;
+  el = document.createElement('div');
+  el.id = 'savewarn'; el.setAttribute('role', 'alert');
+  el.innerHTML = `<span><b>Изменения не сохраняются.</b> В памяти телефона нет места или запись запрещена. Сохраните копию, чтобы ничего не потерять.</span><button>Копия</button>`;
+  $('button', el).onclick = () => api.go('data');
+  document.body.append(el);
+}
+store.subscribe(() => { applyAll(store.get()); render(); saveWarn(); });
+try { navigator.storage?.persist?.().catch(() => {}); } catch {}   // просим браузер не вычищать данные при нехватке места
 render();
 // Регулярные платежи: проводим пропущенное при запуске и при возвращении в приложение.
 const runRec = () => { const n = runRecurring(store, todayStr()); if (n) toast(`Добавлено регулярных платежей: ${n}`); };
@@ -251,4 +263,14 @@ push.onNotificationGo((r) => { if (SCREENS[r] && !locked && store.get().viewer) 
 sync.subscribe(() => { if (route === 'sync' && sync.isConnected()) render(); });
 if (sync.peekPendingInvite() && store.get().viewer) { route = 'sync'; render(); }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) runRec(); });
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+  // Приложение открывается из сохранённой копии; когда в фоне скачалась новая версия, предлагаем перезапуск.
+  let told = false;
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e.data?.type !== 'updated' || told) return;
+    told = true;
+    // с задержкой: стартовые сообщения (регулярные платежи, «Что нового») не должны его затереть, а остальные файлы — успеть докачаться
+    setTimeout(() => toast('Доступна новая версия', { label: 'Обновить', fn: () => location.reload() }), 3000);
+  });
+}

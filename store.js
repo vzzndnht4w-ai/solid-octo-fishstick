@@ -58,11 +58,14 @@ let state = defaults();
 const listeners = new Set();
 try { state = migrate(JSON.parse(localStorage.getItem(KEY) || '{}')); } catch { state = defaults(); }
 
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} listeners.forEach((f) => f()); };
+let saveFailed = false;   // запись в память телефона не удалась (переполнение, запрет): показываем предупреждение, а не молчим
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); saveFailed = false; } catch { saveFailed = true; } listeners.forEach((f) => f()); };
 
 export const store = {
   get: () => state,
   subscribe: (f) => listeners.add(f),
+  /** true, если последнее изменение не удалось записать на телефон. */
+  saveFailed: () => saveFailed,
   /** Любое изменение состояния: store.mutate((s) => { s.settings.theme = 'dark'; }) */
   mutate(fn) { fn(state); save(); },
   add(tx) { state.txs.push({ id: crypto.randomUUID(), createdAt: Date.now(), ...tx }); save(); },

@@ -24,6 +24,9 @@ export const dayLabel = (s) => {
 /** Деньги с символом валюты из настроек. */
 export const money = (kop) => formatMoney(kop).replace('₽', store.get().settings.currency || '₽');
 
+/** То же, но с округлением до целых: для расчётных величин (среднее, прогноз, доля), где копейки только шум. */
+export const moneyR = (kop) => money(Math.round(kop / 100) * 100);
+
 export const nameOf = (p) => PEOPLE[p];
 export const init = (p) => (nameOf(p) || '?')[0].toUpperCase();
 export const av = (p, cls = '') => `<span class="av ${p} ${cls}">${esc(init(p))}</span>`;

@@ -1,19 +1,21 @@
 import { WALLETS, EXPENSE_CATEGORIES, INCOME_CATEGORIES, other, splitAmount, shareByIncome, inMonth, validate, method as methodOf, parseMoney } from '../ledger.js';
-import { ic, av, esc, nameOf, feminine, catOf, money as fm, todayStr, $, $$ } from '../core.js';
+import { ic, av, esc, nameOf, feminine, catOf, money as fm, todayStr, dayLabel, $, $$ } from '../core.js';
 import '../lib/tools-ui.js';
 import { incomeShare, addDays, templateFromTx, templateErrors } from '../lib/tools.js';
 
 let draft = null, error = '', tplOpen = false;
+let moreOpen = false;    // раскрыт ли блок «Детали» (способ, кошелёк, доля, дата, скрытие, шаблон)
+let wantFocus = false;   // форму только что открыли пустой: курсор сразу в сумму
 
 const autoShare = (s) => (s.settings.splitByIncome ? incomeShare(s.txs, todayStr(), 3) : null);
 const newDraft = (s) => ({ editId: null, shareAuto: autoShare(s) != null, revealOn: '', revealMode: 'never', type: 'expense', amount: '', person: s.viewer, category: EXPENSE_CATEGORIES[0], scope: 'shared', paidFrom: s.viewer, method: s.settings.defaultMethod || 'card', shareMax: autoShare(s) ?? s.settings.defaultShare ?? 50, note: '', hidden: false, wallet: s.viewer, from: s.viewer, fromMethod: 'card', to: 'joint', toMethod: 'card', date: todayStr() });
 const draftFrom = (t, s) => ({ ...newDraft(s), ...t, editId: t.id, person: t.person || t.from || s.viewer, amount: String(t.amount / 100).replace('.', ','), method: methodOf(t), fromMethod: methodOf(t, 'from'), toMethod: methodOf(t, 'to'), note: t.note || '', hidden: !!t.hidden, shareAuto: false, revealOn: t.revealOn || '', revealMode: t.revealOn ? 'date' : 'never' });
 
-export const startEdit = (t, s) => { draft = draftFrom(t, s); error = ''; };
-export const reset = () => { draft = null; error = ''; tplOpen = false; };
+export const startEdit = (t, s) => { draft = draftFrom(t, s); error = ''; moreOpen = true; wantFocus = false; };
+export const reset = () => { draft = null; error = ''; tplOpen = false; moreOpen = false; wantFocus = true; };
 export const isEditing = () => !!(draft && draft.editId);
 /** Открыть форму с заготовкой (например, из шаблона регулярного платежа). */
-export const startWith = (partial, s) => { draft = { ...newDraft(s), ...partial }; if (partial.shareMax != null) draft.shareAuto = false; error = ''; tplOpen = false; };
+export const startWith = (partial, s) => { draft = { ...newDraft(s), ...partial }; if (partial.shareMax != null) draft.shareAuto = false; error = ''; tplOpen = false; moreOpen = !!draft.hidden; wantFocus = !draft.amount; };
 
 const chips = (name, items, cur, cls = () => '') => `<div class="chips" data-chips="${name}">${items.map(([v, l]) => `<button type="button" data-v="${v}" class="chip ${cls(v)} ${String(cur) === String(v) ? 'on' : ''}" aria-pressed="${String(cur) === String(v)}">${l}</button>`).join('')}</div>`;
 const personChips = (name, cur) => chips(name, ['max', 'dinara'].map((p) => [p, `${av(p, 'sm')}${esc(nameOf(p))}`]), cur, (v) => v);
@@ -31,6 +33,17 @@ const REVEAL = [['never', 'Никогда'], ['week', 'Через неделю']
 const revealBlock = (dr) => `<div class="reveal" role="group" aria-label="Открыть партнёру"><span class="rlab">${ic('gift')} Открыть партнёру</span><div class="chips">${REVEAL.map(([v, l]) => `<button type="button" class="chip ${dr.revealMode === v ? 'on' : ''}" data-reveal="${v}" aria-pressed="${dr.revealMode === v}">${l}</button>`).join('')}</div>${dr.revealMode === 'date' ? `<label class="sr" for="f-reveal">Дата раскрытия</label><input type="date" id="f-reveal" value="${esc(dr.revealOn)}" min="${todayStr()}">` : ''}<small class="muted">${dr.revealOn ? 'После этой даты детали увидит партнёр.' : 'Детали останутся скрытыми от партнёра.'}</small></div>`;
 const tplBlock = (dr) => `<div class="tplsave">${tplOpen ? `<div class="card"><label class="l" for="f-tpl" style="margin-top:0">Название шаблона</label><input id="f-tpl" maxlength="30" placeholder="Например, Кофе" value="${esc(dr.note || (dr.type === 'income' ? '' : dr.category))}"><button type="button" class="primary" id="f-tplsave" style="margin-top:12px">Сохранить шаблон</button></div>` : `<button type="button" class="ghost" id="f-tplopen">${ic('qbolt')} Сохранить как шаблон</button>`}</div>`;
 
+/** Строка-сводка свёрнутых «Деталей»: «Карта · платит Максим · 50/50 · Сегодня». */
+function detailsSummary(dr) {
+  const m = dr.method === 'cash' ? 'Наличные' : 'Карта', day = dayLabel(dr.date || todayStr());
+  let parts;
+  if (dr.type === 'income') parts = [m, dr.wallet === 'joint' ? 'в общий баланс' : `в кошелёк: ${nameOf(dr.wallet)}`, day];
+  else if (dr.scope === 'personal') parts = [m, day];
+  else parts = [m, dr.paidFrom === 'joint' ? 'из общего баланса' : `платит ${nameOf(dr.paidFrom)}`, `${dr.shareMax}/${100 - dr.shareMax}`, day];
+  if (dr.hidden) parts.push('скрыто');
+  return parts.join(' · ');
+}
+
 function readForm() {
   if (!draft) return;
   const g = (id) => $('#' + id);
@@ -44,9 +57,10 @@ function readForm() {
 
 function updatePreview() {
   const lab = $('#f-sharelabel'), pv = $('#f-preview');
-  if (!lab || !pv) return;
   readForm();
+  if (!lab || !pv) { const d0 = $('#f-dsum'); if (d0) d0.textContent = detailsSummary(draft); return; }
   const sp = splitAmount(parseMoney(draft.amount) || 0, draft.shareMax), pf = draft.paidFrom;
+  const ds = $('#f-dsum'); if (ds) ds.textContent = detailsSummary(draft);
   lab.textContent = `Как делим: ${nameOf('max')} ${draft.shareMax}% · ${nameOf('dinara')} ${100 - draft.shareMax}%${draft.shareAuto ? ' · по доходам за 3 месяца' : ''}`;
   const debtor = other(pf);
   pv.innerHTML = `${esc(nameOf('max'))}: <b>${fm(sp.max)}</b> · ${esc(nameOf('dinara'))}: <b>${fm(sp.dinara)}</b><br>` + (pf === 'joint' ? 'Платим из баланса — долгов не возникает.' : `Платил${feminine(pf)} ${esc(nameOf(pf))}: ${esc(nameOf(debtor))} ${feminine(debtor) ? 'будет должна' : 'будет должен'} свою долю. Баланс не меняется.`);
@@ -60,30 +74,36 @@ export default {
     let h = `<div class="addv"><div class="top"><h1>${dr.editId ? 'Изменить' : 'Новая операция'}</h1>${dr.editId ? `<button class="av joint" data-cancel aria-label="Отмена">${ic('x')}</button>` : `<button class="ib scanbtn" data-scan aria-label="Сканировать QR чека">${ic('qr')}</button>`}</div>
     ${slideSeg('type', [['expense', 'Расход'], ['income', 'Доход'], ['transfer', 'Перевод']], dr.type)}
     <div class="amount"><input id="f-amount" inputmode="decimal" placeholder="0" value="${esc(dr.amount)}" aria-label="Сумма"><span>${esc(s.settings.currency)}</span></div>`;
-    if (dr.type !== 'transfer') h += `<label class="l">Кто</label>${personChips('person', dr.person)}`;
-    if (dr.type === 'expense') {
-      h += `<label class="l">Категория</label>${catGrid(cats('expense', EXPENSE_CATEGORIES), dr.category)}
-      <label class="l">Чья это трата</label>${slideSeg('scope', [['personal', `${ic('user')} Личная`], ['shared', `${ic('users')} Общая`]], dr.scope, 'compact')}
-      <p class="muted scopehint">${dr.scope === 'personal' ? `Только ${esc(nameOf(dr.person))}. Общий баланс и долги не меняются.` : 'Делим на двоих в нужной пропорции.'}</p>
-      <label class="l">Чем заплатили</label>${methodChips('method', dr.method)}`;
-      if (dr.scope === 'personal') h += `<div class="preview">Спишется из «${esc(WALLETS[dr.person])}». Общий баланс не затрагивается.</div>`;
-      else h += `<label class="l">Откуда деньги</label>${walletChips('paidFrom', dr.paidFrom)}
-        <label class="l" id="f-sharelabel" for="f-share"></label><input type="range" id="f-share" min="0" max="100" step="5" value="${dr.shareMax}" aria-label="Доля первого человека">
-        <div class="chips" style="margin-top:10px"><button type="button" class="chip" data-share="50">50/50</button><button type="button" class="chip" data-share="60">60/40</button><button type="button" class="chip" data-share="70">70/30</button><button type="button" class="chip" data-share="income">По доходам</button></div>
-        <div class="preview" id="f-preview"></div>`;
-    } else if (dr.type === 'income') {
-      h += `<label class="l">Категория</label>${catGrid(cats('income', INCOME_CATEGORIES), dr.category)}
-      <label class="l">Куда пришли деньги</label>${walletChips('wallet', dr.wallet)}<label class="l">Способ</label>${methodChips('method', dr.method)}`;
-    } else {
+    const note = `<label class="l" for="f-note">Заметка</label><input id="f-note" placeholder="Необязательно" value="${esc(dr.note)}">`;
+    const date = `<label class="l" for="f-date">Дата</label><input type="date" id="f-date" value="${dr.date}">`;
+    if (dr.type === 'transfer') {
       h += `<label class="l">Быстро</label><div class="chips"><button type="button" class="chip" data-preset="cash">${ic('cash')} Снял(а) наличные</button><button type="button" class="chip" data-preset="joint">${ic('bank')} В общий баланс</button><button type="button" class="chip" data-preset="settle">${ic('swap')} Вернул(а) долг</button></div>
       <label class="l">Откуда</label>${walletChips('from', dr.from)}<div style="height:8px"></div>${methodChips('fromMethod', dr.fromMethod)}
       <label class="l">Куда</label>${walletChips('to', dr.to)}<div style="height:8px"></div>${methodChips('toMethod', dr.toMethod)}
-      <div class="preview">Перевод в «Общий баланс» — пополнение, а не расход. Между вашими кошельками — взаиморасчёт, он гасит долг.</div>`;
+      <div class="preview">Перевод в «Общий баланс» — пополнение, а не расход. Между вашими кошельками — взаиморасчёт, он гасит долг.</div>${date}${note}`;
+    } else {
+      // Сверху только то, что меняется почти в каждой операции; остальное — в «Деталях» со сводкой в одну строку.
+      h += `<label class="l">Кто</label>${personChips('person', dr.person)}`;
+      let more = '';
+      if (dr.type === 'expense') {
+        h += `<label class="l">Категория</label>${catGrid(cats('expense', EXPENSE_CATEGORIES), dr.category)}
+        <label class="l">Чья это трата</label>${slideSeg('scope', [['personal', `${ic('user')} Личная`], ['shared', `${ic('users')} Общая`]], dr.scope, 'compact')}
+        <p class="muted scopehint">${dr.scope === 'personal' ? `Только ${esc(nameOf(dr.person))}. Общий баланс и долги не меняются.` : 'Делим на двоих в нужной пропорции.'}</p>`;
+        more += `<label class="l">Чем заплатили</label>${methodChips('method', dr.method)}`;
+        if (dr.scope === 'personal') more += `<div class="preview">Спишется из «${esc(WALLETS[dr.person])}». Общий баланс не затрагивается.</div>`;
+        else more += `<label class="l">Откуда деньги</label>${walletChips('paidFrom', dr.paidFrom)}
+          <label class="l" id="f-sharelabel" for="f-share"></label><input type="range" id="f-share" min="0" max="100" step="5" value="${dr.shareMax}" aria-label="Доля первого человека">
+          <div class="chips" style="margin-top:10px"><button type="button" class="chip" data-share="50">50/50</button><button type="button" class="chip" data-share="60">60/40</button><button type="button" class="chip" data-share="70">70/30</button><button type="button" class="chip" data-share="income">По доходам</button></div>
+          <div class="preview" id="f-preview"></div>`;
+      } else {
+        h += `<label class="l">Категория</label>${catGrid(cats('income', INCOME_CATEGORIES), dr.category)}`;
+        more += `<label class="l">Куда пришли деньги</label>${walletChips('wallet', dr.wallet)}<label class="l">Способ</label>${methodChips('method', dr.method)}`;
+      }
+      more += `${date}<label class="switch"><span>Скрыть детали от партнёра<br><span class="muted sm">Будет видна только сумма</span></span><input type="checkbox" id="f-hidden" ${dr.hidden ? 'checked' : ''}></label>`;
+      if (dr.hidden) more += revealBlock(dr);
+      more += tplBlock(dr);
+      h += `${note}<details class="fmore" id="f-more" ${moreOpen ? 'open' : ''}><summary><span class="fm-t">Детали</span><span class="fm-s" id="f-dsum">${esc(detailsSummary(dr))}</span>${ic('right')}</summary><div class="fm-b">${more}</div></details>`;
     }
-    h += `<label class="l" for="f-date">Дата</label><input type="date" id="f-date" value="${dr.date}"><label class="l" for="f-note">Заметка</label><input id="f-note" placeholder="Необязательно" value="${esc(dr.note)}">`;
-    if (dr.type !== 'transfer') h += `<label class="switch"><span>Скрыть детали от партнёра<br><span class="muted sm">Будет видна только сумма</span></span><input type="checkbox" id="f-hidden" ${dr.hidden ? 'checked' : ''}></label>`;
-    if (dr.type !== 'transfer' && dr.hidden) h += revealBlock(dr);
-    if (dr.type !== 'transfer') h += tplBlock(dr);
     return h + `${error ? `<div class="error">${esc(error)}</div>` : ''}<div class="savebar"><button class="primary" id="f-save">${dr.editId ? 'Сохранить изменения' : 'Добавить'}</button></div></div>`;
   },
   bind(root, s, a) {
@@ -135,6 +155,10 @@ export default {
       a.toast(`Шаблон «${title}» сохранён`);
     };
     const amt = $('#f-amount'); if (amt) amt.oninput = updatePreview;
+    const mo = $('#f-more', root); if (mo) mo.ontoggle = () => { moreOpen = mo.open; };
+    const dt = $('#f-date', root); if (dt) dt.onchange = updatePreview;
+    if (wantFocus && amt && !draft.editId && !draft.amount) amt.focus({ preventScroll: true });
+    wantFocus = false;
     updatePreview();
     const cn = $('[data-cancel]', root); if (cn) cn.onclick = () => { draft = null; a.go('feed'); };
     const sc = $('[data-scan]', root); if (sc) sc.onclick = () => { readForm(); a.go('scan'); };
