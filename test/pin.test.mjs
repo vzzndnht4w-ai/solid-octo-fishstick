@@ -13,7 +13,9 @@ test('хэш: детерминирован, зависит от соли и PIN'
 
 test('запись не содержит PIN, проверка принимает верный и отвергает неверный', async () => {
   const rec = await createPinRecord('4821');
-  assert.ok(!rec.includes('4821'));
+  // соль фиксирована: со случайной солью цифры PIN изредка (примерно раз на 700 запусков) совпадали с куском хэша, и тест падал
+  assert.ok(!(await createPinRecord('4821', 'a1b2c3d4e5f60718')).includes('4821'));
+  assert.match(rec, /^[0-9a-f]+\$[0-9a-f]{64}$/);
   assert.equal(await verifyPin('4821', rec), true);
   assert.equal(await verifyPin('4822', rec), false);
   assert.equal(await verifyPin('abcd', rec), false);
