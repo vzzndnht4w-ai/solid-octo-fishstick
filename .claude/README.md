@@ -2,7 +2,8 @@
 
 Только текстовые инструкции (Markdown). Ни хуков, ни скриптов, ни изменений настроек доступа здесь нет.
 Источники (лицензия MIT, тексты лицензий в `vendor-licenses/`), файлы скопированы без изменений, кроме префикса `ecc-` в имени:
-- https://github.com/msitarzewski/agency-agents — 13 агентов
+- https://github.com/msitarzewski/agency-agents — 27 агентов (14 добавлены в ноябре 2026: маркетинг, продукт, приватность, документация)
+- https://github.com/coreyhaines31/marketingskills (коммит 1f83744) — 16 скиллов маркетинга с префиксом `mkt-` (переименованы папка и поле `name`, только `.md`: без `evals/`)
 - https://github.com/affaan-m/ECC — 2 агента и 3 скилла
 - https://github.com/pbakaus/impeccable — скилл `impeccable` (Apache 2.0), **только текстовая часть**: SKILL.md с вырезанными подкомандами `live`, `generate`, `hooks`, `doctor`, `init`, `document`, `pin` и 31 справочник (критика, polish, типографика, отступы, тексты, пустые состояния, адаптив, `craft-floor` с запретами). Исполняемый движок, хуки, живой режим и телеметрия не установлены
 
@@ -21,6 +22,34 @@
 | Проверка «действительно ли работает» со скриншотами | `Evidence Collector`, затем `Reality Checker` |
 | Скорость и вес страницы | `Performance Benchmarker` |
 | Безопасность (ключи, XSS, шифрование, Supabase) | `AppSec Engineer`, `AI-Generated Code Auditor` |
+| Личные данные, что хранится и уходит в облако, политика конфиденциальности | `Privacy Engineer` |
+| Установка на телефон, офлайн, поведение PWA на iOS/Android | `Mobile App Builder` |
+| README, справка, инструкции для пользователя | `Technical Writer` |
+| Что делать дальше, приоритеты, ТЗ на функцию | `Product Manager`, `Sprint Prioritizer` |
+| Разбор отзывов, тренды и конкуренты | `Feedback Synthesizer`, `Trend Researcher` |
+| Рост, вирусность, эксперименты | `Growth Hacker` |
+| Поиск Google/Яндекс, лендинг | `SEO Specialist`, `AI Citation Strategist` (видимость в ответах ChatGPT/Алисы) |
+| Публикации, соцсети, статьи | `Content Creator`, `Social Media Strategist` |
+| Пресса, анонсы | `PR & Communications Manager` |
+| Страница в RuStore / App Store / Google Play | `App Store Optimizer` |
+
+## Скиллы маркетинга (`mkt-*`)
+| Задача | Скилл |
+| --- | --- |
+| Позиционирование, аудитория, голос бренда (база для остальных) | `mkt-product-marketing` |
+| Тексты лендинга и экранов / вычитка готовых | `mkt-copywriting` / `mkt-copy-editing` |
+| План запуска, бета, анонс, чек-лист сайта | `mkt-launch` |
+| SEO-аудит / видимость в ИИ-поиске | `mkt-seo-audit` / `mkt-ai-seo` |
+| Страница в магазине приложений | `mkt-aso` |
+| Первый запуск и активация пользователя | `mkt-onboarding` |
+| Конверсия лендинга и форм | `mkt-cro` |
+| Контент-план, соцсети | `mkt-content-strategy`, `mkt-social` |
+| «Приведи друга», отзывы | `mkt-referrals` |
+| Метрики и события аналитики | `mkt-analytics` |
+| Интервью, опросы, голос клиента | `mkt-customer-research` |
+| Идеи продвижения, психология решений | `mkt-marketing-ideas`, `mkt-marketing-psychology` |
+
+Ссылки внутри скиллов на соседние называют их без префикса (`see copywriting` = `mkt-copywriting`). Примеры в них про SaaS и англоязычный рынок: VK, Telegram, Дзен и RuStore учитывать отдельно. В `mkt-social` есть рецепты `curl` только для чтения публичных лент (HN, Bluesky, RSS), в `mkt-ai-seo` упомянуты `npx`-проверки сайта: сами по себе ничего не запускают.
 
 Скилл `impeccable`: «покритикуй интерфейс», «отполируй экран», «подтяни типографику / отступы / тексты» (команды critique, polish, typeset, layout, clarify, onboard, harden, adapt).
 
