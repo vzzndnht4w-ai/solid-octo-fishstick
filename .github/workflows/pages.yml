@@ -18,6 +18,7 @@ jobs:
         with: { node-version: 22 }
       - run: node --test test/*.test.mjs
   deploy:
+    if: github.event_name != 'pull_request'
     needs: test
     runs-on: ubuntu-latest
     environment: { name: github-pages, url: "${{ steps.d.outputs.page_url }}" }
