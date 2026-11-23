@@ -6,7 +6,7 @@ import { applyProfiles, PEOPLE, WALLETS } from '../ledger.js';
 test('PBKDF2-запись: соль случайная, PIN проверяется корректно', async () => {
   const a = await createPinRecord('1234'), b = await createPinRecord('1234');
   assert.notEqual(a, b);
-  assert.match(a, /^pbkdf2\\$\\d+\\$[0-9a-f]{32}\\$[0-9a-f]{64}$/);
+  assert.match(a, /^pbkdf2\$\d+\$[0-9a-f]{32}\$[0-9a-f]{64}$/);
   assert.equal(a.split('$')[1], String(PIN_KDF_ITERATIONS));
   assert.equal(await verifyPin('1234', a), true);
   assert.equal(await verifyPin('1235', a), false);
