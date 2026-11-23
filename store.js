@@ -65,18 +65,26 @@ export function validateBackup(d) {
   if (!isRecord(d)) throw new Error('Резервная копия должна содержать объект данных');
   if (!Array.isArray(d.txs)) throw new Error('В резервной копии нет списка операций');
   if (d.txs.length > MAX_COLLECTION_ITEMS) throw new Error('Слишком много операций в резервной копии');
+  const txIds = new Set();
   for (const [i, tx] of d.txs.entries()) {
     if (!isRecord(tx)) throw new Error(`Операция №${i + 1} имеет неверный формат`);
-    if (typeof tx.id !== 'string' || !tx.id.trim()) throw new Error(`У операции №${i + 1} отсутствует идентификатор`);
+    if (typeof tx.id !== 'string' || !tx.id.trim() || txIds.has(tx.id)) throw new Error(`У операции №${i + 1} отсутствует или повторяется идентификатор`);
+    txIds.add(tx.id);
     if (!['income', 'expense', 'transfer', 'saving'].includes(tx.type)) throw new Error(`У операции №${i + 1} неизвестный тип`);
     if (!Number.isSafeInteger(tx.amount)) throw new Error(`У операции №${i + 1} некорректная сумма`);
+    if (tx.createdAt !== undefined && !Number.isFinite(tx.createdAt)) throw new Error(`У операции №${i + 1} некорректная дата`);
   }
-  for (const key of ['goals', 'recurring', 'comments', 'challenges', 'templates', 'savings', 'dateNotes']) {
+  const collections = ['goals', 'recurring', 'comments', 'challenges', 'templates', 'savings', 'dateNotes'];
+  for (const key of collections) {
     if (d[key] !== undefined && (!Array.isArray(d[key]) || d[key].length > MAX_COLLECTION_ITEMS)) throw new Error(`Раздел «${key}» имеет неверный формат`);
+    if (Array.isArray(d[key]) && d[key].some((item) => !isRecord(item))) throw new Error(`Раздел «${key}» содержит некорректную запись`);
   }
   for (const key of ['settings', 'profiles', 'budgets', 'categories']) {
     if (d[key] !== undefined && !isRecord(d[key])) throw new Error(`Раздел «${key}» имеет неверный формат`);
   }
+  if (d.profiles && ['max', 'dinara'].some((key) => d.profiles[key] !== undefined && !isRecord(d.profiles[key]))) throw new Error('Профили имеют неверный формат');
+  if (d.categories && ['expense', 'income'].some((key) => d.categories[key] !== undefined && (!Array.isArray(d.categories[key]) || d.categories[key].some((name) => typeof name !== 'string')))) throw new Error('Список категорий имеет неверный формат');
+  if (d.budgets && Object.values(d.budgets).some((amount) => !Number.isSafeInteger(amount) || amount < 0)) throw new Error('Бюджеты должны содержать целые неотрицательные суммы');
   const scan = (value, depth = 0) => {
     if (depth > 80) throw new Error('Слишком глубокая структура резервной копии');
     if (Array.isArray(value)) { for (const item of value) scan(item, depth + 1); return; }
