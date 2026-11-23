@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-globalThis.localStorage = { data: new Map(), getItem(k) { return this.data.get(k) ?? null; }, setItem(k, v) { this.data.set(k, String(v)); } };\nconst { defaults, store, validateBackup } = await import('../store.js');
+globalThis.localStorage = { data: new Map(), getItem(k) { return this.data.get(k) ?? null; }, setItem(k, v) { this.data.set(k, String(v)); } };
+const { defaults, store, validateBackup } = await import('../store.js');
 
 test('валидная резервная копия проходит проверку', () => {
   const d = defaults();
