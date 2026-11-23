@@ -118,9 +118,11 @@ export const store = {
     validateBackup(parsed);
     const next = migrate(parsed);
     next.settings.pins = {}; // PIN задаётся заново на устройстве после восстановления
+    try { localStorage.setItem(KEY, JSON.stringify(next)); }
+    catch { saveFailed = true; throw new Error('Не удалось сохранить восстановленные данные на этом устройстве'); }
     state = next;
-    save();
-    if (saveFailed) throw new Error('Не удалось сохранить восстановленные данные на этом устройстве');
+    saveFailed = false;
+    listeners.forEach((f) => f());
   },
   /** Удаляет операции, цели, бюджеты и регулярные платежи; профили и настройки остаются. */
   reset() { state = { ...defaults(), viewer: state.viewer, profiles: state.profiles, settings: state.settings }; save(); },
