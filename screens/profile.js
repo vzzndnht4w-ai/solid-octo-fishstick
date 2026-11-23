@@ -29,7 +29,7 @@ export default {
     ${group('PIN-код', hasPin
       ? row({ icon: 'shield', hue: 'var(--max)', label: 'PIN-код включён', sub: 'Спрашивается при запуске и после паузы' }) + row({ icon: 'lock', hue: 'var(--dinara)', label: 'Заблокировать сейчас', go: 'lock-now', fk: 'lock-now' }) + row({ icon: 'edit', label: 'Сменить PIN-код', go: 'pin-change', fk: 'pin-change' }) + row({ icon: 'x', hue: 'var(--neg)', label: 'Отключить PIN-код', go: 'pin-off', fk: 'pin-off', danger: true })
       : row({ icon: 'lock', hue: 'var(--muted)', label: 'Защитить профиль', sub: '4 цифры, у каждого свой', go: 'pin-set', fk: 'pin-set' }),
-    'Хранится только хэш, сам PIN нигде не записывается. Время автоблокировки — в настройках.')}
+    'PIN хранится как PBKDF2-хэш. Это блокировка экрана, а не шифрование данных в памяти телефона. Время автоблокировки — в настройках.')}
     ${group('Второй профиль', `${nameField('pf-pname', P[pt].name, 'Имя партнёра')}<div class="srow col">${genderSeg('pgender', P[pt].female, P[pt].name)}</div>`)}
     </div>`;
   },

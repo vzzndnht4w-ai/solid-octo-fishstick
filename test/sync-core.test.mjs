@@ -119,3 +119,11 @@ test('профиль со старыми цветами с другого тел
   applyRemote(st, known, { id: 'prof:max', data: { name: 'Максим', female: false, color: 'blue' }, deleted: false, u: 6 });
   assert.equal(st.profiles.max.color, 'emerald');
 });
+
+test('повреждённая или некорректная запись синхронизации отклоняется', async () => {
+  const keys = await deriveKeys('SAFE-CODE');
+  await assert.rejects(() => openRecord(keys, { payload: '!!!', u: 1 }));
+  await assert.rejects(() => openRecord(keys, { payload: 'AA==', u: 1 }));
+  await assert.rejects(() => openRecord(keys, { payload: 'A'.repeat(7_000_001), u: 1 }));
+  await assert.rejects(() => openRecord(keys, { payload: 'AA==', u: -1 }));
+});

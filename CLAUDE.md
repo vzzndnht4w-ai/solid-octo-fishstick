@@ -6,7 +6,9 @@
 
 ## Архитектура
 - `ledger.js` — чистая логика (балансы, долги, статистика, валидация). Без DOM. Тестируется.
-- `store.js` — состояние в localStorage, схема v2 (`profiles`, `settings`, `budgets`, `goals`, `recurring`, `categories`). Менять через `store.mutate(fn)`.
+- `store.js` — состояние в localStorage, схема v2 (`profiles`, `settings`, `budgets`, `goals`, `recurring`, `categories`). Менять через `store.mutate(fn)`. Данные в localStorage не зашифрованы; PIN блокирует интерфейс, но не защищает резервную копию хранилища. PIN-записи — PBKDF2-SHA-256 (310k итераций), старые SHA-256-записи повышаются при успешном входе.
+- Импорт резервной копии: `validateBackup()` проверяет структуру, размеры, типы и уникальность ID до замены состояния; nullable старые необязательные разделы мигрируются в значения по умолчанию. PIN-хэши не восстанавливаются из файла. Ошибка записи в localStorage не должна заменять текущее состояние.
+- Синхронизация: повреждённая запись шифротекста должна останавливать текущий проход с ошибкой, а не молча пропускаться и сдвигать курсор.
 - `core.js` — общие помощники интерфейса (`esc`, `money`, `av`, `tile`, `nameOf`, `subHeader`…). Все пользовательские строки в HTML — через `esc()`.
 - `app.js` — роутер. Экран = модуль `screens/<имя>.js`: `export default { render(s, a) → html, bind(root, s, a) }`.
   `a` — api: `a.go(route)`, `a.back()`, `a.render()`, `a.month`, `a.store`, `a.toast(msg, {label, fn})`, `a.openTx(id)`, `a.editTx(tx)`.

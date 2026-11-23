@@ -54,6 +54,50 @@ const migrate = (d) => {
   return out;
 };
 
+
+const MAX_BACKUP_CHARS = 25 * 1024 * 1024;
+const MAX_COLLECTION_ITEMS = 100_000;
+const isRecord = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+const FORBIDDEN_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
+
+/** Проверяет резервную копию до замены текущего состояния. Не исправляет сомнительные данные молча. */
+export function validateBackup(d) {
+  if (!isRecord(d)) throw new Error('Резервная копия должна содержать объект данных');
+  if (!Array.isArray(d.txs)) throw new Error('В резервной копии нет списка операций');
+  if (d.txs.length > MAX_COLLECTION_ITEMS) throw new Error('Слишком много операций в резервной копии');
+  const txIds = new Set();
+  for (const [i, tx] of d.txs.entries()) {
+    if (!isRecord(tx)) throw new Error(`Операция №${i + 1} имеет неверный формат`);
+    if (typeof tx.id !== 'string' || !tx.id.trim() || txIds.has(tx.id)) throw new Error(`У операции №${i + 1} отсутствует или повторяется идентификатор`);
+    txIds.add(tx.id);
+    if (!['income', 'expense', 'transfer', 'saving'].includes(tx.type)) throw new Error(`У операции №${i + 1} неизвестный тип`);
+    if (!Number.isSafeInteger(tx.amount)) throw new Error(`У операции №${i + 1} некорректная сумма`);
+    if (tx.createdAt !== undefined && !Number.isFinite(tx.createdAt)) throw new Error(`У операции №${i + 1} некорректная дата`);
+  }
+  const collections = ['goals', 'recurring', 'comments', 'challenges', 'templates', 'savings', 'dateNotes'];
+  for (const key of collections) {
+    if (d[key] != null && (!Array.isArray(d[key]) || d[key].length > MAX_COLLECTION_ITEMS)) throw new Error(`Раздел «${key}» имеет неверный формат`);
+    if (Array.isArray(d[key]) && d[key].some((item) => !isRecord(item))) throw new Error(`Раздел «${key}» содержит некорректную запись`);
+  }
+  for (const key of ['settings', 'profiles', 'budgets', 'categories']) {
+    if (d[key] != null && !isRecord(d[key])) throw new Error(`Раздел «${key}» имеет неверный формат`);
+  }
+  if (d.profiles && ['max', 'dinara'].some((key) => d.profiles[key] !== undefined && !isRecord(d.profiles[key]))) throw new Error('Профили имеют неверный формат');
+  if (d.categories && ['expense', 'income'].some((key) => d.categories[key] !== undefined && (!Array.isArray(d.categories[key]) || d.categories[key].some((name) => typeof name !== 'string')))) throw new Error('Список категорий имеет неверный формат');
+  if (d.budgets && Object.values(d.budgets).some((amount) => !Number.isSafeInteger(amount) || amount < 0)) throw new Error('Бюджеты должны содержать целые неотрицательные суммы');
+  const scan = (value, depth = 0) => {
+    if (depth > 80) throw new Error('Слишком глубокая структура резервной копии');
+    if (Array.isArray(value)) { for (const item of value) scan(item, depth + 1); return; }
+    if (!isRecord(value)) return;
+    for (const [key, child] of Object.entries(value)) {
+      if (FORBIDDEN_KEYS.has(key)) throw new Error('В резервной копии обнаружено небезопасное поле');
+      scan(child, depth + 1);
+    }
+  };
+  scan(d);
+  return d;
+};
+
 let state = defaults();
 const listeners = new Set();
 try { state = migrate(JSON.parse(localStorage.getItem(KEY) || '{}')); } catch { state = defaults(); }
@@ -76,9 +120,17 @@ export const store = {
   /** Резервная копия: без PIN-хэшей (их можно подобрать за миллисекунды; после восстановления PIN задаётся заново). */
   exportJson: () => JSON.stringify({ ...state, settings: { ...state.settings, pins: {} } }),
   importJson(text) {
-    const d = JSON.parse(text);
-    if (!Array.isArray(d.txs)) throw new Error('bad');
-    state = migrate(d); save();
+    if (typeof text !== 'string' || text.length > MAX_BACKUP_CHARS) throw new Error('Размер резервной копии недопустим');
+    let parsed;
+    try { parsed = JSON.parse(text); } catch { throw new Error('Файл резервной копии повреждён: неверный JSON'); }
+    validateBackup(parsed);
+    const next = migrate(parsed);
+    next.settings.pins = {}; // PIN задаётся заново на устройстве после восстановления
+    try { localStorage.setItem(KEY, JSON.stringify(next)); }
+    catch { saveFailed = true; throw new Error('Не удалось сохранить восстановленные данные на этом устройстве'); }
+    state = next;
+    saveFailed = false;
+    listeners.forEach((f) => f());
   },
   /** Удаляет операции, цели, бюджеты и регулярные платежи; профили и настройки остаются. */
   reset() { state = { ...defaults(), viewer: state.viewer, profiles: state.profiles, settings: state.settings }; save(); },

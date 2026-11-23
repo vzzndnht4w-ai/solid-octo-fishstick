@@ -1,32 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { hashPin, createPinRecord, verifyPin, isValidPin, shouldLock, newThrottle, canAttempt, recordFail, recordSuccess, attemptsLeft, randomSalt, FREE_ATTEMPTS, BASE_PAUSE_MS, MAX_PAUSE_MS } from '../lib/pin.js';
+import { hashPin, createPinRecord, verifyPin, isValidPin, shouldLock, newThrottle, canAttempt, recordFail, recordSuccess, attemptsLeft, randomSalt, FREE_ATTEMPTS, BASE_PAUSE_MS, MAX_PAUSE_MS, PIN_KDF_ITERATIONS, needsPinUpgrade } from '../lib/pin.js';
 import { applyProfiles, PEOPLE, WALLETS } from '../ledger.js';
 
-test('хэш: детерминирован, зависит от соли и PIN', async () => {
-  const a = await hashPin('1234', 'aa');
-  assert.equal(a, await hashPin('1234', 'aa'));
-  assert.notEqual(a, await hashPin('1234', 'bb'));
-  assert.notEqual(a, await hashPin('1235', 'aa'));
-  assert.match(a, /^[0-9a-f]{64}$/);
+test('PBKDF2-запись: соль случайная, PIN проверяется корректно', async () => {
+  const a = await createPinRecord('1234'), b = await createPinRecord('1234');
+  assert.notEqual(a, b);
+  assert.match(a, /^pbkdf2\$\d+\$[0-9a-f]{32}\$[0-9a-f]{64}$/);
+  assert.equal(a.split('$')[1], String(PIN_KDF_ITERATIONS));
+  assert.equal(await verifyPin('1234', a), true);
+  assert.equal(await verifyPin('1235', a), false);
+  assert.equal(await verifyPin('abcd', a), false);
+  assert.equal(await verifyPin('1234', undefined), false);
+  assert.equal(needsPinUpgrade(a), false);
 });
 
-test('запись не содержит PIN, проверка принимает верный и отвергает неверный', async () => {
-  const rec = await createPinRecord('4821');
-  // соль фиксирована: со случайной солью цифры PIN изредка (примерно раз на 700 запусков) совпадали с куском хэша, и тест падал
-  assert.ok(!(await createPinRecord('4821', 'a1b2c3d4e5f60718')).includes('4821'));
-  assert.match(rec, /^[0-9a-f]+\$[0-9a-f]{64}$/);
-  assert.equal(await verifyPin('4821', rec), true);
-  assert.equal(await verifyPin('4822', rec), false);
-  assert.equal(await verifyPin('abcd', rec), false);
-  assert.equal(await verifyPin('4821', undefined), false);
+test('старые SHA-256 записи продолжают работать и требуют обновления', async () => {
+  const legacy = `a1b2c3d4e5f60718a1b2c3d4e5f60718$${await hashPin('4821', 'a1b2c3d4e5f60718a1b2c3d4e5f60718')}`;
+  assert.equal(await verifyPin('4821', legacy), true);
+  assert.equal(await verifyPin('4822', legacy), false);
+  assert.equal(needsPinUpgrade(legacy), true);
   assert.equal(await verifyPin('4821', 'мусор'), false);
 });
 
-test('соль случайная: одинаковый PIN даёт разные записи', async () => {
-  const [a, b] = [await createPinRecord('0000'), await createPinRecord('0000')];
-  assert.notEqual(a, b);
-  assert.notEqual(randomSalt(), randomSalt());
+test('PBKDF2 отвергает некорректные и чрезмерные параметры', async () => {
+  assert.equal(await verifyPin('1234', 'pbkdf2$1$' + 'a'.repeat(32) + '$' + 'b'.repeat(64)), false);
+  assert.equal(await verifyPin('1234', 'pbkdf2$999999999$' + 'a'.repeat(32) + '$' + 'b'.repeat(64)), false);
+  assert.equal(await verifyPin('1234', 'pbkdf2$310000$bad$bad'), false);
 });
 
 test('isValidPin: ровно 4 цифры', async () => {

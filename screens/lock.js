@@ -1,6 +1,6 @@
 // Экран ввода PIN-кода: цифровая клавиатура поверх приложения. Используется для блокировки, смены
 // пользователя и установки/смены/отключения PIN в профиле. Логика хэшей и лимитов — в lib/pin.js.
-import { PIN_LENGTH, verifyPin, canAttempt, recordFail, recordSuccess, attemptsLeft, newThrottle } from '../lib/pin.js';
+import { PIN_LENGTH, verifyPin, createPinRecord, needsPinUpgrade, canAttempt, recordFail, recordSuccess, attemptsLeft, newThrottle } from '../lib/pin.js';
 import { esc, ic, av, nameOf } from '../core.js';
 import { store } from '../store.js';
 import '../lib/profile-icons.js';
@@ -118,7 +118,15 @@ export function pinPad(opts) {
 }
 
 /** Проверка PIN конкретного человека по сохранённому хэшу. */
-export const checkFor = (person) => (pin) => verifyPin(pin, store.get().settings.pins?.[person]);
+export const checkFor = (person) => async (pin) => {
+  const record = store.get().settings.pins?.[person];
+  const valid = await verifyPin(pin, record);
+  if (valid && needsPinUpgrade(record)) {
+    const upgraded = await createPinRecord(pin);
+    store.mutate((state) => { if (state.settings.pins?.[person] === record) state.settings.pins[person] = upgraded; });
+  }
+  return valid;
+};
 
 /** Просит ввести текущий PIN человека; true — введён верно. */
 export async function confirmPin(person, { title, sub, cancelable = true, extras } = {}) {
