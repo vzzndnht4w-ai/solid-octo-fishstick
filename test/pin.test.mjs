@@ -16,7 +16,7 @@ test('PBKDF2-запись: соль случайная, PIN проверяетс
 });
 
 test('старые SHA-256 записи продолжают работать и требуют обновления', async () => {
-  const legacy = `a1b2c3d4e5f60718a1b2c3d4e5f60718$${await hashPin('4821', 'a1b2c3d4e5f60718')}`;
+  const legacy = `a1b2c3d4e5f60718a1b2c3d4e5f60718$${await hashPin('4821', 'a1b2c3d4e5f60718a1b2c3d4e5f60718')}`;
   assert.equal(await verifyPin('4821', legacy), true);
   assert.equal(await verifyPin('4822', legacy), false);
   assert.equal(needsPinUpgrade(legacy), true);
