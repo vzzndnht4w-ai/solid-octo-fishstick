@@ -54,6 +54,42 @@ const migrate = (d) => {
   return out;
 };
 
+
+const MAX_BACKUP_CHARS = 25 * 1024 * 1024;
+const MAX_COLLECTION_ITEMS = 100_000;
+const isRecord = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+const FORBIDDEN_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
+
+/** Проверяет резервную копию до замены текущего состояния. Не исправляет сомнительные данные молча. */
+export function validateBackup(d) {
+  if (!isRecord(d)) throw new Error('Резервная копия должна содержать объект данных');
+  if (!Array.isArray(d.txs)) throw new Error('В резервной копии нет списка операций');
+  if (d.txs.length > MAX_COLLECTION_ITEMS) throw new Error('Слишком много операций в резервной копии');
+  for (const [i, tx] of d.txs.entries()) {
+    if (!isRecord(tx)) throw new Error(`Операция №${i + 1} имеет неверный формат`);
+    if (typeof tx.id !== 'string' || !tx.id.trim()) throw new Error(`У операции №${i + 1} отсутствует идентификатор`);
+    if (!['income', 'expense', 'transfer', 'saving'].includes(tx.type)) throw new Error(`У операции №${i + 1} неизвестный тип`);
+    if (!Number.isSafeInteger(tx.amount)) throw new Error(`У операции №${i + 1} некорректная сумма`);
+  }
+  for (const key of ['goals', 'recurring', 'comments', 'challenges', 'templates', 'savings', 'dateNotes']) {
+    if (d[key] !== undefined && (!Array.isArray(d[key]) || d[key].length > MAX_COLLECTION_ITEMS)) throw new Error(`Раздел «${key}» имеет неверный формат`);
+  }
+  for (const key of ['settings', 'profiles', 'budgets', 'categories']) {
+    if (d[key] !== undefined && !isRecord(d[key])) throw new Error(`Раздел «${key}» имеет неверный формат`);
+  }
+  const scan = (value, depth = 0) => {
+    if (depth > 80) throw new Error('Слишком глубокая структура резервной копии');
+    if (Array.isArray(value)) { for (const item of value) scan(item, depth + 1); return; }
+    if (!isRecord(value)) return;
+    for (const [key, child] of Object.entries(value)) {
+      if (FORBIDDEN_KEYS.has(key)) throw new Error('В резервной копии обнаружено небезопасное поле');
+      scan(child, depth + 1);
+    }
+  };
+  scan(d);
+  return d;
+};
+
 let state = defaults();
 const listeners = new Set();
 try { state = migrate(JSON.parse(localStorage.getItem(KEY) || '{}')); } catch { state = defaults(); }
