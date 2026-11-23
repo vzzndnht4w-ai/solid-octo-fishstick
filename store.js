@@ -76,11 +76,11 @@ export function validateBackup(d) {
   }
   const collections = ['goals', 'recurring', 'comments', 'challenges', 'templates', 'savings', 'dateNotes'];
   for (const key of collections) {
-    if (d[key] !== undefined && (!Array.isArray(d[key]) || d[key].length > MAX_COLLECTION_ITEMS)) throw new Error(`Раздел «${key}» имеет неверный формат`);
+    if (d[key] != null && (!Array.isArray(d[key]) || d[key].length > MAX_COLLECTION_ITEMS)) throw new Error(`Раздел «${key}» имеет неверный формат`);
     if (Array.isArray(d[key]) && d[key].some((item) => !isRecord(item))) throw new Error(`Раздел «${key}» содержит некорректную запись`);
   }
   for (const key of ['settings', 'profiles', 'budgets', 'categories']) {
-    if (d[key] !== undefined && !isRecord(d[key])) throw new Error(`Раздел «${key}» имеет неверный формат`);
+    if (d[key] != null && !isRecord(d[key])) throw new Error(`Раздел «${key}» имеет неверный формат`);
   }
   if (d.profiles && ['max', 'dinara'].some((key) => d.profiles[key] !== undefined && !isRecord(d.profiles[key]))) throw new Error('Профили имеют неверный формат');
   if (d.categories && ['expense', 'income'].some((key) => d.categories[key] !== undefined && (!Array.isArray(d.categories[key]) || d.categories[key].some((name) => typeof name !== 'string')))) throw new Error('Список категорий имеет неверный формат');
