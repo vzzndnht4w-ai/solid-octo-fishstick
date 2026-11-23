@@ -48,3 +48,11 @@ test('валидный импорт мигрирует старую копию �
   assert.deepEqual(store.get().settings.pins, {});
   store.importJson(JSON.stringify({ txs: [] }));
 });
+
+test('импорт отклоняет дублирующиеся ID и повреждённые вложенные разделы', () => {
+  const duplicate = { txs: [{ id: 'same', type: 'income', amount: 1 }, { id: 'same', type: 'expense', amount: 2 }] };
+  assert.throws(() => validateBackup(duplicate), /повторяется идентификатор/);
+  assert.throws(() => validateBackup({ txs: [], profiles: { max: null } }), /Профили/);
+  assert.throws(() => validateBackup({ txs: [], budgets: { rent: -1 } }), /Бюджеты/);
+  assert.throws(() => validateBackup({ txs: [], categories: { expense: [42] } }), /категорий/);
+});
