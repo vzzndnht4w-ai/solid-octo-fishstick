@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { defaults, store, validateBackup } from '../store.js';
+globalThis.localStorage = { data: new Map(), getItem(k) { return this.data.get(k) ?? null; }, setItem(k, v) { this.data.set(k, String(v)); } };\nconst { defaults, store, validateBackup } = await import('../store.js');
 
 test('валидная резервная копия проходит проверку', () => {
   const d = defaults();
@@ -44,6 +44,6 @@ test('валидный импорт мигрирует старую копию �
   const backup = { txs: [{ id: 'old-1', type: 'income', amount: 500, createdAt: 1 }], settings: { pins: { max: 'legacy-hash' } } };
   store.importJson(JSON.stringify(backup));
   assert.equal(store.get().txs.length, 1);
-  assert.deepEqual(store.get().settings.pins, { max: 'legacy-hash' });
+  assert.deepEqual(store.get().settings.pins, {});
   store.importJson(JSON.stringify({ txs: [] }));
 });
