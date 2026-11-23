@@ -112,9 +112,15 @@ export const store = {
   /** Резервная копия: без PIN-хэшей (их можно подобрать за миллисекунды; после восстановления PIN задаётся заново). */
   exportJson: () => JSON.stringify({ ...state, settings: { ...state.settings, pins: {} } }),
   importJson(text) {
-    const d = JSON.parse(text);
-    if (!Array.isArray(d.txs)) throw new Error('bad');
-    state = migrate(d); save();
+    if (typeof text !== 'string' || text.length > MAX_BACKUP_CHARS) throw new Error('Размер резервной копии недопустим');
+    let parsed;
+    try { parsed = JSON.parse(text); } catch { throw new Error('Файл резервной копии повреждён: неверный JSON'); }
+    validateBackup(parsed);
+    const next = migrate(parsed);
+    next.settings.pins = {}; // PIN задаётся заново на устройстве после восстановления
+    state = next;
+    save();
+    if (saveFailed) throw new Error('Не удалось сохранить восстановленные данные на этом устройстве');
   },
   /** Удаляет операции, цели, бюджеты и регулярные платежи; профили и настройки остаются. */
   reset() { state = { ...defaults(), viewer: state.viewer, profiles: state.profiles, settings: state.settings }; save(); },
